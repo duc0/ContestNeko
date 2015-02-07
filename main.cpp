@@ -29,7 +29,7 @@ void testGen() {
 int p[MAXN], n, k, pos[MAXN];
 int totalOps;
 
-double pr[2][MAXN][MAXN]; // pr[i][j] = prob that p[i] = x and p[j] = y after k operations
+double pr[2][MAXN][MAXN]; // pr[i][j] = prob that p[i] > p[j] after k operations, i < j
 
 int getPos(int i, int l, int r) { // get pos of p[i] after reverse(l, r)
   if (i < l || i > r) {
@@ -37,9 +37,10 @@ int getPos(int i, int l, int r) { // get pos of p[i] after reverse(l, r)
   }
   return r - i + l;
 }
+
 int main() {
   //testGen();
-  freopen("input2.txt", "r", stdin);
+  //freopen("input2.txt", "r", stdin);
   
   cin >> n >> k;
   for (int i = 1; i <= n; ++i) {
@@ -49,39 +50,41 @@ int main() {
   totalOps = n * (n + 1) / 2;
   double probOp = (double) 1 / totalOps;
   
-  double ret = 0;
-  
-  for (int x = 1; x < n; ++x) {
-    for (int y = x + 1; y <= n; ++y) {
-      fill0(pr);
-      int cur = 0, next = 1;
-      pr[cur][pos[x]][pos[y]] = 1;
-      repeat(k) {
-        fill0(pr[next]);
-        for (int i = 1; i <= n; ++i) {
-          for (int j = 1; j <= n; ++j) {
-            if (i == j) continue;
-            if (pr[cur][i][j] == 0) continue;
-            for (int l = 1; l <= n; ++l) {
-              for (int r = l; r <= n; ++r) {
-                int i2 = getPos(i, l, r);
-                int j2 = getPos(j, l, r);
-                pr[next][i2][j2] += pr[cur][i][j] * probOp;
-              }
-            }
-          }
-        }
-        cur = 1 - cur;
-        next = 1 -  next;
-      }
-      for (int py = 1; py < n; ++py) {
-        for (int px = py + 1; px <= n; ++px) {
-          ret += pr[cur][px][py];
-        }
-      }
+  fill0(pr);
+  int cur = 0, next = 1;
+  for (int i = 1; i < n; ++i) {
+    for (int j = i + 1; j <= n; ++j) {
+      pr[cur][i][j] = p[i] > p[j] ? 1 : 0;
     }
   }
   
+  repeat(k) {
+    fill0(pr[next]);
+    for (int i = 1; i < n; ++i) {
+      for (int j = i + 1; j <= n; ++j) {
+        for (int l = 1; l <= n; ++l) {
+          for (int r = l; r <= n; ++r) {
+            int i2 = getPos(i, l, r);
+            int j2 = getPos(j, l, r);
+            if (i2 < j2) {
+              pr[next][i2][j2] += pr[cur][i][j] * probOp;
+            } else {
+              pr[next][j2][i2] += (1 - pr[cur][i][j]) * probOp;
+            }
+          }
+        }
+      }
+    }
+    cur = 1 - cur;
+    next = 1 - next;
+  }
+  
+  double ret = 0;
+  for (int i = 1; i < n; ++i) {
+    for (int j = i + 1; j <= n; ++j) {
+      ret += pr[cur][i][j];
+    }
+  }
   printf("%.10lf", ret);
   return 0;
 }
