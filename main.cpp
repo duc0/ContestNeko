@@ -18,104 +18,73 @@ using namespace std;
 
 #define int64 long long
 #define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
-#define fill0(x) memset(a, 0, sizeof(a))
-
-
-
-
-#define MAXN 400
-
-#define MOD 1000000007
-#define MAXT 101000
-
-int n, q, t;
-int a[MAXN];
-int more[MAXN];
-int mless[MAXN];
-
-int f[MAXT];
+#define fill0(x) memset(x, 0, sizeof(x))
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
-  n = 300;
-  q = 299;
-  t = 100000;
-  cout << n << " " << q << " " << t << endl;
-  for (int i = 0; i < n; ++i) {
-    cout << 1 << " ";
-  }
-  cout << endl;
-  for (int i = 0; i < q; ++i) {
-    cout << i + 1 << " " << i + 2 << endl;
-  }
   fclose(stdout);
 }
 
+#define MAXN 110
+int p[MAXN], n, k;
+
+int countInv[MAXN*(MAXN - 1) / 2], countAll;
+
+int countInversion() {
+  int cnt = 0;
+  for (int i = 1; i < n; ++i) {
+    for (int j = i + 1; j <= n; ++j) {
+      if (p[i] > p[j]) {
+        cnt++;
+      }
+    }
+  }
+  return cnt;
+}
+
+void reverse(int l, int r) {
+  int mid = (l + r) / 2;
+  
+  int ii = l, jj = r;
+  for (int i = l; i <= mid; ++i) {
+    swap(p[ii], p[jj]);
+    ii++;
+    jj--;
+  }
+}
+
+void bruteforce(int numOp) {
+  if (numOp == 0) {
+    int ret = countInversion();
+    countInv[ret]++;
+    countAll++;
+    return;
+  }
+  for (int l = 1; l <= n; ++l) {
+    for (int r = l; r <= n; ++r) {
+      reverse(l, r);
+      bruteforce(numOp - 1);
+      reverse(l, r);
+    }
+  }
+}
 int main() {
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  //freopen("input3.txt", "r", stdin);
   
-  cin >> n;
-  cin >> q;
-  cin >> t;
+  cin >> n >> k;
   for (int i = 1; i <= n; ++i) {
-    cin >> a[i];
-  }
-  int b, c;
-  fill0(more);
-  fill0(mless);
-  repeat(q) {
-    cin >> b >> c;
-    more[b] = c;
-    mless[c] = b;
-  }
-  for (int i = 1; i <= n; ++i) {
-    int j = i;
-    while (more[j] != 0) {
-      j = more[j];
-      if (j == i) {
-        // Cycle!
-        cout << 0 << endl;
-        return 0;
-      }
-    }
-  }
-  for (int i = 1; i <= n; ++i) {
-    if (mless[i] != 0) {
-      continue;
-    }
-    int j = i;
-    while (more[j] != 0) {
-      // j, more[j]
-      a[more[j]] += a[j]; // reduce x[j] > x[more[j]] => x[j] > 0
-      t -= a[j]; // reduce x[j] > 0 => x[j] >= 0
-      // Overflow can happen, so we should check here!
-      if (t < 0) {
-        cout << 0 << endl;
-        return 0;
-      }
-      j = more[j];
-    }
+    cin >> p[i];
   }
   
-  if (t == 0) {
-    cout << 1 << endl;
-    return 0;
+  countAll = 0;
+  fill0(countInv);
+  bruteforce(k);
+  
+  double ret = 0;
+  for (int i = 0; i <= n * (n - 1) / 2; ++i) {
+    ret += i * ((double)countInv[i] / countAll);
   }
-  
-  assert(t > 0);
-  
-  memset(f, 0, sizeof(f));
-  for (int i = 1; i <= n; ++i) {
-    f[0] = 1;
-    for (int iterT = 1; iterT <= t; ++iterT) {
-      if (iterT >= a[i]) {
-        f[iterT] = (f[iterT] + f[iterT - a[i]]) % MOD;
-      }
-    }
-  }
-  
-  cout << f[t] << endl;
-  
+  printf("%.10lf", ret);
   return 0;
 }
