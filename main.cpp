@@ -20,102 +20,77 @@ using namespace std;
 #define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
 #define fill0(x) memset(x, 0, sizeof(x))
 
+#define MAXN 500
+#define MAXK 60
 
-
-
-#define MAXN 400
-
-#define MOD 1000000007
-#define MAXT 101000
-
-int n, q, t;
+int n, k;
 int a[MAXN];
-int more[MAXN];
-int mless[MAXN];
-
-int f[MAXT];
+int f[MAXN][MAXN][MAXK];
+int sumPart[MAXN];
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
-  n = 300;
-  q = 299;
-  t = 100000;
-  cout << n << " " << q << " " << t << endl;
-  for (int i = 0; i < n; ++i) {
-    cout << 1 << " ";
-  }
-  cout << endl;
-  for (int i = 0; i < q; ++i) {
-    cout << i + 1 << " " << i + 2 << endl;
+  cout << 400 << " " << 50 << endl;
+  for (int i = 1; i <= 400; ++i) {
+    cout << 10000 << " ";
   }
   fclose(stdout);
 }
 
+int getSum(int l, int r) {
+  return sumPart[r] - sumPart[l - 1];
+}
+
 int main() {
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  //freopen("biginput1.txt", "r", stdin);
   
-  cin >> n;
-  cin >> q;
-  cin >> t;
+  cin >> n >> k;
+  sumPart[0] = 0;
   for (int i = 1; i <= n; ++i) {
     cin >> a[i];
-  }
-  int b, c;
-  fill0(more);
-  fill0(mless);
-  repeat(q) {
-    cin >> b >> c;
-    more[b] = c;
-    mless[c] = b;
-  }
-  for (int i = 1; i <= n; ++i) {
-    int j = i;
-    while (more[j] != 0) {
-      j = more[j];
-      if (j == i) {
-        // Cycle!
-        cout << 0 << endl;
-        return 0;
-      }
-    }
-  }
-  for (int i = 1; i <= n; ++i) {
-    if (mless[i] != 0) {
-      continue;
-    }
-    int j = i;
-    while (more[j] != 0) {
-      // j, more[j]
-      a[more[j]] += a[j]; // reduce x[j] > x[more[j]] => x[j] > 0
-      t -= a[j]; // reduce x[j] > 0 => x[j] >= 0
-      // Overflow can happen, so we should check here!
-      if (t < 0) {
-        cout << 0 << endl;
-        return 0;
-      }
-      j = more[j];
-    }
+    sumPart[i] = a[i] + sumPart[i - 1];
   }
   
-  if (t == 0) {
-    cout << 1 << endl;
-    return 0;
-  }
-  
-  assert(t > 0);
-  
-  memset(f, 0, sizeof(f));
-  for (int i = 1; i <= n; ++i) {
-    f[0] = 1;
-    for (int iterT = 1; iterT <= t; ++iterT) {
-      if (iterT >= a[i]) {
-        f[iterT] = (f[iterT] + f[iterT - a[i]]) % MOD;
+  fill0(f);
+  for (int last = 1; last <= n; ++last) {
+    for (int prev = 1; prev <= last; ++prev) {
+      for (int numSeq = 1; numSeq <= k; ++numSeq) {
+        if (numSeq > last) {
+          continue;
+        }
+        if (numSeq - 1 > prev - 1) {
+          continue;
+        }
+        int sumCur = getSum(prev, last);
+        if (numSeq == 1) {
+          f[last][prev][numSeq] = 0;
+          continue;
+        }
+        int best = 0;
+        for (int before = 1; before < prev; ++before) {
+          int sumPrev = getSum(before, prev - 1);
+          if (numSeq - 2 > before - 1) {
+            continue;
+          }
+          int cand = abs(sumCur - sumPrev) + f[prev - 1][before][numSeq - 1];
+          if (cand > best) {
+            best = cand;
+          }
+        }
+        f[last][prev][numSeq] = best;
       }
     }
   }
   
-  cout << f[t] << endl;
-  
+  int best = 0;
+  for (int i = 1; i <= n; ++i) {
+    for (int prev = 1; prev <= n; ++prev) {
+      if (k <= i && f[i][prev][k] > best) {
+        best = f[i][prev][k];
+      }
+    }
+  }
+  cout << best << endl;
   return 0;
 }
