@@ -18,7 +18,7 @@ using namespace std;
 
 #define int64 long long
 #define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
-#define fill0(x) memset(a, 0, sizeof(a))
+#define fill0(x) memset(x, 0, sizeof(x))
 
 
 
