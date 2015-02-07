@@ -38,8 +38,8 @@ int main() {
   for (int i = 1; i <= n; ++i) {
     a[i] = i;
   }
-  int bestS = 0;
-  int idx = 0;
+  int bestS = (n*(n+1)*(n+2)) / 6 ;
+  int cnt = 0;
   do {
     int s = 0;
     for (int i = 1; i <= n; ++i) {
@@ -51,23 +51,19 @@ int main() {
         s += m;
       }
     }
-    if (s > bestS) {
-      bestS = s;
-      idx = 1;
-    } else if (s == bestS) {
-      idx++;
-    }
     if (s == bestS) {
-      if (idx == need) {
-        for (int i = 1; i <= n; ++i) {
-          ret[i] = a[i];
-        }
+      cnt++;
+      for (int i = 1; i <= n; ++i) {
+        cout << a[i] << " ";
       }
+      cout << endl;
     }
   } while (next_permutation(a + 1, a + n + 1));
-  //cout << bestS << endl;
+  
   for (int i = 1; i <= n; ++i) {
     cout << ret[i] << " ";
   }
+  cout << cnt << endl;
   return 0;
+  
 }
