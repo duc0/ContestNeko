@@ -30,48 +30,11 @@ void testGen() {
   fclose(stdout);
 }
 
-#define MAXN 110
+#define MAXN 102
 int p[MAXN], n, k, pos[MAXN];
 int totalOps;
 
 double pr[2][MAXN][MAXN]; // pr[i][j] = prob that p[i] > p[j] after k operations, i < j
-
-int getPos(int i, int l, int r) { // get pos of p[i] after reverse(l, r)
-  if (i < l || i > r) {
-    return i;
-  }
-  return r - i + l;
-}
-
-int countOp(int s, int i, int j) {
-  // count number of reverse ops (l, r) such that l + r = s , l <= i, r >= j
-  int l = i, r = s-l;
-  if (!(r >= j && r <= n)) {
-    r = j;
-    l = s - r;
-    if (!(l <= i && l >= 1)) {
-      return 0;
-    }
-  }
-  return min(l, n - r + 1);;
-}
-
-int countOpSwap1(int i, int j, int i2) {
-  // count number of reverse ops (l, r) such that i and i2 are swapped, but j stay the same
-  if (i > i2) {
-    return countOpSwap1(i2, j, i);
-  }
-  return min(i, j - i2);
-}
-
-int countOpSwap2(int i, int j, int j2) {
-  if (j2 > j) {
-    return countOpSwap2(i, j2, j);
-  }
-  return min(j2 - i, n - j + 1);
-}
-
-int countOpNotAffect[MAXN][MAXN];
 
 int main() {
   //testGen();
@@ -94,40 +57,41 @@ int main() {
   for (int i = 1; i < n; ++i) {
     for (int j = i + 1; j <= n; ++j) {
       pr[cur][i][j] = p[i] > p[j] ? 1 : 0;
-      
-      countOpNotAffect[i][j] = (i-1) * i / 2 + (n - j) * (n - j + 1) / 2 + (j - i - 1) * (j - i) / 2;
-    }
-  }
-  
-  for (int i = 1; i < n; ++i) {
-    for (int j = i + 1; j <= n; ++j) {
-      
     }
   }
   repeat(k) {
     fill0(pr[next]);
+    auto prc = pr[cur];
     for (int i = 1; i < n; ++i) {
       for (int j = i + 1; j <= n; ++j) {
-        double curp = pr[cur][i][j];
-        for (int i2 = 1; i2 < j; ++i2) {
-          int cnt = countOpSwap1(i, j, i2);
-          pr[next][i2][j] += curp * cnt;
+        double ret = 0;
+        
+        int dist = j - i;
+        int right = n - j + 1;
+        for (int i2 = 1; i2 <= i; ++i2) {
+          ret += prc[i2][j] * min(i2, dist);
         }
-        for (int j2 = i + 1; j2 <= n; ++j2) {
-          int cnt = countOpSwap2(i, j, j2);
-          pr[next][i][j2] += curp * cnt;
+        
+        for (int i2 = i + 1; i2 < j; ++i2) {
+          ret += prc[i2][j] * min(i, j - i2);
         }
-        pr[next][i][j] += countOpNotAffect[i][j] * pr[cur][i][j];
-        for (int j2 = 1, i2 = j2 + j - i; j2 <= n && i2 <= n; ++j2, ++i2) {
-          int sum_r_l = j2 + j;
-          int cnt = countOp(sum_r_l, i, j);
-          pr[next][j2][i2] += (1 - curp) * cnt;
+        
+        for (int j2 = i + 1; j2 <= j; ++j2) {
+          ret += prc[i][j2] * min(j2 - i, right);
         }
-      }
-    }
-    for (int i = 1; i < n; ++i) {
-      for (int j = i + 1; j <= n; ++j) {
-        pr[next][i][j] *= probOp;
+        
+        for (int j2 = j + 1; j2 <= n; ++j2) {
+          ret += prc[i][j2] * min(dist, n - j2 + 1);
+        }
+        
+        ret += ((i-1) * i / 2 + (n - j) * (n - j + 1) / 2 + (j - i - 1) * (j - i) / 2) * pr[cur][i][j];
+        for (int j2 = 1; j2 < i; ++j2) {
+          ret += (1 - prc[j2][j2 + dist]) * min(j2, right);
+        }
+        for (int j2 = i; j2 <= n + i - j; ++j2) {
+          ret += (1 - prc[j2][j2 + dist]) * min(i, right - j2 + i);
+        }
+        pr[next][i][j] = ret * probOp;
       }
     }
     cur = 1 - cur;
