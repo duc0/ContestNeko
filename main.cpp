@@ -61,37 +61,41 @@ int main() {
   }
   repeat(k) {
     fill0(pr[next]);
-    auto prc = pr[cur];
+    auto prn = pr[next];
     for (int i = 1; i < n; ++i) {
       for (int j = i + 1; j <= n; ++j) {
-        double ret = 0;
+        double prc = pr[cur][i][j];
         
         int dist = j - i;
         int right = n - j + 1;
         for (int i2 = 1; i2 <= i; ++i2) {
-          ret += prc[i2][j] * min(i2, dist);
+          prn[i2][j] += prc * min(i2, dist);
         }
         
         for (int i2 = i + 1; i2 < j; ++i2) {
-          ret += prc[i2][j] * min(i, j - i2);
+          prn[i2][j] += prc * min(i, j - i2);
         }
         
         for (int j2 = i + 1; j2 <= j; ++j2) {
-          ret += prc[i][j2] * min(j2 - i, right);
+          prn[i][j2] += prc * min(j2 - i, right);
         }
         
         for (int j2 = j + 1; j2 <= n; ++j2) {
-          ret += prc[i][j2] * min(dist, n - j2 + 1);
+          prn[i][j2] += prc * min(dist, n - j2 + 1);
         }
         
-        ret += ((i-1) * i / 2 + (n - j) * (n - j + 1) / 2 + (j - i - 1) * (j - i) / 2) * pr[cur][i][j];
+        prn[i][j] += ((i-1) * i / 2 + (n - j) * (n - j + 1) / 2 + (j - i - 1) * (j - i) / 2) * prc;
         for (int j2 = 1; j2 < i; ++j2) {
-          ret += (1 - prc[j2][j2 + dist]) * min(j2, right);
+          prn[j2][j2 + dist] += (1 - prc) * min(j2, right);
         }
         for (int j2 = i; j2 <= n + i - j; ++j2) {
-          ret += (1 - prc[j2][j2 + dist]) * min(i, right - j2 + i);
+          prn[j2][j2 + dist] += (1 - prc) * min(i, right - j2 + i);
         }
-        pr[next][i][j] = ret * probOp;
+      }
+    }
+    for (int i = 1; i < n; ++i) {
+      for (int j = i + 1; j <= n; ++j) {
+        pr[next][i][j] *= probOp;
       }
     }
     cur = 1 - cur;
