@@ -30,11 +30,11 @@ void testGen() {
   fclose(stdout);
 }
 
-#define MAXN 110
+#define MAXN 102
 int p[MAXN], n, k, pos[MAXN];
 int totalOps;
 
-double pr[2][MAXN][MAXN]; // pr[i][j] = prob that p[i] > p[j] after k operations, i < j
+double pr[MAXN][MAXN], npr[MAXN][MAXN]; // pr[i][j] = prob that p[i] > p[j] after k operations, i < j
 
 int getPos(int i, int l, int r) { // get pos of p[i] after reverse(l, r)
   if (i < l || i > r) {
@@ -73,8 +73,17 @@ int countOpSwap2(int i, int j, int j2) {
 
 int countOpNotAffect[MAXN][MAXN];
 
+int nextState[MAXN][MAXN][3*MAXN*3][3];
+int countState[MAXN][MAXN];
+
+void addNextState(int i, int j, int i2, int j2, int cnt) {
+  nextState[i][j][countState[i][j]][0] = i2;
+  nextState[i][j][countState[i][j]][1] = j2;
+  nextState[i][j][countState[i][j]][2] = cnt;
+  countState[i][j]++;
+}
 int main() {
-  //testGen();
+  //testGen()
   freopen("biginput1.txt", "r", stdin);
   
   cin >> n >> k;
@@ -90,54 +99,78 @@ int main() {
   double probOp = (double)1 / totalOps;
   
   fill0(pr);
-  int cur = 0, next = 1;
   for (int i = 1; i < n; ++i) {
     for (int j = i + 1; j <= n; ++j) {
-      pr[cur][i][j] = p[i] > p[j] ? 1 : 0;
+      pr[i][j] = p[i] > p[j] ? 1 : 0;
       
       countOpNotAffect[i][j] = (i-1) * i / 2 + (n - j) * (n - j + 1) / 2 + (j - i - 1) * (j - i) / 2;
     }
   }
   
+  fill0(countState);
+  
   for (int i = 1; i < n; ++i) {
     for (int j = i + 1; j <= n; ++j) {
-      
+      for (int i2 = 1; i2 < j; ++i2) {
+        int cnt = countOpSwap1(i, j, i2);
+        if (cnt > 0) {
+          addNextState(i, j, i2, j, cnt);
+        }
+      }
+      for (int j2 = i + 1; j2 <= n; ++j2) {
+        int cnt = countOpSwap2(i, j, j2);
+        if (cnt > 0) {
+          addNextState(i, j, i, j2, cnt);
+        }
+      }
+      if (countOpNotAffect[i][j] > 0) {
+        addNextState(i, j, i, j, countOpNotAffect[i][j]);
+      }
+      for (int j2 = 1, i2 = j2 + j - i; j2 <= n && i2 <= n; ++j2, ++i2) {
+        int sum_r_l = j2 + j;
+        int cnt = countOp(sum_r_l, i, j);
+        if (cnt > 0) {
+          addNextState(i, j, j2, i2, -cnt);
+        }
+      }
+
     }
   }
   repeat(k) {
-    fill0(pr[next]);
+    fill0(npr);
     for (int i = 1; i < n; ++i) {
       for (int j = i + 1; j <= n; ++j) {
-        double curp = pr[cur][i][j];
-        for (int i2 = 1; i2 < j; ++i2) {
-          int cnt = countOpSwap1(i, j, i2);
-          pr[next][i2][j] += curp * cnt;
-        }
-        for (int j2 = i + 1; j2 <= n; ++j2) {
-          int cnt = countOpSwap2(i, j, j2);
-          pr[next][i][j2] += curp * cnt;
-        }
-        pr[next][i][j] += countOpNotAffect[i][j] * pr[cur][i][j];
-        for (int j2 = 1, i2 = j2 + j - i; j2 <= n && i2 <= n; ++j2, ++i2) {
-          int sum_r_l = j2 + j;
-          int cnt = countOp(sum_r_l, i, j);
-          pr[next][j2][i2] += (1 - curp) * cnt;
+        double curp = pr[i][j];
+        double curp1 = 1 - curp;
+        double ret;
+        auto ns = nextState[i][j];
+        int cs = countState[i][j];
+        int i2, j2, cnt;
+        for (int id = 0; id < cs; ++id) {
+          i2 = ns[id][0];
+          j2 = ns[id][1];
+          cnt = ns[id][2];
+          if (cnt > 0) {
+            ret = curp * cnt;
+          } else {
+            ret = -curp1 * cnt;
+          }
+          npr[i2][j2] += ret;
         }
       }
     }
     for (int i = 1; i < n; ++i) {
       for (int j = i + 1; j <= n; ++j) {
-        pr[next][i][j] *= probOp;
+        npr[i][j] *= probOp;
+        pr[i][j] = npr[i][j];
       }
     }
-    cur = 1 - cur;
-    next = 1 - next;
   }
   
   double ret = 0;
   for (int i = 1; i < n; ++i) {
     for (int j = i + 1; j <= n; ++j) {
-      ret += pr[cur][i][j];
+      ret += pr[i][j];
     }
   }
   printf("%.10lf", ret);
