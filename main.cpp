@@ -23,117 +23,84 @@ using namespace std;
 #define INT_INF 2E9L
 #define INT64_INF 2E18L
 
+#define ntype int
+#define N_INF INT_INF
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
 
-struct t_edge {
-  int u, v, c, f;
-  t_edge(int u, int v, int c, int f):u(u),v(v),c(c),f(f){}
+struct Network {
+  struct Edge {int u, v; ntype f, c;};
+  vector<Edge> edgeList;
+  vector<vector<int> > adj;
+  void addEdge(int u, int v, ntype c) {
+    Edge e={u,v,0,c};
+    adj[u].push_back((int)edgeList.size());
+    adj[v].push_back((int)edgeList.size());
+    edgeList.push_back(e);
+  }
+  int n(){return (int)adj.size();}
+  void resetFlow() {
+    for (auto &pe : edgeList) pe.f=0;
+  }
+  void init(int n) {
+    edgeList.clear();
+    adj.resize(n);
+    for (auto &au : adj) au.clear();
+  }
+  Network(int n){init(n);}
 };
 
-struct network {
-  int n;
-  vector <vector <int> > a;
-  vector <t_edge> e;
-  int s, t, total_f;
-  
-  void reset(int n) {
-    this->n = n;
-    e.clear();
-    a.resize(n);
-    for (int i = 0; i < n; ++i) {
-      a[i].clear();
-    }
-    total_f = 0;
-  }
-  
-  network() {}
-  network(int n) { reset(n); }
-  
-  void add_edge(int u, int v, int c) {
-    e.push_back(t_edge(u, v, c, 0));
-    a[u].push_back((int)e.size() - 1);
-    a[v].push_back((int)e.size() - 1);
-  }
-  
-  t_edge & get_edge(int i) {return e[i];}
-  void set_source(int s) { this->s = s; }
-  void set_sink(int t) { this->t = t; }
-  inline int source() {return s;}
-  inline int sink() {return t;}
-  
-  int get_flow_value() {
-    return total_f;
-  }
-};
-
-struct edmonds_karp {
-  vector<int> pre;
-  vector<int> minc;
-  
-  bool find_aug_path(network &g) {
+class Dinic {
+  Network &g;
+  int s, t;
+  vector<ntype> dist;
+  vector<bool> block;
+  bool computeDist() {
     queue<int> q;
-    q.push(g.s);
-    
-    pre.resize(g.n);
-    for (int u = 0; u < g.n; ++u) pre[u] = -1;
-    pre[g.s] = -2;
-    
-    minc.resize(g.n);
-    minc[g.s]=INT_INF;
-    
+    q.push(t);
+    fill(dist.begin(),dist.end(),-1);
+    dist[t]=0;
     while (!q.empty()) {
       int u=q.front();
       q.pop();
-      for (int i = 0; i < g.a[u].size(); ++i) {
-        int t = g.a[u][i];
-        t_edge & e = g.e[t];
-        if (e.v == u) {
-          if (pre[e.u] == -1 && e.f > 0) {
-            minc[e.u] = min(minc[u], e.f);
-            pre[e.u] = t;
-            q.push(e.u);
-            if (e.u == g.t) return 1;
+      for (auto pi : g.adj[u]) {
+        Network::Edge &e=g.edgeList[pi];
+#define CONSIDER(v) {if (dist[v]==-1) {dist[v]=dist[u]+1; q.push(v); if (v==s) return true;}}
+        if (e.v==u && e.f<e.c) CONSIDER(e.u) else if (e.u==u && e.f>0) CONSIDER(e.v)
+#undef CONSIDER
           }
-        } else {
-          if (pre[e.v] == -1 && e.f < e.c) {
-            minc[e.v] = min(minc[u], e.c - e.f);
-            pre[e.v] = t;
-            q.push(e.v);
-            if (e.v == g.t) return 1;
-          }
-        }
-      }
     }
+    return dist[s]!=-1;
+  }
+  ntype findAugmentingPath(int u, ntype delta) {
+    if (u==t) return delta;
+    ntype inc;
+    for (auto pi : g.adj[u]){
+      Network::Edge &e=g.edgeList[pi];
+#define CONSIDER(v,i,d) {if (!block[v] && dist[u]==dist[v]+1 && (inc=findAugmentingPath(v,min(delta,d)))) {e.f+=i*inc; return inc;}}
+      if (e.u==u && e.f<e.c) CONSIDER(e.v,1,e.c-e.f) else if (e.v==u && e.f>0) CONSIDER(e.u,-1,e.f)
+#undef CONSIDER
+        }
+    block[u]=true;
     return 0;
   }
-  
-  void inc_flow(network &g) {
-    int d = minc[g.t];
-    int v = g.t;
-    while (v != g.s) {
-      t_edge & e = g.e[pre[v]];
-      if (e.v == v) {
-        e.f += d;
-        v = e.u;
-      } else {
-        e.f -= d;
-        v = e.v;
-      }
-    }
-    g.total_f += d;
+public:
+  ntype totalFlow;
+  Dinic(Network &g, int s, int t):g(g),s(s),t(t){
+    g.resetFlow();
+    totalFlow=0;
+    dist.resize(g.n());
+    block.resize(g.n());
   }
-  
-  edmonds_karp(network &g) {
-    while (find_aug_path(g)) {
-      inc_flow(g);
+  ntype run () {
+    while (computeDist()) {
+		    fill(block.begin(), block.end(), false);
+		    while (ntype inc = findAugmentingPath(s, N_INF)) totalFlow += inc;
     }
-  }
-  
-  bool in_cut_s(int u) {
-    return pre[u] != -1;
+    return totalFlow;
   }
 };
 
@@ -274,33 +241,32 @@ int main() {
     mid = (left + right) / 2;
 
     int nNode = nMale + nFemale + 2 * nSquare + 2;
-    network g(nNode);
-    g.set_source(nNode - 2);
-    g.set_sink(nNode - 1);
+    Network g(nNode);
+    int source = nNode - 2;
+    int sink = nNode - 1;
     REPMALE(m) {
-      g.add_edge(g.source(), MALENODE(m), 1);
+      g.addEdge(source, MALENODE(m), 1);
     }
     REPFEMALE(f) {
-      g.add_edge(FEMALENODE(f), g.sink(), 1);
+      g.addEdge(FEMALENODE(f), sink, 1);
     }
     REPSQUARE(x) {
-      g.add_edge(SQUARENODEIN(x), SQUARENODEOUT(x), 1);
+      g.addEdge(SQUARENODEIN(x), SQUARENODEOUT(x), 1);
     }
     
     REPMALE(m) REPROW(r) REPCOL(c) {
       if (best[MALE][m][r][c] != INT64_INF && best[MALE][m][r][c] <= mid) {
-        g.add_edge(MALENODE(m), SQUARENODEIN(squareID[r][c]), 1);
+        g.addEdge(MALENODE(m), SQUARENODEIN(squareID[r][c]), 1);
       }
     }
     
     REPFEMALE(f) REPROW(r) REPCOL(c) {
       if (best[FEMALE][f][r][c] != INT64_INF && best[FEMALE][f][r][c] <= mid) {
-        g.add_edge(SQUARENODEOUT(squareID[r][c]), FEMALENODE(f), 1);
+        g.addEdge(SQUARENODEOUT(squareID[r][c]), FEMALENODE(f), 1);
       }
     }
     
-    edmonds_karp maxflow(g);
-    int bestMatch = g.get_flow_value();
+    int bestMatch = Dinic(g, source, sink).run();
     if (bestMatch == nMale) {
       ret = mid;
       right = mid - 1;
