@@ -27,7 +27,18 @@ using namespace std;
 #define N_INF INT_INF
 
 void testGen() {
-  freopen("biginput1.txt", "w", stdout);
+  freopen("biginput2.txt", "w", stdout);
+  int n = 14;
+  cout << n << " " << n << " " << n * n << " " << n * n - 1 << endl;
+  repeat(n) {
+    repeat (n) {
+      cout << ".";
+    }
+    cout << endl;
+  }
+  repeat(2*n*n) {
+    cout << 1 << " " << 1 << " " << 1 << endl;
+  }
   fclose(stdout);
 }
 
@@ -147,7 +158,7 @@ void addScay(int type, int r, int c, int t) {
 
 int main() {
   //testGen();
-  //freopen("input1.txt", "r", stdin);
+  freopen("biginput2.txt", "r", stdin);
   
   cin >> nRow >> nCol >> nMale >> nFemale;
   if ((nMale + nFemale) % 2 == 0) {
@@ -205,26 +216,24 @@ int main() {
   
   
   int64 maxTime = -INT64_INF;
-  REPMALE(m) REPFEMALE(f) {
-    REPROW(r) REPCOL(c) {
-      REPMALE(m) {
-        best[MALE][m][r][c] = INT64_INF;
-        int dMale = dist[r][c][row[MALE][m]][col[MALE][m]];
-        if (dMale != INT_INF) {
-          int64 timeMale = (int64)dMale * speed[MALE][m];
-          best[MALE][m][r][c] = timeMale;
-          maxTime = max(maxTime, timeMale);
-        }
+  REPROW(r) REPCOL(c) {
+    REPMALE(m) {
+      best[MALE][m][r][c] = INT64_INF;
+      int dMale = dist[r][c][row[MALE][m]][col[MALE][m]];
+      if (dMale != INT_INF) {
+        int64 timeMale = (int64)dMale * speed[MALE][m];
+        best[MALE][m][r][c] = timeMale;
+        maxTime = max(maxTime, timeMale);
       }
-      
-      REPFEMALE(f) {
-        best[FEMALE][f][r][c] = INT64_INF;
-        int dFemale = dist[r][c][row[FEMALE][f]][col[FEMALE][f]];
-        if (dFemale != INT_INF) {
-          int64 timeFemale = (int64)dFemale * speed[FEMALE][f];
-          best[FEMALE][f][r][c] = timeFemale;
-          maxTime = max(maxTime, timeFemale);
-        }
+    }
+    
+    REPFEMALE(f) {
+      best[FEMALE][f][r][c] = INT64_INF;
+      int dFemale = dist[r][c][row[FEMALE][f]][col[FEMALE][f]];
+      if (dFemale != INT_INF) {
+        int64 timeFemale = (int64)dFemale * speed[FEMALE][f];
+        best[FEMALE][f][r][c] = timeFemale;
+        maxTime = max(maxTime, timeFemale);
       }
     }
   }
