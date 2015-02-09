@@ -19,103 +19,95 @@ using namespace std;
 #define int64 long long
 #define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
 #define fill0(x) memset(x, 0, sizeof(x))
-
-
-
-
-#define MAXN 400
-
-#define MOD 1000000007
-#define MAXT 101000
-
-int n, q, t;
-int a[MAXN];
-int more[MAXN];
-int mless[MAXN];
-
-int f[MAXT];
+#define checkMin(x, y) x = min(x, y)
+#define checkMax(x, y) x = max(x, y)
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
-  n = 300;
-  q = 299;
-  t = 100000;
-  cout << n << " " << q << " " << t << endl;
-  for (int i = 0; i < n; ++i) {
-    cout << 1 << " ";
-  }
-  cout << endl;
-  for (int i = 0; i < q; ++i) {
-    cout << i + 1 << " " << i + 2 << endl;
-  }
   fclose(stdout);
+}
+
+#define MAXN 1000100
+
+int n, c;
+// No need to store all the constraints, since
+// let minL[i] = min(j, j is left of i), maxL[i] = max(j, j is left of i),
+// we know that all nodes from minL[i] to maxL[i] should be left of i (due to properties
+// of pre-order traversal).
+int minL[MAXN], minR[MAXN], maxL[MAXN], maxR[MAXN];
+
+int ret[MAXN];
+int cntRet = 0;
+int cur = 0;
+
+bool dfs(int u, int m) {
+  // Subtree rooted at u should at least have up to node m
+  
+  cur++;
+  assert(cur == u);
+  
+  if (minL[u] != 0) {
+    // Go left
+    // We don't care about m when going to the left subtree
+    if (!dfs(cur + 1, maxL[u])) {
+      return false;
+    }
+  }
+  ret[cntRet] = u;
+  cntRet++;
+  if (minR[u] != 0 && cur + 1 > minR[u]) {
+    return false;
+  }
+  // Go right, we need to build up to m if maxR[u] < m
+  int t = max(maxR[u], m);
+  if (t >= cur + 1) {
+    if (!dfs(cur + 1, t)) {
+      return false;
+    }
+  }
+  
+  return true;
 }
 
 int main() {
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  //freopen("input5.txt", "r", stdin);
   
-  cin >> n;
-  cin >> q;
-  cin >> t;
-  for (int i = 1; i <= n; ++i) {
-    cin >> a[i];
-  }
-  int b, c;
-  fill0(more);
-  fill0(mless);
-  repeat(q) {
-    cin >> b >> c;
-    more[b] = c;
-    mless[c] = b;
-  }
-  for (int i = 1; i <= n; ++i) {
-    int j = i;
-    while (more[j] != 0) {
-      j = more[j];
-      if (j == i) {
-        // Cycle!
-        cout << 0 << endl;
-        return 0;
+  cin >> n >> c;
+  int a, b;
+  string s;
+  repeat(c) {
+    cin >> a >> b >> s;
+    if (a >= b) {
+      cout << "IMPOSSIBLE";
+      return 0;
+    }
+    if (s[0] == 'L') {
+      if (minL[a] == 0) {
+        minL[a] = b;
+        maxL[a] = b;
+      } else {
+        checkMin(minL[a], b);
+        checkMax(maxL[a], b);
       }
-    }
-  }
-  for (int i = 1; i <= n; ++i) {
-    if (mless[i] != 0) {
-      continue;
-    }
-    int j = i;
-    while (more[j] != 0) {
-      // j, more[j]
-      a[more[j]] += a[j]; // reduce x[j] > x[more[j]] => x[j] > 0
-      t -= a[j]; // reduce x[j] > 0 => x[j] >= 0
-      // Overflow can happen, so we should check here!
-      if (t < 0) {
-        cout << 0 << endl;
-        return 0;
-      }
-      j = more[j];
-    }
-  }
-  
-  if (t == 0) {
-    cout << 1 << endl;
-    return 0;
-  }
-  
-  assert(t > 0);
-  
-  memset(f, 0, sizeof(f));
-  for (int i = 1; i <= n; ++i) {
-    f[0] = 1;
-    for (int iterT = 1; iterT <= t; ++iterT) {
-      if (iterT >= a[i]) {
-        f[iterT] = (f[iterT] + f[iterT - a[i]]) % MOD;
+    } else {
+      if (minR[a] == 0) {
+        minR[a] = b;
+        maxR[a] = b;
+      } else {
+        checkMin(minR[a], b);
+        checkMax(maxR[a], b);
       }
     }
   }
   
-  cout << f[t] << endl;
+  if (!dfs(1, n)) {
+    cout << "IMPOSSIBLE";
+  } else {
+    for (int i = 0; i < n; ++i) {
+      cout << ret[i] << " ";
+    }
+  }
   
   return 0;
 }
