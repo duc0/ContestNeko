@@ -19,103 +19,76 @@ using namespace std;
 #define int64 long long
 #define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
 #define fill0(x) memset(x, 0, sizeof(x))
-
-
-
-
-#define MAXN 400
-
-#define MOD 1000000007
-#define MAXT 101000
-
-int n, q, t;
-int a[MAXN];
-int more[MAXN];
-int mless[MAXN];
-
-int f[MAXT];
+#define INT_INF 2E9L
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
-  n = 300;
-  q = 299;
-  t = 100000;
-  cout << n << " " << q << " " << t << endl;
-  for (int i = 0; i < n; ++i) {
-    cout << 1 << " ";
-  }
-  cout << endl;
-  for (int i = 0; i < q; ++i) {
-    cout << i + 1 << " " << i + 2 << endl;
-  }
   fclose(stdout);
 }
+
+#define MAXN 23
+#define MAXS MAXN*MAXN
+
+#define MALE 0
+#define FEMALE 1
+
+char board[MAXN][MAXN];
+
+int row[MAXS], col[MAXS], speed[MAXS], type[MAXS];
+
+int nRow, nCol, nMale, nFemale;
+
+int dist[MAXN][MAXN][MAXN][MAXN];
+
+#define REPROW(x) for (int x = 0; x < nRow; ++x)
+#define REPCOL(x) for (int x = 0; x < nCol; ++x)
 
 int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
   
-  cin >> n;
-  cin >> q;
-  cin >> t;
-  for (int i = 1; i <= n; ++i) {
-    cin >> a[i];
-  }
-  int b, c;
-  fill0(more);
-  fill0(mless);
-  repeat(q) {
-    cin >> b >> c;
-    more[b] = c;
-    mless[c] = b;
-  }
-  for (int i = 1; i <= n; ++i) {
-    int j = i;
-    while (more[j] != 0) {
-      j = more[j];
-      if (j == i) {
-        // Cycle!
-        cout << 0 << endl;
-        return 0;
-      }
-    }
-  }
-  for (int i = 1; i <= n; ++i) {
-    if (mless[i] != 0) {
-      continue;
-    }
-    int j = i;
-    while (more[j] != 0) {
-      // j, more[j]
-      a[more[j]] += a[j]; // reduce x[j] > x[more[j]] => x[j] > 0
-      t -= a[j]; // reduce x[j] > 0 => x[j] >= 0
-      // Overflow can happen, so we should check here!
-      if (t < 0) {
-        cout << 0 << endl;
-        return 0;
-      }
-      j = more[j];
-    }
-  }
-  
-  if (t == 0) {
-    cout << 1 << endl;
+  cin >> nRow >> nCol >> nMale >> nFemale;
+  if ((nMale + nFemale) % 2 == 0) {
+    cout << -1;
     return 0;
   }
+  if (abs(nMale - nFemale) >= 2) {
+    cout << -1;
+    return 0;
+  }
+  REPROW(i) {
+    cin >> board[i];
+    assert(strlen(board[i]) == nCol);
+  }
+  cin >> row[0] >> col[0] >> speed[0];
+  if (nMale == nFemale + 1) {
+    type[0] = FEMALE;
+  }
+  for (int i = 0; i < nMale; ++i) {
+    cin >> row[i + 1] >> col[i + 1] >> speed[i + 1];
+    type[i + 1] = MALE;
+  }
+  for (int i = 0; i < nFemale; ++i) {
+    cin >> row[i + 1 + nMale] >> col[i + 1 + nMale] >> speed[i + 1 + nMale];
+    type[i + 1 + nMale] = FEMALE;
+  }
   
-  assert(t > 0);
-  
-  memset(f, 0, sizeof(f));
-  for (int i = 1; i <= n; ++i) {
-    f[0] = 1;
-    for (int iterT = 1; iterT <= t; ++iterT) {
-      if (iterT >= a[i]) {
-        f[iterT] = (f[iterT] + f[iterT - a[i]]) % MOD;
+  REPROW(r) REPCOL(c) REPROW(r2) REPCOL(c2) {
+    dist[r][c][r2][c2] = INT_INF;
+    if (r2 == r && c2 == c) {
+      dist[r][c][r2][c2] = 0;
+    } else if (abs(r2 - r) + abs(c2 - c) == 1) {
+      if (board[r][c] != '#' && board[r2][c2] != '#') {
+        dist[r][c][r2][c2] = 1;
       }
     }
   }
   
-  cout << f[t] << endl;
+  REPROW(rk) REPCOL(ck) REPROW(r) REPCOL(c) REPROW(r2) REPCOL(c2) {
+    dist[r][c][r2][c2] = min (dist[r][c][r2][c2], dist[r][c][rk][ck] + dist[rk][ck][r2][c2]);
+  }
   
+  
+    
   return 0;
 }
