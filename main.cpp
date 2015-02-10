@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <array>
 #include <type_traits>
+#include <queue>
 
 using namespace std;
 
@@ -20,6 +21,82 @@ using namespace std;
 #define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF 2E9L
+
+#define ntype int
+#define N_INF INT_INF
+
+struct Network {
+  struct Edge {int u, v; ntype f, c;};
+  vector<Edge> edgeList;
+  vector<vector<int> > adj;
+  void addEdge(int u, int v, ntype c) {
+    Edge e={u,v,0,c};
+    adj[u].push_back((int)edgeList.size());
+    adj[v].push_back((int)edgeList.size());
+    edgeList.push_back(e);
+  }
+  int n(){return (int)adj.size();}
+  void resetFlow() {
+    for (auto &pe : edgeList) pe.f=0;
+  }
+  void init(int n) {
+    edgeList.clear();
+    adj.resize(n);
+    for (auto &au : adj) au.clear();
+  }
+  Network(int n){init(n);}
+};
+
+class Dinic {
+  Network &g;
+  int s, t;
+  vector<ntype> dist;
+  vector<bool> block;
+  bool computeDist() {
+    queue<int> q;
+    q.push(t);
+    fill(dist.begin(),dist.end(),-1);
+    dist[t]=0;
+    while (!q.empty()) {
+      int u=q.front();
+      q.pop();
+      for (auto pi : g.adj[u]) {
+        Network::Edge &e=g.edgeList[pi];
+#define CONSIDER(v) {if (dist[v]==-1) {dist[v]=dist[u]+1; q.push(v); if (v==s) return true;}}
+        if (e.v==u && e.f<e.c) CONSIDER(e.u) else if (e.u==u && e.f>0) CONSIDER(e.v)
+#undef CONSIDER
+          }
+    }
+    return dist[s]!=-1;
+  }
+  ntype findAugmentingPath(int u, ntype delta) {
+    if (u==t) return delta;
+    ntype inc;
+    for (auto pi : g.adj[u]){
+      Network::Edge &e=g.edgeList[pi];
+#define CONSIDER(v,i,d) {if (!block[v] && dist[u]==dist[v]+1 && (inc=findAugmentingPath(v,min(delta,d)))) {e.f+=i*inc; return inc;}}
+      if (e.u==u && e.f<e.c) CONSIDER(e.v,1,e.c-e.f) else if (e.v==u && e.f>0) CONSIDER(e.u,-1,e.f)
+#undef CONSIDER
+        }
+    block[u]=true;
+    return 0;
+  }
+public:
+  ntype totalFlow;
+  Dinic(Network &g, int s, int t):g(g),s(s),t(t){
+    g.resetFlow();
+    totalFlow=0;
+    dist.resize(g.n());
+    block.resize(g.n());
+  }
+  ntype run () {
+    while (computeDist()) {
+		    fill(block.begin(), block.end(), false);
+		    while (ntype inc = findAugmentingPath(s, N_INF)) totalFlow += inc;
+    }
+    return totalFlow;
+  }
+};
 
 class DoubleTree {
   int n;
@@ -57,7 +134,7 @@ class DoubleTree {
   
 public:
   int maximalScore( vector <int> a, vector <int> b, vector <int> c, vector <int> d, vector <int> score ) {
-    n = (int) a.size();
+    n = (int) a.size() + 1;
     
     assert((int)a.size() == n-1);
     assert((int)b.size() == n-1);
@@ -75,13 +152,30 @@ public:
     }
     
     int best = -INT_INF;
+    int MVAL = 1001;
     for (int i = 0; i < n; ++i) {
       makeRoot(i);
       
+      Network g(2 * n + 2);
       
+      int s = 2 * n;
+      int t = 2 * n + 1;
+      for (int u = 0; u < n; ++u) {
+        g.addEdge(s, u, 0 + MVAL);
+        g.addEdge(u, t, score[u] + MVAL);
+        if (u != i) {
+          g.addEdge(u, p1[u], INT_INF);
+          g.addEdge(u, p2[u], INT_INF);
+        }
+      }
+      int maxFlow = Dinic(g, s, t).run();
+      int ret = maxFlow  / n;
+      if (ret > best) {
+        best = ret;
+      }
     }
     
-    return 0;
+    return best;
   }
 };
 
