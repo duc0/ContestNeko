@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cstring>
 
-#define NDEBUG
+//#define NDEBUG
 #include <cassert>
 
 #include <iostream>
@@ -19,103 +19,274 @@ using namespace std;
 #define int64 long long
 #define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
 #define fill0(x) memset(x, 0, sizeof(x))
+#define INT_INF 2E9L
 
-
-
-
-#define MAXN 400
-
-#define MOD 1000000007
-#define MAXT 101000
-
-int n, q, t;
-int a[MAXN];
-int more[MAXN];
-int mless[MAXN];
-
-int f[MAXT];
-
-void testGen() {
-  freopen("biginput1.txt", "w", stdout);
-  n = 300;
-  q = 299;
-  t = 100000;
-  cout << n << " " << q << " " << t << endl;
-  for (int i = 0; i < n; ++i) {
-    cout << 1 << " ";
-  }
-  cout << endl;
-  for (int i = 0; i < q; ++i) {
-    cout << i + 1 << " " << i + 2 << endl;
-  }
-  fclose(stdout);
-}
-
-int main() {
-  //testGen();
-  freopen("input1.txt", "r", stdin);
+class DoubleTree {
+  int n;
+  vector<int> p1, p2;
   
-  cin >> n;
-  cin >> q;
-  cin >> t;
-  for (int i = 1; i <= n; ++i) {
-    cin >> a[i];
-  }
-  int b, c;
-  fill0(more);
-  fill0(mless);
-  repeat(q) {
-    cin >> b >> c;
-    more[b] = c;
-    mless[c] = b;
-  }
-  for (int i = 1; i <= n; ++i) {
-    int j = i;
-    while (more[j] != 0) {
-      j = more[j];
-      if (j == i) {
-        // Cycle!
-        cout << 0 << endl;
-        return 0;
+  vector< vector<int >> next1, next2;
+  vector<bool> visit;
+  
+  void dfs1(int u) {
+    visit[u] = true;
+    for (auto &v: next1[u]) {
+      if (!visit[v]) {
+        p1[v] = u;
+        dfs1(v);
       }
     }
   }
-  for (int i = 1; i <= n; ++i) {
-    if (mless[i] != 0) {
-      continue;
-    }
-    int j = i;
-    while (more[j] != 0) {
-      // j, more[j]
-      a[more[j]] += a[j]; // reduce x[j] > x[more[j]] => x[j] > 0
-      t -= a[j]; // reduce x[j] > 0 => x[j] >= 0
-      // Overflow can happen, so we should check here!
-      if (t < 0) {
-        cout << 0 << endl;
-        return 0;
+  
+  void dfs2(int u) {
+    visit[u] = true;
+    for (auto &v: next2[u]) {
+      if (!visit[v]) {
+        p2[v] = u;
+        dfs2(v);
       }
-      j = more[j];
     }
   }
   
-  if (t == 0) {
-    cout << 1 << endl;
+  void makeRoot(int root) {
+    fill(visit.begin(), visit.end(), false);
+    dfs1(root);
+    fill(visit.begin(), visit.end(), false);
+    dfs2(root);
+  }
+  
+public:
+  int maximalScore( vector <int> a, vector <int> b, vector <int> c, vector <int> d, vector <int> score ) {
+    n = (int) a.size();
+    
+    assert((int)a.size() == n-1);
+    assert((int)b.size() == n-1);
+    
+    p1.resize(n);
+    p2.resize(n);
+    visit.resize(n);
+    
+    next1.resize(n);
+    next2.resize(n);
+    
+    for (int i = 0; i < n - 1; ++i) {
+      next1[a[i]].push_back(b[i]);
+      next2[a[i]].push_back(b[i]);
+    }
+    
+    int best = -INT_INF;
+    for (int i = 0; i < n; ++i) {
+      makeRoot(i);
+      
+      
+    }
+    
     return 0;
   }
-  
-  assert(t > 0);
-  
-  memset(f, 0, sizeof(f));
-  for (int i = 1; i <= n; ++i) {
-    f[0] = 1;
-    for (int iterT = 1; iterT <= t; ++iterT) {
-      if (iterT >= a[i]) {
-        f[iterT] = (f[iterT] + f[iterT - a[i]]) % MOD;
-      }
-    }
-  }
-  
-  cout << f[t] << endl;
-  
-  return 0;
+};
+
+// BEGIN CUT HERE
+#include <cstdio>
+#include <ctime>
+#include <iostream>
+#include <string>
+#include <vector>
+namespace moj_harness {
+	using std::string;
+	using std::vector;
+	int run_test_case(int);
+	void run_test(int casenum = -1, bool quiet = false) {
+		if (casenum != -1) {
+			if (run_test_case(casenum) == -1 && !quiet) {
+				std::cerr << "Illegal input! Test case " << casenum << " does not exist." << std::endl;
+			}
+			return;
+		}
+		
+		int correct = 0, total = 0;
+		for (int i=0;; ++i) {
+			int x = run_test_case(i);
+			if (x == -1) {
+				if (i >= 100) break;
+				continue;
+			}
+			correct += x;
+			++total;
+		}
+		
+		if (total == 0) {
+			std::cerr << "No test cases run." << std::endl;
+		} else if (correct < total) {
+			std::cerr << "Some cases FAILED (passed " << correct << " of " << total << ")." << std::endl;
+		} else {
+			std::cerr << "All " << total << " tests passed!" << std::endl;
+		}
+	}
+	
+	int verify_case(int casenum, const int &expected, const int &received, std::clock_t elapsed) { 
+		std::cerr << "Example " << casenum << "... "; 
+		
+		string verdict;
+		vector<string> info;
+		char buf[100];
+		
+		if (elapsed > CLOCKS_PER_SEC / 200) {
+			std::sprintf(buf, "time %.2fs", elapsed * (1.0/CLOCKS_PER_SEC));
+			info.push_back(buf);
+		}
+		
+		if (expected == received) {
+			verdict = "PASSED";
+		} else {
+			verdict = "FAILED";
+		}
+		
+		std::cerr << verdict;
+		if (!info.empty()) {
+			std::cerr << " (";
+			for (size_t i=0; i<info.size(); ++i) {
+				if (i > 0) std::cerr << ", ";
+				std::cerr << info[i];
+			}
+			std::cerr << ")";
+		}
+		std::cerr << std::endl;
+		
+		if (verdict == "FAILED") {
+			std::cerr << "    Expected: " << expected << std::endl; 
+			std::cerr << "    Received: " << received << std::endl; 
+		}
+		
+		return verdict == "PASSED";
+	}
+
+	int run_test_case(int casenum__) {
+		switch (casenum__) {
+		case 0: {
+			int a[]                   = {0,0,1};
+			int b[]                   = {1,3,2};
+			int c[]                   = {0,0,3};
+			int d[]                   = {1,3,2};
+			int score[]               = {1000,24,100,-200};
+			int expected__            = 1024;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}
+		case 1: {
+			int a[]                   = {0,0,1};
+			int b[]                   = {1,3,2};
+			int c[]                   = {0,0,3};
+			int d[]                   = {1,3,2};
+			int score[]               = {1000,24,100,200};
+			int expected__            = 1324;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}
+		case 2: {
+			int a[]                   = {0,0,1};
+			int b[]                   = {1,3,2};
+			int c[]                   = {0,0,3};
+			int d[]                   = {1,3,2};
+			int score[]               = {-1000,-24,-100,-200};
+			int expected__            = 0;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}
+		case 3: {
+			int a[]                   = {0,0,1};
+			int b[]                   = {1,3,2};
+			int c[]                   = {0,0,3};
+			int d[]                   = {1,3,2};
+			int score[]               = {-1000,24,100,200};
+			int expected__            = 200;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}
+		case 4: {
+			int a[]                   = {0,0,1,1,2,2};
+			int b[]                   = {1,2,3,4,5,6};
+			int c[]                   = {0,0,1,1,2,2};
+			int d[]                   = {1,2,3,4,5,6};
+			int score[]               = {-3,2,2,-1,2,2,-1};
+			int expected__            = 5;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}
+		case 5: {
+			int a[]                   = {0,0,1,1,2,2};
+			int b[]                   = {1,2,3,4,5,6};
+			int c[]                   = {0,0,0,0,0,0};
+			int d[]                   = {1,2,3,4,5,6};
+			int score[]               = {-3,2,2,-1,2,2,-1};
+			int expected__            = 5;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}
+
+		// custom cases
+
+/*      case 6: {
+			int a[]                   = ;
+			int b[]                   = ;
+			int c[]                   = ;
+			int d[]                   = ;
+			int score[]               = ;
+			int expected__            = ;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}*/
+/*      case 7: {
+			int a[]                   = ;
+			int b[]                   = ;
+			int c[]                   = ;
+			int d[]                   = ;
+			int score[]               = ;
+			int expected__            = ;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}*/
+/*      case 8: {
+			int a[]                   = ;
+			int b[]                   = ;
+			int c[]                   = ;
+			int d[]                   = ;
+			int score[]               = ;
+			int expected__            = ;
+
+			std::clock_t start__      = std::clock();
+			int received__            = DoubleTree().maximalScore(vector <int>(a, a + (sizeof a / sizeof a[0])), vector <int>(b, b + (sizeof b / sizeof b[0])), vector <int>(c, c + (sizeof c / sizeof c[0])), vector <int>(d, d + (sizeof d / sizeof d[0])), vector <int>(score, score + (sizeof score / sizeof score[0])));
+			return verify_case(casenum__, expected__, received__, clock()-start__);
+		}*/
+		default:
+			return -1;
+		}
+	}
 }
+
+
+#include <cstdlib>
+int main(int argc, char *argv[]) {
+	if (argc == 1) {
+		moj_harness::run_test();
+	} else {
+		for (int i=1; i<argc; ++i)
+			moj_harness::run_test(std::atoi(argv[i]));
+	}
+}
+// END CUT HERE
