@@ -169,7 +169,7 @@ public:
         }
       }
       int maxFlow = Dinic(g, s, t).run();
-      int ret = maxFlow  / n;
+      int ret = maxFlow  / (MVAL * n);
       if (ret > best) {
         best = ret;
       }
