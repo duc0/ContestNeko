@@ -57,10 +57,12 @@ vector<int> relatedV;
 
 bool visit[MAXN];
 int comp[MAXN], compCount;
+set<int> compSet;
 
 void dfs(int u) {
   visit[u] = true;
   comp[compCount] = u;
+  compSet.insert(u);
   compCount++;
   for (auto &v : adj[u]) {
     if (!visit[v]) {
@@ -71,9 +73,9 @@ void dfs(int u) {
 
 int main() {
   //testGen();
-  //freopen("biginput2.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
   
-  // The algo is simple, but to make sure the worst case complexity is within limit is tricky. It is probably O(msqrt(m)).
+  // The algo is simple, but to make sure the worst case complexity is within limit is tricky.
   
   scanf("%d%d",&n,&m);
   int u, v, c;
@@ -91,6 +93,8 @@ int main() {
   }
   
   adj.resize(n + 1);
+  
+  int sq = (int) sqrt(q);
   for (int color = 1; color <= m; ++color) {
     relatedVSet.clear();
     for (auto &e : edge[color]) {
@@ -110,12 +114,28 @@ int main() {
     
     for (auto &v: relatedV) {
       compCount = 0;
+      compSet.clear();
       dfs(v);
-      for (int i = 0; i < compCount; ++i) {
-        for (int j = 0; j < compCount; ++j) if (i != j) {
-          pair<int, int> e = make_pair(comp[i], comp[j]);
-          if (queryMap.count(e)) {
-            queryMap[e]++;
+      
+      // We know that the total size of connected components are O(m)
+      if (compCount >= sq) {
+        // So there could be at most O(m/sq) components that have size >= sq,
+        // We need O(q*m/sq) = O(m*sq) here
+        for (auto &q: queryMap) {
+          if (compSet.count(q.first.first) && compSet.count(q.first.second)) {
+            q.second++;
+          }
+        }
+      } else {
+        // If the component size is less than sq, we loop through all pairs in the component.
+        // Suppose the component size x, we have x <= sq, so x^2 <= x*sq, thus
+        // x1^2 + x2^2 + ... xc^2 <= (x1+x2..+xc)*sq = O(m*sq)
+        for (int i = 0; i < compCount; ++i) {
+          for (int j = 0; j < compCount; ++j) if (i != j) {
+            pair<int, int> e = make_pair(comp[i], comp[j]);
+            if (queryMap.count(e)) {
+              queryMap[e]++;
+            }
           }
         }
       }
