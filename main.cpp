@@ -54,48 +54,6 @@ bool win(int h1, int a1, int d1, int h2, int a2, int d2) {
 
 int h1, a1, d1, h2, a2, d2, ph, pa, pd;
 
-void tryBuy(int money, int &x, int &y, int &z, int &px, int &py, int &pz) {
-  x += money / px;
-  money %= px;
-  y += money / py;
-  money %= py;
-  z += money / pz;
-  money %= pz;
-}
-
-#define buy(x,y,z) tryBuy(money, x, y, z, p##x, p##y, p##z)
-
-bool ok(int oMoney) {
-  int money;
-  int h, a, d;
-  
-  money = oMoney; h = h1; a = a1; d = d1;
-  buy(h,a,d);
-  if (win(h, a, d, h2, a2, d2)) return true;
-  
-  money = oMoney; h = h1; a = a1; d = d1;
-  buy(h, d, a);
-  if (win(h, a, d, h2, a2, d2)) return true;
-
-  money = oMoney; h = h1; a = a1; d = d1;
-  buy(a, h, d);
-  if (win(h, a, d, h2, a2, d2)) return true;
-
-  money = oMoney; h = h1; a = a1; d = d1;
-  buy(a, d, h);
-  if (win(h, a, d, h2, a2, d2)) return true;
-
-  money = oMoney; h = h1; a = a1; d = d1;
-  buy(d, a, h);
-  if (win(h, a, d, h2, a2, d2)) return true;
-
-  money = oMoney; h = h1; a = a1; d = d1;
-  buy(d, h, a);
-  if (win(h, a, d, h2, a2, d2)) return true;
-  
-  return false;
-}
-
 int main() {
   //testGen();
   //freopen("input1.txt", "r", stdin);
@@ -105,19 +63,26 @@ int main() {
   cin >> h2 >> a2 >> d2;
   cin >> ph >> pa >> pd;
   
-  int left = 0, right = INT_INF, mid, ret = 0;
-  
-  while (left <= right) {
-    mid = (left + right) / 2;
-    if (ok(mid)) {
-      ret = mid;
-      right = mid - 1;
-    } else {
-      left = mid + 1;
+  int best = INT_INF;
+  for (int h = h1; h <= 1000; ++h) {
+    for (int a = a1; a <= 1000; ++a) {
+      int left = d1, right = INT_INF, mid = 0, d = 0;
+      while (left <= right) {
+        mid = (left + right) / 2;
+        if (win(h, a, mid, h2, a2, d2)) {
+          d = mid;
+          right = mid - 1;
+        } else {
+          left = mid + 1;
+        }
+      }
+      if (win(h, a, d, h2, a2, d2)) {
+        int cost = (h - h1) * ph + (a - a1) * pa + (d - d1) * pd;
+        best = min(best, cost);
+      }
     }
   }
-  
-  cout << ret << endl;
+  cout << best << endl;
   
   return 0;
 }
