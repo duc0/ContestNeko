@@ -44,38 +44,27 @@ void testGen() {
   fclose(stdout);
 }
 
-struct interval_part {
+struct interval {
   int l, r, id;
-  
-  bool operator < (const interval_part &other) const {
-    if (l < other.l) {
-      return true;
-    }
-    if (l == other.l && r > other.r) {
-      return true;
-    }
-    if (l == other.l && r == other.r) {
-      return id < other.id;
-    }
-    return false;
+};
+
+struct comp_left {
+  bool operator () (const interval &i1, const interval &i2) const {
+    if (i1.l < i2.l) return true;
+    if (i1.l > i2.l) return false;
+    if (i1.r > i2.r) return true;
+    if (i1.r < i2.r) return false;
+    return i1.id < i2.id;
   }
 };
 
-
-struct interval_actor {
-  int l, r, id;
-  
-  bool operator < (const interval_actor &other) const {
-    if (r < other.r) {
-      return true;
-    }
-    if (r == other.r && l > other.l) {
-      return true;
-    }
-    if (r == other.r && l == other.l) {
-      return id < other.id;
-    }
-    return false;
+struct comp_right {
+  bool operator () (const interval &i1, const interval &i2) const {
+    if (i1.r < i2.r) return true;
+    if (i1.r > i2.r) return false;
+    if (i1.l > i2.l) return true;
+    if (i1.l < i2.l) return false;
+    return i1.id < i2.id;
   }
 };
 
@@ -83,31 +72,17 @@ int nActor, nPart;
 
 #define MAXN 100100
 
-interval_part part[MAXN];
-interval_actor actor[MAXN];
+interval part[MAXN];
+interval actor[MAXN];
 int cap[MAXN];
 
-set<interval_actor> avail_actor;
+set<interval, comp_right> avail_actor;
 
 int assignment[MAXN];
 
-bool compLeft(const interval_actor &i1, const interval_actor &i2) {
-  if (i1.l < i2.l) {
-    return true;
-  }
-  if (i1.l == i2.l && i1.r > i2.r) {
-    return true;
-  }
-  if (i1.l == i2.l && i1.r == i2.r) {
-    return i1.id < i2.id;
-  }
-
-  return false;
-}
-
 int main() {
   //testGen();
-  freopen("input4.txt", "r", stdin);
+  //freopen("input1.txt", "r", stdin);
   
   scanf("%d", &nPart);
   for_inc_range(i, 1, nPart) {
@@ -121,22 +96,31 @@ int main() {
     actor[i].id = i;
   }
   
-  sort(part + 1, part + nPart + 1);
-  sort(actor + 1, actor + nActor + 1, compLeft);
+  sort(part + 1, part + nPart + 1, comp_left());
+  sort(actor + 1, actor + nActor + 1, comp_left());
   
   int avail_actor_id = 0;
+  
+  // Assign each part according to the part ordering
   for_inc_range(i, 1, nPart) {
     while (avail_actor_id + 1 <= nActor && actor[avail_actor_id + 1].l <= part[i].l) {
       avail_actor.insert(actor[avail_actor_id + 1]);
       avail_actor_id++;
     }
-    interval_actor a;
+    interval a;
     a.l = part[i].l;
     a.r = part[i].r;
     a.id = 0;
+    
+    // Greedy assignment: find the min actor x (according to the actor ordering) that can do this part.
     auto x = avail_actor.lower_bound(a);
-    //cout << avail_actor.size() << endl;
     if (x == avail_actor.end()) {
+      // We can prove that if there is no greedy assignment for this part, there is no solution
+      // Prove by contradiction. Assume that there is a solution. I.e. there must be
+      // an augmenting path. Let this part be X. Since there's an augmenting path, there will
+      // be two actors A, B and another part Y such that A can do both X and Y; Y is currently
+      // assigned to A. B can do Y and B still has capacity. But from the ordering, we can show that
+      // B can do X as well, so the greedy assignment must have assigned X to B.
       cout << "NO" << endl;
       return 0;
     }
