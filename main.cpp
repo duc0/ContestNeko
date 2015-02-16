@@ -31,6 +31,9 @@ using namespace std;
 #define ntype int
 #define N_INF INT_INF
 
+#define MOD 1000000007
+inline int MODP(int64 x) {int r = x % MOD; if (r < 0) r += MOD; return r;}
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -39,8 +42,6 @@ void testGen() {
 int n;
 
 #define MAXN 100100
-
-#define MOD 1000000007
 
 // Weighted undirected tree
 struct weighted_tree {
@@ -172,14 +173,14 @@ int sumAllSqrDist[MAXN]; // sum sqr dist from u to all other nodes
 int sumAllDist[MAXN]; // sum dist from u to all other nodes
 
 int getDistInc(int w, int v) {
-  return ((int64)cntNode[v] * w + sumDist[v]) % MOD;
+  return MODP((int64)cntNode[v] * w + sumDist[v]);
 }
 
 int getSqrDistInc(int w, int v) {
-  int sqrDistInc = ((int64)w * w) % MOD;
-  sqrDistInc = ((int64)sqrDistInc * cntNode[v]) % MOD;
-  sqrDistInc = (sqrDistInc + (int64) 2 * w * sumDist[v]) % MOD;
-  sqrDistInc = (sqrDistInc + sumSqrDist[v]) % MOD;
+  int sqrDistInc = MODP((int64)w * w);
+  sqrDistInc = MODP((int64)sqrDistInc * cntNode[v]);
+  sqrDistInc = MODP(sqrDistInc + (int64) 2 * w * sumDist[v]);
+  sqrDistInc = MODP(sqrDistInc + sumSqrDist[v]);
   return sqrDistInc;
 }
 
@@ -192,11 +193,11 @@ void dfs(int u) {
   for (auto &e : tree.adj[u]) {
     int v = e.first, w = e.second;
     if (v != tree.pi[u].first && !visit[v]) {
-      sumWeight[v] = (sumWeight[u] + w) % MOD;      
+      sumWeight[v] = MODP(sumWeight[u] + w);
       dfs(v);
       cntNode[u] += cntNode[v];
-      sumDist[u] = (sumDist[u] + getDistInc(w, v)) % MOD;
-      sumSqrDist[u] = (sumSqrDist[u] + getSqrDistInc(w, v)) % MOD;
+      sumDist[u] = MODP(sumDist[u] + getDistInc(w, v));
+      sumSqrDist[u] = MODP(sumSqrDist[u] + getSqrDistInc(w, v));
     }
   }
 }
@@ -208,22 +209,20 @@ void dfsSumAllDist(int u) {
     if (v != tree.pi[u].first && !visit[v]) {
       int nOutside = n - cntNode[v];
       int retSumDist = sumAllDist[u];
-      retSumDist = (retSumDist - getDistInc(w, v)) % MOD;
-      if (retSumDist < 0) retSumDist += MOD;
+      retSumDist = MODP(retSumDist - getDistInc(w, v));
       
       int retSumSqrDist = sumAllSqrDist[u];
-      retSumSqrDist = (retSumSqrDist - getSqrDistInc(w, v)) % MOD;
-      if (retSumSqrDist < 0) retSumSqrDist += MOD;
-      int inc = ((int64)w*w) % MOD;
-      inc = ((int64)inc * nOutside) % MOD;
-      inc = (inc + (int64) 2 * w * retSumDist) % MOD;
-      retSumSqrDist = (retSumSqrDist + inc) % MOD;
+      retSumSqrDist = MODP(retSumSqrDist - getSqrDistInc(w, v));
+      int inc = MODP((int64)w*w);
+      inc = MODP((int64)inc * nOutside);
+      inc = MODP(inc + (int64) 2 * w * retSumDist);
+      retSumSqrDist = MODP(retSumSqrDist + inc);
       
-      retSumDist = (retSumDist + (int64)w * nOutside) % MOD;
-      retSumDist = (retSumDist + sumDist[v]) % MOD;
+      retSumDist = MODP(retSumDist + (int64)w * nOutside);
+      retSumDist = MODP(retSumDist + sumDist[v]);
       sumAllDist[v] = retSumDist;
       
-      retSumSqrDist = (retSumSqrDist + sumSqrDist[v]) % MOD;
+      retSumSqrDist = MODP(retSumSqrDist + sumSqrDist[v]);
       sumAllSqrDist[v] = retSumSqrDist;
       
       dfsSumAllDist(v);
@@ -233,7 +232,7 @@ void dfsSumAllDist(int u) {
 
 int main() {
   //testGen();
-  freopen("input2.txt", "r", stdin);
+  //freopen("input2.txt", "r", stdin);
   
   scanf("%d", &n);
   tree.reset(n);
@@ -260,41 +259,32 @@ int main() {
     scanf("%d%d", &u, &v);
     int ret;
     if (u == v) {
-      ret = (2 * sumSqrDist[u] - sumAllSqrDist[u]) % MOD;
-      if (ret < 0) ret += MOD;
+      ret = MODP(2 * sumSqrDist[u] - sumAllSqrDist[u]);
     } else {
       int x = tree_lca.get_lca(u, v).first;
       if (x == v) {
-        int w = (sumWeight[u] - sumWeight[v]) % MOD;
-        if (w < 0) w+=MOD;
+        int w = MODP(sumWeight[u] - sumWeight[v]);
         
         int nOutside = n - cntNode[v];
         ret = 0;
-        ret = (sumAllSqrDist[v] - sumSqrDist[v]) % MOD;
-        if (ret < 0) ret += MOD;
+        ret = MODP(sumAllSqrDist[v] - sumSqrDist[v]);
         
-        int retSumDist = (sumAllDist[v] - sumDist[v]) % MOD;
-        if (retSumDist < 0) retSumDist += MOD;
+        int retSumDist = MODP(sumAllDist[v] - sumDist[v]);
         
-        int inc = ((int64)w*w) % MOD;
-        inc = ((int64)inc * nOutside) % MOD;
-        inc = (inc + (int64) 2 * w * retSumDist) % MOD;
+        int inc = MODP((int64)w*w);
+        inc = MODP((int64)inc * nOutside);
+        inc = MODP(inc + (int64) 2 * w * retSumDist);
         
-        ret = (ret + inc) % MOD;
-        ret = (sumAllSqrDist[u] - 2 * ret) % MOD;
-        if (ret < 0) ret += MOD;
+        ret = MODP(ret + inc);
+        ret = MODP(sumAllSqrDist[u] - 2 * ret);
       } else {
-        int w = (sumWeight[u] - sumWeight[x]) % MOD;
-        if (w < 0) w+=MOD;
-        w = (w + sumWeight[v] - sumWeight[x]) % MOD;
-        if (w < 0) w+=MOD;
-        
-        int inc = ((int64)w*w) % MOD;
-        inc = ((int64)inc * cntNode[v]) % MOD;
-        inc = (inc + (int64) 2 * w * sumDist[v]) % MOD;
-        ret = (sumSqrDist[v] + inc) % MOD;
-        ret = (2 * ret - sumAllSqrDist[u]) % MOD;
-        if (ret < 0) ret += MOD;
+        int w = MODP(sumWeight[u] - sumWeight[x]);
+        w = MODP(w + sumWeight[v] - sumWeight[x]);
+        int inc = MODP((int64)w*w);
+        inc = MODP((int64)inc * cntNode[v]);
+        inc = MODP(inc + (int64) 2 * w * sumDist[v]);
+        ret = MODP(sumSqrDist[v] + inc);
+        ret = MODP(2 * ret - sumAllSqrDist[u]);
       }
     }
     cout << ret << endl;
