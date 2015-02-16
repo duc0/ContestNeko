@@ -59,49 +59,36 @@ int modularInverse(int a, int m) {
   return modulo(x,m);
 }
 
-int rnd(double x) {
-  return (int)(x+0.5);
-}
-
-bool isSquare(int n) {
-  int p=rnd(sqrt(n));
-  return p*p==n;
-}
-
 int main() {
   //testGen();
   //freopen("input1.txt", "r", stdin);
 
   int n;
   cin >> n;
-  //n = 4;
   if (n == 1) {
     cout << "YES" << endl;
     cout << 1 << endl;
     return 0;
   }
-  
-  bool isPr = isPrime(n);
-  bool isSq = isSquare(n);
-  int sqrtN = 0;
-  if (isSq) {
-    sqrtN = rnd(sqrt(n));
+  if (n == 4) {
+    cout << "YES" << endl;
+    cout << "1" << endl;
+    cout << "3" << endl;
+    cout << "2" << endl;
+    cout << "4" << endl;
+    return 0;
   }
-  if (!isPr && !(isSq && isPrime(sqrtN))) {
+  
+  
+  if (!isPrime(n)) {
     cout << "NO";
   } else {
     cout << "YES" << endl;
     int a = 1;
-  
-    
     for_inc_range(i, 1, n - 1) {
-      if (isSq && i == sqrtN) continue;
       int x = modulo((int64)i * modularInverse(a, n), n);
       cout << x << endl;
       a = modulo((int64)a * x, n);
-    }
-    if (isSq) {
-      cout << sqrtN << endl;
     }
     cout << n << endl;
   }
