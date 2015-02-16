@@ -114,7 +114,7 @@ void solve2() {
       auto rSearch = upper_bound(a.begin(), a.end(), rightBound);
       rSearch--;
       if (lSearch != a.end() && rSearch != a.end() && lSearch <= rSearch && *lSearch >= leftBound && *rSearch <= rightBound) {
-        int b = rmq.Query(lSearch - a.begin(), rSearch - a.begin()) % x;
+        int b = rmq.Query((int)(lSearch - a.begin()), (int)(rSearch - a.begin())) % x;
         best = max(best, b);
         if (b  == x - 1) {
           break;
