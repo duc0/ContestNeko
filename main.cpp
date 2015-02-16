@@ -36,10 +36,63 @@ void testGen() {
   fclose(stdout);
 }
 
+#define count _count
+#define MAXN 100100
+
+int n, s, l;
+int x;
+map<int, int> count;
+
+int f[MAXN], a[MAXN];
+set<int> goodPos;
+
 int main() {
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  //freopen("input2.txt", "r", stdin);
   
+  scanf("%d%d%d", &n, &s, &l);
+  for_inc_range(i, 1, n) {
+    scanf("%d", &a[i]);
+  }
   
+  int leftBound = 1;
+  
+  goodPos.insert(0);
+  f[0] = 0;
+  
+  fill0(f);
+  for_inc_range(i, 1, n) {
+    count[a[i]]++;
+    
+    while (leftBound < i) {
+      int smallest = count.begin()->first;
+      int largest = count.rbegin()->first;
+      if (largest - smallest <= s) {
+        break;
+      }
+      count[a[leftBound]]--;
+      if (count[a[leftBound]] == 0) {
+        count.erase(a[leftBound]);
+      }
+      leftBound++;
+    }
+   
+    if (i - leftBound + 1 >= l) {
+      auto minPos = goodPos.lower_bound(leftBound - 1);
+      if (minPos != goodPos.end()) {
+        auto x = *minPos;
+        if (i - x >= l) {
+          f[i] = f[x] + 1;
+          goodPos.insert(i);
+        }
+      }
+    }
+  }
+
+  if (f[n] == 0) {
+    cout << -1 << endl;
+  } else {
+    cout << f[n] << endl;
+  }
   return 0;
 }
