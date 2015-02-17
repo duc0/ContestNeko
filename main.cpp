@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cstring>
 
-#define NDEBUG
+//#define NDEBUG
 #include <cassert>
 
 #include <iostream>
@@ -14,16 +14,18 @@
 #include <array>
 #include <type_traits>
 #include <queue>
+#include <deque>
+#include <functional>
 
 using namespace std;
 
 #define int64 long long
-#define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
+#define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
 
-#define for_inc(i,x) for(auto i=0; i < x;++i)
-#define for_dec(i,x) for(auto i=x-1; i >= 0; --i)
-#define for_inc_range(i,x,y) for (auto i=x; i<=y; ++i)
-#define for_dec_range(i,x,y) for (auto i=x; i>=y; --i)
+#define for_inc(i, x) for (auto i = 0; i < x; ++i)
+#define for_dec(i, x) for (auto i = x - 1; i >= 0; --i)
+#define for_inc_range(i, x, y) for (auto i = x; i <= y; ++i)
+#define for_dec_range(i, x, y) for (auto i = x; i >= y; --i)
 
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF 2E9L
@@ -44,97 +46,113 @@ char board[MAXN][MAXN];
 pair<int, int> carPos[MAXK];
 int f[MAXN][MAXN];
 
+int posLeft[MAXN][MAXN];
+int posRight[MAXN][MAXN];
+
 int ret[MAXK];
 
-set<int> carAt[MAXN];
+template <class T> class KMin {
+  deque<pair<int, T>> a;
+  int k;
+  int last = 0;
+  function<bool(T, T)> comp;
 
-set<pair<int, int>> carIn;
+public:
+  KMin(int k) : KMin(k, [](T a, T b) { return a < b; }) {}
+  KMin(int k, function<bool(T, T)> comp) : k(k), comp(comp) {}
 
-bool isGood(int side, int c) {
-  int minLeft = 1, maxRight = nCol;
-  auto nextCar = carIn.lower_bound(make_pair(c, 0));
-  if (nextCar != carIn.end()) {
-    if (nextCar->first != c) {
-      maxRight = nextCar->first - 1;
+  void absorb(T x) {
+    last++;
+    if (a.empty()) {
+      a.push_back(make_pair(last, x));
     } else {
-      return false;
+      while (!a.empty() && !comp(a.back().second, x)) {
+        a.pop_back();
+      }
+      a.push_back(make_pair(last, x));
+      while (!a.empty() && a.front().first <= last - k) {
+        a.pop_front();
+      }
     }
   }
-  if (nextCar != carIn.begin()) {
-    nextCar--;
-    minLeft = nextCar->first + 1;
-  }
-  return minLeft <= maxRight && maxRight - minLeft + 1 >= side;
-}
 
-void doRelevant(int row, int c, bool del) {
-  auto p = carAt[row].lower_bound(c);
-  if (p != carAt[row].end()) {
-    auto q = make_pair(*p, row);
-    if (del) {
-      carIn.erase(q);
-    } else {
-      carIn.insert(q);
-    }
-  }
-  if (p != carAt[row].begin()) {
-    p--;
-    auto q = make_pair(*p, row);
-    if (del) {
-      carIn.erase(q);
-    } else {
-      carIn.insert(q);
-    }
-  }
-}
+  T getMin() { return a.front().second; }
+};
 
 bool ok(int side, int r, int c) {
   if (side == 1) {
     return true;
   }
-  
+
   int top = max(1, r - side + 1), bottom = top + side - 1;
   if (bottom > nRow || top > r) {
     return false;
   }
-  carIn.clear();
+
+  KMin<int> maxLeft(side, [](int a, int b) { return a > b; });
+  KMin<int> minRight(side);
+
   for_inc_range(row, top, bottom) {
-    doRelevant(row, c, false);
+    maxLeft.absorb(posLeft[row][c] + 1);
+    minRight.absorb(posRight[row][c] - 1);
   }
-  
+
   while (1) {
-    if (isGood(side, c)) {
+    auto ml = maxLeft.getMin();
+    auto mr = minRight.getMin();
+    if (ml <= mr && mr - ml + 1 >= side) {
       return true;
     }
-    
-    doRelevant(top, c, true);
+
     top++;
     bottom++;
     if (bottom > nRow || top > r) {
       break;
     }
-    doRelevant(bottom, c, false);
-    
+    maxLeft.absorb(posLeft[bottom][c] + 1);
+    minRight.absorb(posRight[bottom][c] - 1);
   }
   return false;
 }
 
-int main() {
-  //testGen();
-  //freopen("input1.txt", "r", stdin);
-  
-  scanf("%d%d%d", &nRow, &nCol, &nCar);
-  for_inc(row, nRow) {
-    scanf("%s", board[row]);
+void recalcRow(int r) {
+  for_inc_range(c, 1, nCol) {
+    char ch = board[r - 1][c - 1];
+    if (ch == 'X') {
+      posLeft[r][c] = c;
+      posRight[r][c] = c;
+    }
   }
-  
+  posLeft[r][0] = 0;
+  posRight[r][nCol + 1] = nCol + 1;
+  for_inc_range(c, 1, nCol) {
+    char ch = board[r - 1][c - 1];
+    if (ch == '.') {
+      posLeft[r][c] = posLeft[r][c - 1];
+    }
+  }
+  for_dec_range(c, nCol, 1) {
+    char ch = board[r - 1][c - 1];
+    if (ch == '.') {
+      posRight[r][c] = posRight[r][c + 1];
+    }
+  }
+}
+
+int main() {
+  // testGen();
+  freopen("input1.txt", "r", stdin);
+
+  scanf("%d%d%d", &nRow, &nCol, &nCar);
+  for_inc(row, nRow) { scanf("%s", board[row]); }
+
   for_inc_range(i, 1, nCar) {
     int r, c;
     scanf("%d%d", &r, &c);
     carPos[i] = make_pair(r, c);
     board[r - 1][c - 1] = 'X';
   }
-  
+
   ret[nCar] = 0;
   fill0(f);
   for_inc_range(r, 1, nRow) {
@@ -146,23 +164,15 @@ int main() {
       }
     }
   }
-  
-  for_inc_range(r, 1, nRow) {
-    for_inc_range(c, 1, nCol) {
-      char ch = board[r - 1][c - 1];
-      if (ch == 'X') {
-        carAt[r].insert(c);
-      }
-    }
-  }
+
+  for_inc_range(r, 1, nRow) { recalcRow(r); }
 
   for_dec_range(car, nCar - 1, 1) {
     pair<int, int> pos = carPos[car + 1];
     board[pos.first - 1][pos.second - 1] = '.';
-    
-    assert(carAt[pos.first].count(pos.second));
-    carAt[pos.first].erase(pos.second);
-    
+
+    recalcRow(pos.first);
+
     int l = 1, r = min(nRow, nCol), mid = 0, best = 0;
     while (l <= r) {
       mid = (l + r) / 2;
@@ -173,13 +183,11 @@ int main() {
         r = mid - 1;
       }
     }
-    
+
     ret[car] = max(ret[car + 1], best);
   }
-  
-  for_inc_range(car, 1, nCar) {
-    cout << ret[car] << endl;
-  }
-  
+
+  for_inc_range(car, 1, nCar) { cout << ret[car] << endl; }
+
   return 0;
 }
