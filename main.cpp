@@ -38,8 +38,29 @@ void testGen() {
 
 int main() {
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  //freopen("input5.txt", "r", stdin);
   
+  int n, k;
+  scanf("%d%d", &n, &k);
+  
+  int i =1, j = k + 1;
+  while (1) {
+    cout << i << " ";
+    if (i < j) {
+      cout << j << " ";
+    }
+    i++;
+    j--;
+    if (i >= j) {
+      if (i == j) {
+        cout << i << " ";
+      }
+      for_inc_range(t, k + 2, n) {
+        cout << t << " ";
+      }
+      break;
+    }
+  }
   
   return 0;
 }
