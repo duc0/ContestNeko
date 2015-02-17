@@ -67,6 +67,27 @@ bool isGood(int side, int c) {
   return minLeft <= maxRight && maxRight - minLeft + 1 >= side;
 }
 
+void doRelevant(int row, int c, bool del) {
+  auto p = carAt[row].lower_bound(c);
+  if (p != carAt[row].end()) {
+    auto q = make_pair(*p, row);
+    if (del) {
+      carIn.erase(q);
+    } else {
+      carIn.insert(q);
+    }
+  }
+  if (p != carAt[row].begin()) {
+    p--;
+    auto q = make_pair(*p, row);
+    if (del) {
+      carIn.erase(q);
+    } else {
+      carIn.insert(q);
+    }
+  }
+}
+
 bool ok(int side, int r, int c) {
   if (side == 1) {
     return true;
@@ -78,9 +99,7 @@ bool ok(int side, int r, int c) {
   }
   carIn.clear();
   for_inc_range(row, top, bottom) {
-    for (auto &p : carAt[row]) {
-      carIn.insert(make_pair(p, row));
-    }
+    doRelevant(row, c, false);
   }
   
   while (1) {
@@ -88,17 +107,13 @@ bool ok(int side, int r, int c) {
       return true;
     }
     
-    for (auto &p: carAt[top]) {
-      carIn.erase(make_pair(p, top));
-    }
+    doRelevant(top, c, true);
     top++;
     bottom++;
     if (bottom > nRow || top > r) {
       break;
     }
-    for (auto &p: carAt[bottom]) {
-      carIn.insert(make_pair(p, bottom));
-    }
+    doRelevant(bottom, c, false);
     
   }
   return false;
@@ -106,7 +121,7 @@ bool ok(int side, int r, int c) {
 
 int main() {
   //testGen();
-  //freopen("input4.txt", "r", stdin);
+  //freopen("input1.txt", "r", stdin);
   
   scanf("%d%d%d", &nRow, &nCol, &nCar);
   for_inc(row, nRow) {
