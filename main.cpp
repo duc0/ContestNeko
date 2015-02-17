@@ -38,8 +38,27 @@ void testGen() {
 
 int main() {
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  //freopen("input2.txt", "r", stdin);
   
+  int n, a, b;
+  vector<pair<int, int>> s;
+  cin >> n;
+  repeat(n) {
+    cin >> a >> b;
+    s.push_back(make_pair(a, b));
+  }
   
+  int curDay = 0;
+  sort(s.begin(), s.end());
+  
+  for (auto &p : s) {
+    if (p.second >= curDay) {
+      curDay = p.second;
+    } else {
+      curDay = p.first;
+    }
+  }
+  
+  cout << curDay << endl;
   return 0;
 }
