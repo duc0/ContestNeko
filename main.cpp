@@ -36,9 +36,35 @@ void testGen() {
   fclose(stdout);
 }
 
+#define MAXN 100100
+
+int n, q;
+
+int64 h[MAXN];
+int64 d[MAXN];
+
 int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
+  
+  cin >> n >> q;
+  for_inc_range(i, 1, n) {
+    cin >> d[i];
+  }
+  for_inc_range(i, 1, n) {
+    cin >> h[i];
+  }
+  
+  for_inc_range(i, n + 1, 2 * n) {
+    d[i] = d[i - n];
+    h[i] = h[i - n];
+  }
+  
+  n = n * 2;
+  d[0] = 0;
+  for_inc_range(i, 1, n) {
+    d[i] = d[i - 1] + d[i];
+  }
   
   
   return 0;
