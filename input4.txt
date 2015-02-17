@@ -1,0 +1,9 @@
+7 8 1
+.XXXXXXX
+XXXXXXXX
+........
+........
+XXXXXXXX
+XXXXXXXX
+XXXXXXXX
+1 1
