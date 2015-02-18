@@ -1,45 +1,53 @@
-#include <cstdio>
-#include <algorithm>
-#include <cstring>
+// Paste me into the FileEdit configuration dialog
 
-#define NDEBUG
-#include <cassert>
-
-#include <iostream>
+#include <string>
 #include <vector>
-#include <map>
-#include <set>
-#include <cmath>
-#include <cstdlib>
-#include <array>
-#include <type_traits>
-#include <queue>
-
+#include <algorithm>
 using namespace std;
 
+#define MOD 1000000007
 #define int64 long long
-#define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
 
-#define for_inc(i,x) for(auto i=0; i < x;++i)
-#define for_dec(i,x) for(auto i=x-1; i >= 0; --i)
-#define for_inc_range(i,x,y) for (auto i=x; i<=y; ++i)
-#define for_dec_range(i,x,y) for (auto i=x; i>=y; --i)
+class TaroFillingAStringDiv1 {
+public:
+    int getNumber(int n, vector <int> pos, string val ) {
+        vector<pair<int, char>> a;
+        
+        int k = (int)pos.size();
+        for (int i = 0; i < k; ++i) {
+            int p = pos[i];
+            char c = val[i];
+            a.push_back(make_pair(p, c));
+        }
+        sort(a.begin(), a.end());
+        
+        int ret = 1;
+        for (int i = 1; i < k; ++i) {
+            int diff = a[i].first - a[i - 1].first - 1;
+            if (diff % 2 == 0) {
+                if (a[i].second != a[i - 1].second) {
+                    continue;
+                }
+                ret = ((int64)ret * (diff + 1)) % MOD;
+            } else {
+                if (a[i].second == a[i - 1].second) {
+                    continue;
+                }
+                ret = ((int64)ret * (diff + 1)) % MOD;
+            }
+            
+        }
+        return ret;
+    }
+};
 
-#define fill0(x) memset(x, 0, sizeof(x))
-#define INT_INF 2E9L
 
-#define ntype int
-#define N_INF INT_INF
 
-void testGen() {
-  freopen("biginput1.txt", "w", stdout);
-  fclose(stdout);
-}
+// Powered by FileEdit
+// Powered by moj 4.18 [modified TZTester]
+// Powered by CodeProcessor
 
-int main() {
-  //testGen();
-  freopen("input1.txt", "r", stdin);
-  
-  
-  return 0;
-}
+
+// Powered by FileEdit
+// Powered by moj 4.18 [modified TZTester]
+// Powered by CodeProcessor
