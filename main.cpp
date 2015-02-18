@@ -29,8 +29,9 @@ bool dfs(int depth, int u, int canIgnore) {
         if (v == u) {
             shouldIgnore = true;
         } else if (parent[u] != v) {
+            child.push_back(v);
             if (visit[v]) {
-                shouldIgnore = true;
+                //shouldIgnore = true;
             }
         } else {
             if (seenP) {
@@ -44,8 +45,6 @@ bool dfs(int depth, int u, int canIgnore) {
             } else {
                 return fv = false;
             }
-        } else {
-            child.push_back(v);
         }
     }
     
@@ -57,14 +56,21 @@ bool dfs(int depth, int u, int canIgnore) {
         return fv = false;
     }
     
+    canIgnore -= child.size() - 2;
     for (int i = 0; i < child.size(); ++i) {
         for (int j = i + 1; j < child.size(); ++j) {
-            int u = child[i], v = child[j];
+            int cl = child[i], cr = child[j];
+            parent[cl] = u; parent[cr] = u;
             for (int ig = 0; ig <= canIgnore; ++ig) {
-                if (dfs(depth + 1, u, ig) && dfs(depth + 1, v, canIgnore - ig)) {
-                    return fv =true;
+                bool dl = dfs(depth - 1, cl, ig);
+                if (dl) {
+                    bool dr= dfs(depth - 1, cr, canIgnore - ig);
+                    if (dr) {
+                        return fv = true;
+                    }
                 }
             }
+            parent[cl] = -1; parent[cr] = -1;
         }
     }
     
