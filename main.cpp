@@ -45,6 +45,11 @@ template <class T> class RangeQuery
   vector<vector<T>> a;
   function<T(T,T)> combine;
 public:
+  // The default combine function is min (Range Minimum Query).
+  template <class Iterator> RangeQuery(Iterator begin, Iterator end) {
+    RangeQuery(begin, end, [](T a, T b){return min(a, b);});
+  }
+  
   template <class Iterator> RangeQuery(Iterator begin, Iterator end, const function<T(T,T)> &combine): combine(combine) {
     n=end - begin;
     k=-1;
@@ -127,6 +132,7 @@ int main() {
     if (a.best > b.best) return a;
     return Node(a.best, a.bestId1, good(a.bestId1, {a.bestId2, b.bestId1, b.bestId2}));
   };
+
   RangeQuery<Node> rmqplus(hplusd, hplusd + n, combineNode);
   RangeQuery<Node> rmqminus(hminusd, hminusd + n, combineNode);
   
