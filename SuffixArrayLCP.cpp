@@ -40,10 +40,11 @@ template <class T> class SuffixArray {
   size_t n;
   vector<int> suffix, rank, lcp;
   bool shortFirst;
+  RangeQuery<int> rangeLCP;
   
   bool saBuilt = false;
   bool lcpBuilt = false;
-  
+  bool rangeLCPBuilt = false;
 public:
   // If shortFirst is true, the special character is the minimum character.
   // Otherwise it is the maximum.
@@ -111,10 +112,29 @@ public:
     lcpBuilt = true;
   }
   
+  void buildRangeLCP() {
+    assert(lcpBuilt);
+    
+    rangeLCP.init(lcp.begin(), lcp.end());
+    
+    rangeLCPBuilt = true;
+  }
+  
   int getLCP(int i) {
     assert(lcpBuilt);
     
     return lcp[i];
+  }
+  
+  int getLCP(int i, int j) {
+    assert(rangeLCPBuilt);
+    assert(i != j);
+    i = rank[i];
+    j = rank[j];
+    
+    if (i > j) swap(i, j);
+    
+    return rangeLCP.query(i + 1, j);
   }
 };
 

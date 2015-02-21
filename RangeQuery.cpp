@@ -42,14 +42,27 @@ template <class T> class RangeQuery {
   function<T(T, T)> combine;
   
 public:
-  // The default combine function is min (Range Minimum Query).
-  template <class Iterator>
-  RangeQuery(Iterator begin, Iterator end)
-  : RangeQuery(begin, end, [](T a, T b) { return min(a, b); }) {}
+  RangeQuery() {}
   
   template <class Iterator>
-  RangeQuery(Iterator begin, Iterator end, const function<T(T, T)> &combine)
-  : combine(combine) {
+  RangeQuery(Iterator begin, Iterator end) {
+    init(begin, end);
+  }
+  
+  template <class Iterator>
+  RangeQuery(Iterator begin, Iterator end, const function<T(T, T)> &combine) {
+    init(begin, end, combine);
+  }
+  
+  // The default combine function is min (Range Minimum Query).
+  template <class Iterator>
+  void init(Iterator begin, Iterator end) {
+    init(begin, end, [](T a, T b) { return min(a, b); });
+  }
+  
+  template <class Iterator>
+  void init(Iterator begin, Iterator end, const function<T(T, T)> &combine) {
+    this->combine = combine;
     n = end - begin;
     k = -1;
     size_t s = n;
