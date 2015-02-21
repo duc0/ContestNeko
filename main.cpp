@@ -31,9 +31,6 @@ using namespace std;
 #define INT_INF 2E9L
 #define INT64_INF 1E18L
 
-#define ntype int
-#define N_INF INT_INF
-
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -46,9 +43,9 @@ template <class T> class RangeQuery {
 
 public:
   // The default combine function is min (Range Minimum Query).
-  template <class Iterator> RangeQuery(Iterator begin, Iterator end) {
-    RangeQuery(begin, end, [](T a, T b) { return min(a, b); });
-  }
+  template <class Iterator>
+  RangeQuery(Iterator begin, Iterator end)
+      : RangeQuery(begin, end, [](T a, T b) { return min(a, b); }) {}
 
   template <class Iterator>
   RangeQuery(Iterator begin, Iterator end, const function<T(T, T)> &combine)
@@ -76,7 +73,7 @@ public:
     }
   }
 
-  T Query(int i, int j) {
+  T query(int i, int j) {
     int l = j - i + 1, t = -1;
     while (l > 0) {
       l >>= 1;
@@ -89,12 +86,11 @@ public:
 
 #define MAXN 200100
 
+// Sample problem: CF292_C
+
 struct Node {
   int64 best;
   int bestId1, bestId2;
-  Node(int64 best, int bestId1, int bestId2)
-      : best(best), bestId1(bestId1), bestId2(bestId2) {}
-  Node(){};
 };
 
 int n, q;
@@ -108,7 +104,7 @@ Node hminusd[MAXN];
 
 int main() {
   // testGen();
-  // freopen("input1.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 
   cin >> n >> q;
   for_inc_range(i, 1, n) { cin >> dst[i]; }
@@ -124,8 +120,8 @@ int main() {
   for_inc_range(i, 2, n) { d[i] = d[i - 1] + dst[i - 1]; }
 
   for_inc_range(i, 1, n) {
-    hplusd[i - 1] = Node(2 * h[i] + d[i], i - 1, -1);
-    hminusd[i - 1] = Node(2 * h[i] - d[i], i - 1, -1);
+    hplusd[i - 1] = Node{2 * h[i] + d[i], i - 1, -1};
+    hminusd[i - 1] = Node{2 * h[i] - d[i], i - 1, -1};
   }
 
   auto good = [](int x, initializer_list<int> ys) {
@@ -139,8 +135,8 @@ int main() {
       return b;
     if (a.best > b.best)
       return a;
-    return Node(a.best, a.bestId1,
-                good(a.bestId1, {a.bestId2, b.bestId1, b.bestId2}));
+    return Node{a.best, a.bestId1,
+                good(a.bestId1, {a.bestId2, b.bestId1, b.bestId2})};
   };
 
   RangeQuery<Node> rmqplus(hplusd, hplusd + n, combineNode);
@@ -168,7 +164,7 @@ int main() {
 
     int id;
 
-    mplus = rmqplus.Query(leftBound, rightBound);
+    mplus = rmqplus.query(leftBound, rightBound);
     for_inc(loop, 2) {
       if (loop == 0) {
         id = mplus.bestId1;
@@ -179,15 +175,15 @@ int main() {
         continue;
       bt = -INT64_INF;
       if (leftBound <= id - 1) {
-        bt = max(bt, rmqminus.Query(leftBound, id - 1).best);
+        bt = max(bt, rmqminus.query(leftBound, id - 1).best);
       }
       if (id + 1 <= rightBound) {
-        bt = max(bt, rmqminus.Query(id + 1, rightBound).best);
+        bt = max(bt, rmqminus.query(id + 1, rightBound).best);
       }
       best = max(best, mplus.best + bt);
     }
 
-    mminus = rmqminus.Query(leftBound, rightBound);
+    mminus = rmqminus.query(leftBound, rightBound);
     for_inc(loop, 2) {
       if (loop == 0) {
         id = mminus.bestId1;
@@ -198,10 +194,10 @@ int main() {
         continue;
       bt = -INT64_INF;
       if (leftBound <= id - 1) {
-        bt = max(bt, rmqplus.Query(leftBound, id - 1).best);
+        bt = max(bt, rmqplus.query(leftBound, id - 1).best);
       }
       if (id + 1 <= rightBound) {
-        bt = max(bt, rmqplus.Query(id + 1, rightBound).best);
+        bt = max(bt, rmqplus.query(id + 1, rightBound).best);
       }
       best = max(best, mminus.best + bt);
     }
