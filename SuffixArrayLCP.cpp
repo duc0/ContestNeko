@@ -123,9 +123,11 @@ public:
   int getLCP(int i) {
     assert(lcpBuilt);
     
+    i = rank[i];
     return lcp[i];
   }
   
+  // O(logN)
   int getLCP(int i, int j) {
     assert(rangeLCPBuilt);
     assert(i != j);
@@ -135,6 +137,28 @@ public:
     if (i > j) swap(i, j);
     
     return rangeLCP.query(i + 1, j);
+  }
+  
+  // Compare two substrings [i1, j1] and [i2, j2], O(logn)
+  int compareSubstr(int i1, int j1, int i2, int j2) {
+    assert(rangeLCPBuilt);
+    assert(0 <= i1 && i1 <= j1 && j1 < n);
+    assert(0 <= i2 && i2 <= j2 && j2 < n);
+    int l1 = j1 - i1 + 1;
+    int l2 = j2 - i2 + 1;
+    if (l1 > l2) {
+      swap(l1, l2); swap(i1, i2); swap(j1, j2);
+    }
+    int l = getLCP(i1, i2);
+    if (l >= l1) {
+      return l1 == l2 ? 0 : -1;
+    } else {
+      T c1 = s[i1 + l];
+      T c2 = s[i2 + l];
+      if (c1 < c2) return -1;
+      if (c1 > c2) return 1;
+      return 0;
+    }
   }
 };
 
