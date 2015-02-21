@@ -47,12 +47,18 @@ template <class T> class SuffixArray {
 public:
   // If shortFirst is true, the special character is the minimum character.
   // Otherwise it is the maximum.
-  SuffixArray(vector<T> s, bool shortFirst = true)
-  : s(s), shortFirst(shortFirst), n(s.size()) {}
+  template <class Iterator> SuffixArray(Iterator begin, Iterator end, bool shortFirst = true)
+  : shortFirst(shortFirst), n(end - begin) {
+    s.resize(n + 1);
+    auto it = begin;
+    for (int i = 0; i < n; ++i) {
+      s[i] = *it;
+      it++;
+    }
+    s.push_back(0);
+  }
   
   void buildSuffixArray() {
-    s.push_back(0);
-    
     suffix.resize(n);
     rank.resize(n + 1);
     
@@ -116,14 +122,14 @@ public:
 char s[50002];
 
 int main() {
-  // freopen("input1.txt", "r", stdin);
+  //freopen("input1.txt", "r", stdin);
   int n;
   long long r, l;
   scanf("%d", &n);
   for (int i = 0; i < n; ++i) {
     scanf("%s", s);
     l = strlen(s);
-    SuffixArray<char> sa(vector<char>(s, s + l));
+    SuffixArray<char> sa(s, s + l);
     sa.buildSuffixArray();
     sa.buildLCP();
     r = l * (l + 1) / 2;
