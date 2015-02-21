@@ -20,12 +20,12 @@
 using namespace std;
 
 #define int64 long long
-#define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
+#define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
 
-#define for_inc(i,x) for(auto i=0; i < x;++i)
-#define for_dec(i,x) for(auto i=x-1; i >= 0; --i)
-#define for_inc_range(i,x,y) for (auto i=x; i<=y; ++i)
-#define for_dec_range(i,x,y) for (auto i=x; i>=y; --i)
+#define for_inc(i, x) for (auto i = 0; i < x; ++i)
+#define for_dec(i, x) for (auto i = x - 1; i >= 0; --i)
+#define for_inc_range(i, x, y) for (auto i = x; i <= y; ++i)
+#define for_dec_range(i, x, y) for (auto i = x; i >= y; --i)
 
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF 2E9L
@@ -39,43 +39,50 @@ void testGen() {
   fclose(stdout);
 }
 
-template <class T> class RangeQuery
-{
+template <class T> class RangeQuery {
   size_t n, k;
   vector<vector<T>> a;
-  function<T(T,T)> combine;
+  function<T(T, T)> combine;
+
 public:
   // The default combine function is min (Range Minimum Query).
   template <class Iterator> RangeQuery(Iterator begin, Iterator end) {
-    RangeQuery(begin, end, [](T a, T b){return min(a, b);});
+    RangeQuery(begin, end, [](T a, T b) { return min(a, b); });
   }
-  
-  template <class Iterator> RangeQuery(Iterator begin, Iterator end, const function<T(T,T)> &combine): combine(combine) {
-    n=end - begin;
-    k=-1;
+
+  template <class Iterator>
+  RangeQuery(Iterator begin, Iterator end, const function<T(T, T)> &combine)
+      : combine(combine) {
+    n = end - begin;
+    k = -1;
     size_t s = n;
-    while (s>0) {s>>=1; ++k;}
+    while (s > 0) {
+      s >>= 1;
+      ++k;
+    }
     a.resize(k + 1);
-    for (int i=0; i<=k; ++i) {
-      a[i].resize(n+1-(1<<i));
+    for (int i = 0; i <= k; ++i) {
+      a[i].resize(n + 1 - (1 << i));
     }
     auto it = begin;
-    for (int i=0; i<n; ++i) {
-      a[0][i]=*it;
+    for (int i = 0; i < n; ++i) {
+      a[0][i] = *it;
       ++it;
     }
-    for (int t=1; t<=k; ++t) {
-      for (int i=0; i<=n-(1<<t); ++i) {
-        a[t][i] = combine(a[t - 1][i], a[t - 1][i+(1<<(t-1))]);
+    for (int t = 1; t <= k; ++t) {
+      for (int i = 0; i <= n - (1 << t); ++i) {
+        a[t][i] = combine(a[t - 1][i], a[t - 1][i + (1 << (t - 1))]);
       }
     }
   }
 
-  T Query(int i, int j)
-  {
-    int l=j-i+1, t=-1;
-    while (l>0) {l>>=1; ++t;}
-    int m=j+1-(1<<t);
+  T Query(int i, int j) {
+    int l = j - i + 1, t = -1;
+    while (l > 0) {
+      l >>= 1;
+      ++t;
+    }
+    int m = j + 1 - (1 << t);
     return combine(a[t][i], a[t][m]);
   }
 };
@@ -85,8 +92,9 @@ public:
 struct Node {
   int64 best;
   int bestId1, bestId2;
-  Node(int64 best, int bestId1, int bestId2): best(best), bestId1(bestId1), bestId2(bestId2) {}
-  Node() {};
+  Node(int64 best, int bestId1, int bestId2)
+      : best(best), bestId1(bestId1), bestId2(bestId2) {}
+  Node(){};
 };
 
 int n, q;
@@ -99,43 +107,45 @@ Node hplusd[MAXN];
 Node hminusd[MAXN];
 
 int main() {
-  //testGen();
-  //freopen("input1.txt", "r", stdin);
-  
+  // testGen();
+  // freopen("input1.txt", "r", stdin);
+
   cin >> n >> q;
-  for_inc_range(i, 1, n) {
-    cin >> dst[i];
-  }
-  for_inc_range(i, 1, n) {
-    cin >> h[i];
-  }
-  
+  for_inc_range(i, 1, n) { cin >> dst[i]; }
+  for_inc_range(i, 1, n) { cin >> h[i]; }
+
   for_inc_range(i, n + 1, 2 * n) {
     dst[i] = dst[i - n];
     h[i] = h[i - n];
   }
-  
+
   n = n * 2;
   d[1] = 0;
-  for_inc_range(i, 2, n) {
-    d[i] = d[i - 1] + dst[i - 1];
-  }
-  
+  for_inc_range(i, 2, n) { d[i] = d[i - 1] + dst[i - 1]; }
+
   for_inc_range(i, 1, n) {
     hplusd[i - 1] = Node(2 * h[i] + d[i], i - 1, -1);
     hminusd[i - 1] = Node(2 * h[i] - d[i], i - 1, -1);
   }
-  
-  auto good = [](int x, initializer_list<int> ys) {for (auto y : ys) if (y != -1 && y != x) return y; return *ys.begin();};
+
+  auto good = [](int x, initializer_list<int> ys) {
+    for (auto y : ys)
+      if (y != -1 && y != x)
+        return y;
+    return *ys.begin();
+  };
   auto combineNode = [&good](Node a, Node b) {
-    if (a.best < b.best) return b;
-    if (a.best > b.best) return a;
-    return Node(a.best, a.bestId1, good(a.bestId1, {a.bestId2, b.bestId1, b.bestId2}));
+    if (a.best < b.best)
+      return b;
+    if (a.best > b.best)
+      return a;
+    return Node(a.best, a.bestId1,
+                good(a.bestId1, {a.bestId2, b.bestId1, b.bestId2}));
   };
 
   RangeQuery<Node> rmqplus(hplusd, hplusd + n, combineNode);
   RangeQuery<Node> rmqminus(hminusd, hminusd + n, combineNode);
-  
+
   int a, b;
   int leftBound, rightBound;
   repeat(q) {
@@ -147,17 +157,17 @@ int main() {
       leftBound = b + 1;
       rightBound = a - 1;
     }
-    
+
     leftBound--;
     rightBound--;
-    
+
     Node mplus;
     Node mminus;
-  
+
     int64 best = -INT64_INF, bt;
-    
+
     int id;
-    
+
     mplus = rmqplus.Query(leftBound, rightBound);
     for_inc(loop, 2) {
       if (loop == 0) {
@@ -165,7 +175,8 @@ int main() {
       } else {
         id = mplus.bestId2;
       }
-      if (id == -1) continue;
+      if (id == -1)
+        continue;
       bt = -INT64_INF;
       if (leftBound <= id - 1) {
         bt = max(bt, rmqminus.Query(leftBound, id - 1).best);
@@ -175,7 +186,7 @@ int main() {
       }
       best = max(best, mplus.best + bt);
     }
-    
+
     mminus = rmqminus.Query(leftBound, rightBound);
     for_inc(loop, 2) {
       if (loop == 0) {
@@ -183,7 +194,8 @@ int main() {
       } else {
         id = mminus.bestId2;
       }
-      if (id == -1) continue;
+      if (id == -1)
+        continue;
       bt = -INT64_INF;
       if (leftBound <= id - 1) {
         bt = max(bt, rmqplus.Query(leftBound, id - 1).best);
@@ -193,9 +205,9 @@ int main() {
       }
       best = max(best, mminus.best + bt);
     }
-    
+
     cout << best << endl;
   }
-  
+
   return 0;
 }
