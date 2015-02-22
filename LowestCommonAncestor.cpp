@@ -102,6 +102,9 @@ public:
   int getRoot() { return root; }
   
   void setRoot(int u) {
+    for_inc_range(v, 1, n) {
+      p[v].first = -1;
+    }
     root = u;
     p[root].first = -2;
     dfs(root);
