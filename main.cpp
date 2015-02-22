@@ -16,6 +16,7 @@
 #include <queue>
 #include <stack>
 #include <functional>
+#include <deque>
 
 using namespace std;
 
