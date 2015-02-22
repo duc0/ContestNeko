@@ -35,6 +35,67 @@ void testGen() {
   fclose(stdout);
 }
 
+template <class T> class RangeQuery {
+  size_t n, k;
+  vector<vector<T>> a;
+  function<T(T, T)> combine;
+  
+public:
+  RangeQuery() {}
+  
+  template <class Iterator>
+  RangeQuery(Iterator begin, Iterator end) {
+    init(begin, end);
+  }
+  
+  template <class Iterator>
+  RangeQuery(Iterator begin, Iterator end, const function<T(T, T)> &combine) {
+    init(begin, end, combine);
+  }
+  
+  // The default combine function is min (Range Minimum Query).
+  template <class Iterator>
+  void init(Iterator begin, Iterator end) {
+    init(begin, end, [](T a, T b) { return min(a, b); });
+  }
+  
+  template <class Iterator>
+  void init(Iterator begin, Iterator end, const function<T(T, T)> &combine) {
+    this->combine = combine;
+    n = end - begin;
+    k = -1;
+    size_t s = n;
+    while (s > 0) {
+      s >>= 1;
+      ++k;
+    }
+    a.resize(k + 1);
+    for (int i = 0; i <= k; ++i) {
+      a[i].resize(n + 1 - (1 << i));
+    }
+    auto it = begin;
+    for (int i = 0; i < n; ++i) {
+      a[0][i] = *it;
+      ++it;
+    }
+    for (int t = 1; t <= k; ++t) {
+      for (int i = 0; i <= n - (1 << t); ++i) {
+        a[t][i] = combine(a[t - 1][i], a[t - 1][i + (1 << (t - 1))]);
+      }
+    }
+  }
+  
+  T query(int i, int j) {
+    int l = j - i + 1, t = -1;
+    while (l > 0) {
+      l >>= 1;
+      ++t;
+    }
+    int m = j + 1 - (1 << t);
+    return combine(a[t][i], a[t][m]);
+  }
+};
+
 template <class T> class SuffixArray {
   vector<T> s;
   size_t n;
@@ -125,6 +186,12 @@ public:
     
     i = rank[i];
     return lcp[i];
+  }
+  
+  int getPrevSuffix(int i) {
+    assert(saBuilt);
+    
+    return suffix[rank[i] - 1];
   }
   
   // O(logN)
