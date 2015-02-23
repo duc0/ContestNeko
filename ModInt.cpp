@@ -42,15 +42,15 @@ template <class T> class NumberTheory {
     extendedEuclid(b, a % b, x2, x);
     y = x2 - (a / b) * x;
   }
-
+  
 public:
-  static T modulo(int64 a, T b) {
+  static inline T modulo(int64 a, T b) {
     T r = a % b;
     if (r < 0)
       r += b;
     return r;
   }
-  static T modularInverse(T a, T m) {
+  static inline T modularInverse(T a, T m) {
     T x, y;
     extendedEuclid(a, m, x, y);
     return modulo(x, m);
@@ -59,29 +59,32 @@ public:
 
 template <class T, T M> class ModInt {
   T x = 0;
-  static T modp(int64 x) { return NumberTheory<T>::modulo(x, M); }
-  static T get(ModInt x) { return x.get(); }
-  static T get(T x) { return x; }
-
+  static inline T get(ModInt x) { return x.get(); }
+  static inline T get(T x) { return x; }
+  
 public:
   ModInt() : ModInt(0) {}
-  ModInt(T y) { x = modp(y); }
+  ModInt(int64 y) { x = NumberTheory<T>::modulo(y, M); }
   T get() { return x; }
   template <class Q> ModInt operator+(const Q &y) {
-    return ModInt(modp(x + get(y)));
+    return ModInt(x + get(y));
   }
   template <class Q> ModInt operator-(const Q &y) {
-    return ModInt(modp(x - get(y)));
+    return ModInt(x - get(y));
   }
   template <class Q> ModInt operator*(const Q &y) {
-    return ModInt(modp((int64)x * get(y)));
+    return ModInt((int64)x * get(y));
   }
   template <class Q> ModInt operator/(const Q &y) {
     return ModInt(
-        modp((int64)x * NumberTheory<T>::modularInverse(get(y), MOD)));
+                  (int64)x * NumberTheory<T>::modularInverse(get(y), MOD));
   }
-  template <class Q> ModInt &operator=(const Q &y) {
-    x = modp(get(y));
+  ModInt &operator=(const T &y) {
+    x = NumberTheory<T>::modulo(y, M);
+    return *this;
+  }
+  ModInt &operator=(const ModInt &y) {
+    x = y.x;
     return *this;
   }
 };
