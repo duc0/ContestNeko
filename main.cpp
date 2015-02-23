@@ -37,25 +37,77 @@ void testGen() {
 }
 
 #define MOD 1000000007
-int MODP(int a) {
-  int r = a % MOD;
-  if (r < 0) r += MOD;
-  return r;
-}
+
+template <class T> class NumberTheory {
+  static void extendedEuclid(T a, T b, T &x, T &y) {
+    if (b == 0) {
+      x = 1;
+      y = 0;
+      return;
+    }
+    T x2;
+    extendedEuclid(b, a % b, x2, x);
+    y = x2 - (a / b) * x;
+  }
+  
+public:
+  static inline T modulo(int64 a, T b) {
+    T r = a % b;
+    if (r < 0)
+      r += b;
+    return r;
+  }
+  static inline T modularInverse(T a, T m) {
+    T x, y;
+    extendedEuclid(a, m, x, y);
+    return modulo(x, m);
+  }
+};
+
+template <class T, T M> class ModInt {
+  T x = 0;
+  static inline T get(ModInt x) { return x.get(); }
+  static inline T get(T x) { return x; }
+  
+public:
+  ModInt() : ModInt(0) {}
+  ModInt(int64 y) { x = NumberTheory<T>::modulo(y, M); }
+  T get() { return x; }
+  template <class Q> ModInt operator+(const Q &y) {
+    return ModInt(x + get(y));
+  }
+  template <class Q> ModInt operator-(const Q &y) {
+    return ModInt(x - get(y));
+  }
+  template <class Q> ModInt operator*(const Q &y) {
+    return ModInt((int64)x * get(y));
+  }
+  template <class Q> ModInt operator/(const Q &y) {
+    return ModInt(
+                  (int64)x * NumberTheory<T>::modularInverse(get(y), MOD));
+  }
+  ModInt &operator=(const T &y) {
+    x = NumberTheory<T>::modulo(y, M);
+    return *this;
+  }
+  ModInt &operator=(const ModInt &y) {
+    x = y.x;
+    return *this;
+  }
+};
 
 #define MAXN 5100
 
 int n, a, b, k;
-int f[MAXN][MAXN];
-int s[MAXN][MAXN];
+ModInt<int, MOD> f[MAXN][MAXN], s[MAXN][MAXN];
 
-int getSum(int d, int i, int j) {
-  return MODP(s[d][j] - s[d][i - 1]);
+ModInt<int, MOD> getSum(int d, int i, int j) {
+  return s[d][j] - s[d][i - 1];
 }
 
 int main() {
   //testGen();
-  //freopen("input3.txt", "r", stdin);
+  //freopen("input1.txt", "r", stdin);
   
   cin >> n >> a >> b >> k;
   fill0(f);
@@ -65,7 +117,7 @@ int main() {
 
   s[0][0] = 0;
   for_inc_range(i, 1, n) {
-    s[0][i] = MODP(s[0][i - 1] + f[0][i]);
+    s[0][i] = s[0][i - 1] + f[0][i];
   }
   
   for_inc_range(d, 1, k) {
@@ -73,21 +125,21 @@ int main() {
     for_inc_range(i, 1, n) {
       if (i == b) continue;
       if (i > b) {
-        f[d][i] = MODP(getSum(d - 1, (i + b) / 2 + 1, n) - f[d - 1][i]);
+        f[d][i] = getSum(d - 1, (i + b) / 2 + 1, n) - f[d - 1][i];
       } else {
         int r = (i + b) / 2;
         if ((i + b) % 2 == 0) r--;
-        f[d][i] = MODP(getSum(d - 1, 1, r) - f[d - 1][i]);
+        f[d][i] = getSum(d - 1, 1, r) - f[d - 1][i];
       }
       
-      s[d][i] = MODP(s[d][i - 1] + f[d][i]);
+      s[d][i] = s[d][i - 1] + f[d][i];
     }
   }
   
-  int ret = 0;
+  ModInt<int, MOD> ret = 0;
   for_inc_range(i, 1, n) {
-    ret = MODP(ret + f[k][i]);
+    ret = ret + f[k][i];
   }
-  cout << ret << endl;
+  cout << ret.get() << endl;
   return 0;
 }
