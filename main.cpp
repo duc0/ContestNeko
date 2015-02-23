@@ -36,6 +36,25 @@ void testGen() {
 }
 
 int main() {
-  // freopen("input1.txt", "r", stdin);
+  //freopen("input2.txt", "r", stdin);
+  
+  int n;
+  cin >> n;
+  vector<int> a(n + 1);
+  int64 sum = 0;
+  for_inc_range(i, 1, n) {
+    cin >> a[i];
+    sum += a[i];
+  }
+  sort(a.begin() + 1, a.end());
+  
+  int64 ans = sum;
+  for_inc_range(i, 1, n - 1) {
+    ans += sum;
+    sum -= a[i];
+  }
+  
+  cout << ans << endl;
+  
   return 0;
 }
