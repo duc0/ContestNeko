@@ -30,38 +30,65 @@ using namespace std;
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF 2E9L
 #define MOD 1000000007
-int MODP(int64 x) {
-  int r = x % MOD;
-  if (r < 0) r += MOD;
-  return r;
-}
+
+template <class T> class NumberTheory {
+  static void extendedEuclid(T a, T b, T &x, T &y) {
+    if (b==0) {x=1; y=0; return;}
+    T x2;
+    extendedEuclid(b,a%b,x2,x);
+    y=x2-(a/b)*x;
+  }
+public:
+  static T modulo(int64 a, T b) {
+    T r=a%b;
+    if (r<0) r+=b;
+    return r;
+  }
+  static T modularInverse(T a, T m) {
+    T x, y;
+    extendedEuclid(a, m, x, y);
+    return modulo(x,m);
+  }
+};
+
+template<class T, T M> class ModInt {
+  T x = 0;
+  static T modp(int64 x) {
+    return NumberTheory<T>::modulo(x, M);
+  }
+  static T get(ModInt x) {
+    return x.get();
+  }
+  static T get(T x) {
+    return x;
+  }
+public:
+  ModInt(): ModInt(0) {}
+  ModInt(T y) {
+    x = modp(y);
+  }
+  T get() {return x;}
+  template<class Q> ModInt operator + (const Q &y) {
+    return ModInt(modp(x + get(y)));
+  }
+  template<class Q> ModInt operator - (const Q &y) {
+    return ModInt(modp(x - get(y)));
+  }
+  template<class Q> ModInt operator * (const Q &y) {
+    return ModInt(modp((int64)x * get(y)));
+  }
+  template<class Q> ModInt operator / (const Q &y) {
+    return ModInt(modp((int64)x * NumberTheory<T>::modularInverse(get(y), MOD)));
+  }
+  template<class Q> ModInt& operator = (const Q &y) {
+    x = modp(get(y));
+    return *this;
+  }
+};
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
-}
-
-
-// extendedEuclid: tim x, y sao cho ax + by = (a,b)
-void extendedEuclid(int a, int b, int &x, int &y) {
-  if (b==0) {x=1; y=0; return;}
-  int x2;
-  extendedEuclid(b,a%b,x2,x);
-  y=x2-(a/b)*x;
-}
-
-// modulo: tra ve a mod b, nhung ket qua dam bao luon duong
-int modulo(int64 a, int b) {
-  int r=a%b;
-  if (r<0) r+=b;
-  return r;
-}
-
-// modularInverse: dieu kien (a, m) = 1, tra ve a^-1 sao cho a*(a^-1) = 1 (mod m)
-int modularInverse(int a, int m) {
-  int x, y;
-  extendedEuclid(a, m, x, y);
-  return modulo(x,m);
 }
 
 int n;
@@ -72,31 +99,29 @@ vector<vector<int>> child;
 vector <vector<int>> f;
 
 void dfs(int u) {
-  int prod = 1;
-  
+  ModInt<int, MOD> prod = 1, f0, f1;
   for (auto &v: child[u]) {
-    //cout << u << " " << v << endl;
     dfs(v);
-    prod = MODP((int64)prod * (f[0][v] + f[1][v]));
+    prod = prod * (f[0][v] + f[1][v]);
   }
-  
-  f[0][u] = f[0][u] * prod;
   if (color[u] == 1) {
-    f[0][u] = 0;
-    f[1][u] = prod;
+    f0 = 0;
+    f1 = prod;
   } else {
-    f[0][u] = prod;
-    f[1][u] = 0;
+    f0 = prod;
+    f1 = 0;
     for (auto &v: child[u]) {
       if (f[1][v] > 0) {
-        f[1][u] = MODP(f[1][u] + (int64) f[1][v] * MODP((int64)prod * modularInverse(f[0][v] + f[1][v], MOD)));
+        f1 = f1 + prod * f[1][v] / (f[0][v] + f[1][v]);
       }
     }
   }
+  f[0][u] = f0.get();
+  f[1][u] = f1.get();
 }
 
 int main() {
-  //freopen("input3.txt", "r", stdin);
+  //freopen("input2.txt", "r", stdin);
   cin >> n;
   parent.resize(n + 1);
   child.resize(n + 1);
@@ -118,6 +143,5 @@ int main() {
   }
   dfs(1);
   cout << f[1][1] << endl;
-  
   return 0;
 }
