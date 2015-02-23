@@ -29,6 +29,12 @@ using namespace std;
 
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF 2E9L
+#define MOD 1000000007
+int MODP(int64 x) {
+  int r = x % MOD;
+  if (r < 0) r += MOD;
+  return r;
+}
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
