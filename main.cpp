@@ -37,6 +37,78 @@ void testGen() {
   fclose(stdout);
 }
 
+class UndirectedGraph {
+  vector<vector<int>> adj;
+  vector<int> comp;
+  vector<int> color;
+  bool ccBuilt = false;
+  int n, nComp;
+  bool _hasOddCycle = false;
+  
+  void dfs(int u, int c) {
+    comp[u] = nComp;
+    color[u] = c;
+    for (auto &v: adj[u]) {
+      if (comp[v] == -1) {
+        dfs(v, 1 - c);
+      } else {
+        if (color[v] != 1 - c) {
+          _hasOddCycle = true;
+        }
+      }
+    }
+  }
+  
+public:
+  void init(int n) {
+    this->n = n;
+    adj.resize(n + 1);
+    for_inc_range(u, 1, n) {
+      adj[u].clear();
+    }
+    ccBuilt = false;
+  }
+  
+  void addEdge(int u, int v) {
+    assert(1 <= u && u <= n);
+    assert(1 <= v && v <= n);
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+    ccBuilt = false;
+  }
+  
+  // Find connected components and detect odd cycle
+  void buildCC() {
+    ccBuilt = true;
+    comp.resize(n + 1);
+    fill(comp.begin(), comp.end(), -1);
+    color.resize(n + 1);
+    nComp = 0;
+    _hasOddCycle = false;
+    for_inc_range(u, 1, n) {
+      if (comp[u] == -1) {
+        nComp++;
+        dfs(u, 0);
+      }
+    }
+  }
+  
+  bool hasOddCycle() {
+    assert(ccBuilt);
+    return _hasOddCycle;
+  }
+  
+  int getComponent(int u) {
+    assert(ccBuilt);
+    return comp[u];
+  }
+  
+  int getNumberOfComponents() {
+    assert(ccBuilt);
+    return nComp;
+  }
+};
+
 struct Equation {
   int l, r;
 };
@@ -61,104 +133,58 @@ Equation getEquation(int r, int c) {
   return e;
 }
 
-vector<vector<int>> diffEdge, sameEdge;
+UndirectedGraph sameGraph, compGraph;
 
-vector<int> compSame;
-int nComp = 0;
-
-void dfsComp(int u) {
-  compSame[u] = nComp;
-  for (auto &v: sameEdge[u]) {
-    if (compSame[v] == -1) {
-      dfsComp(v);
-    }
-  }
-}
-
-vector<vector<int>> compEdge;
-vector<int> comp;
-vector<int> color;
-
-int nRegion = 0;
-
-bool dfs(int u, int c) {
-  comp[u] = nRegion;
-  color[u] = c;
-  for (auto &v: compEdge[u]) {
-    if (comp[v] == -1) {
-      if (!dfs(v, 1 - c)) {
-        return false;
-      }
-    } else {
-      if (color[v] != 1 - c) {
-        // odd cycle
-        return false;
-      }
-    }
-  }
-  return true;
-}
+vector<vector<int>> diffEdge;
 
 int main() {
-  freopen("input2.txt", "r", stdin);
+  //freopen("input2.txt", "r", stdin);
   
   cin >> n >> k;
   int a, b, c; string s;
   
-  diffEdge.resize(n + 1);
-  sameEdge.resize(n + 1);
+  diffEdge.resize(n + 2);
+  
+  sameGraph.init(n + 1);
   
   repeat(k) {
     cin >> a >> b >> s;
     c = s[0] == 'x';
     Equation e = getEquation(a, b);
-    //cout << e.l << " " << e.r << " " << c << endl;
+    int u = e.l == 0 ? n + 1 : e.l;
+    int v = e.r == 0 ? n + 1 : e.r;
     if (c == 0) {
-      diffEdge[e.l].push_back(e.r);
-      diffEdge[e.r].push_back(e.l);
+      diffEdge[u].push_back(v);
+      diffEdge[v].push_back(u);
     } else {
-      sameEdge[e.l].push_back(e.r);
-      sameEdge[e.r].push_back(e.l);
+      sameGraph.addEdge(u, v);
     }
   }
   
-  compSame.resize(n + 1);
-  fill(compSame.begin(), compSame.end(), - 1);
-  for_inc_range(u, 0, n) {
-    if (compSame[u] == -1) {
-      nComp++;
-      dfsComp(u);
-    }
-  }
+  sameGraph.buildCC();
   
-  compEdge.resize(nComp + 1);
-  for_inc_range(u, 0, n) {
+  compGraph.init(sameGraph.getNumberOfComponents());
+  for_inc_range(u, 1, n + 1) {
     for (auto &v: diffEdge[u]) {
-      if (compSame[u] == compSame[v]) {
+      int cu = sameGraph.getComponent(u);
+      int cv = sameGraph.getComponent(v);
+      if (cu == cv) {
         cout << 0;
         return 0;
       } else {
-        compEdge[compSame[u]].push_back(compSame[v]);
-        compEdge[compSame[v]].push_back(compSame[u]);
+        compGraph.addEdge(cu, cv);
       }
     }
   }
   
-  comp.resize(nComp + 1);
-  fill(comp.begin(), comp.end(), -1);
-  color.resize(nComp + 1);
-  for_inc_range(u, 1, nComp) {
-    if (comp[u] == -1) {
-      nRegion++;
-      if (!dfs(u, 0)) {
-        cout << 0;
-        return 0;
-      }
-    }
+  compGraph.buildCC();
+  if (compGraph.hasOddCycle()) {
+    cout << 0;
+    return 0;
   }
   
   int ret = 1;
-  for_inc_range(i, 1, nRegion - 1) {
+  for_inc_range(i, 1, compGraph.getNumberOfComponents() - 1) {
     ret = (ret * 2) % MOD;
   }
   cout << ret << endl;
