@@ -19,6 +19,9 @@
 
 using namespace std;
 
+#define LOGLEVEL 0
+#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
 
