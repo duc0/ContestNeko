@@ -65,17 +65,24 @@ template <class T, T M> class ModInt {
 public:
   ModInt() : ModInt(0) {}
   ModInt(int64 y) { x = NumberTheory<T>::modulo(y, M); }
-  T get() { return x; }
-  template <class Q> ModInt operator+(const Q &y) {
+  T get() const { return x; }
+  template <class Q> ModInt operator+(const Q &y) const {
     return ModInt(x + get(y));
   }
-  template <class Q> ModInt operator-(const Q &y) {
+  template <class Q> ModInt& operator+=(const Q &y) {
+    x = NumberTheory<T>::modulo(x + get(y), M);
+    return *this;
+  }
+  template <class Q> ModInt operator-(const Q &y) const {
     return ModInt(x - get(y));
   }
-  template <class Q> ModInt operator*(const Q &y) {
+  template <class Q> bool operator!=(const Q &y) const {
+    return x != get(y);
+  }
+  template <class Q> ModInt operator*(const Q &y) const {
     return ModInt((int64)x * get(y));
   }
-  template <class Q> ModInt operator/(const Q &y) {
+  template <class Q> ModInt operator/(const Q &y) const {
     return ModInt(
                   (int64)x * NumberTheory<T>::modularInverse(get(y), MOD));
   }
@@ -87,6 +94,12 @@ public:
     x = y.x;
     return *this;
   }
+  
+  friend std::ostream& operator<< (std::ostream& stream, const ModInt& y) {
+    stream << get(y);
+    return stream;
+  }
+  
 };
 
 void testGen() {
