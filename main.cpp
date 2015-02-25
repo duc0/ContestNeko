@@ -1,10 +1,16 @@
+#define SUBMIT
+
+#ifdef SUBMIT
+#define LOGLEVEL 0
+#define NDEBUG
+#else
+#define LOGLEVEL 1
+#endif
+
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
-
-//#define NDEBUG
 #include <cassert>
-
 #include <iostream>
 #include <vector>
 #include <map>
@@ -19,6 +25,8 @@
 
 using namespace std;
 
+#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
 
@@ -32,8 +40,7 @@ using namespace std;
 #define MOD 1000000007
 int MODP(int64 x) {
   int r = x % MOD;
-  if (r < 0)
-    r += MOD;
+  if (r < 0) r += MOD;
   return r;
 }
 
@@ -42,84 +49,95 @@ void testGen() {
   fclose(stdout);
 }
 
-int nRow, nCol;
-vector<string> board;
+class Board {
+  int nRow, nCol;
+  vector<string> a;
+public:
+  void init(int nRow) {
+    this->nRow = nRow;
+    a.resize(nRow);
+  }
+  void setRow(int r, string s) {
+    a[r] = s;
+    nCol = (int)s.length();
+  }
+  
+  int numRow() const {return nRow;}
+  int numCol() const {return nCol;}
+  bool isCorner(int r, int c) const {
+    return (r == 0 && c == 0) || (r == 0 && c == lastCol()) || (r == lastRow() && c == 0) || (r == lastRow() && c == lastCol());
+  }
+  bool isOnSide(int r, int c) const {
+    return (r == 0 || c == 0 || r == lastRow() || c == lastCol());
+  }
+  int lastCol() const {return nCol - 1;}
+  int lastRow() const {return nRow - 1;}
+  
+  void rotateRight() {
+    vector<string> boardRotate;
+    boardRotate.resize(nCol);
+    for_inc(c, nCol) boardRotate[c].resize(nRow);
+    for_inc(r, nRow) {
+      for_inc(c, nCol) {
+        boardRotate[c][nRow - 1 - r] = a[r][c];
+      }
+    }
+    swap(nRow, nCol);
+    a = boardRotate;
+  }
+  
+  const string& operator[](int r) {
+    return a[r];
+  }
+};
 
-int getSide(int r, int c) {
-  if (r == 0 && c == 0)
-    return -1;
-  if (r == 0 && c == nCol - 1)
-    return -1;
-  if (r == nRow - 1 && c == 0)
-    return -1;
-  if (r == nRow - 1 && c == nCol - 1)
-    return -1;
-  if (r > 0 && r < nRow && c > 0 && c < nCol)
-    return -1;
-  if (r == 0)
-    return 0;
-  if (c == nCol - 1)
-    return 1;
-  if (r == nRow - 1)
-    return 2;
-  // c == 0
-  return 3;
+Board board;
+
+bool isSide(const Board &board, int r, int c) {
+  return board.isOnSide(r, c) && !board.isCorner(r, c);
 }
+
+// Sample: CF 293, div 2, problem F
 
 #define DDOWN 0
 #define DLEFT 1
 #define DRIGHT 2
-
 #define MAXN 2020
 int64 f[3][3][MAXN][MAXN];
-int side[MAXN][MAXN];
-
-vector<string> boardRotate;
-
-void rotateBoard() {
-  int nRowNew = nCol;
-  int nColNew = nRow;
-  boardRotate.resize(nRowNew);
-  for_inc(r, nRowNew) {
-    boardRotate[r].resize(nColNew);
-  }
-  for_inc(r, nRow) {
-    for_inc(c, nCol) {
-      boardRotate[c][nColNew - 1 - r] = board[r][c];
-    }
-  }
-  nRow = nRowNew;
-  nCol = nColNew;
-  board = boardRotate;
-}
+bool good[MAXN][MAXN];
 
 int main() {
-  //freopen("input4.txt", "r", stdin);
+#ifndef SUBMIT
+  freopen("input2.txt", "r", stdin);
+#endif
+  int nRow, nCol;
   cin >> nRow >> nCol;
-  board.resize(nRow);
-  for_inc(r, nRow) cin >> board[r];
-
+  board.init(nRow);
+  for_inc(r, nRow) {
+    string s;
+    cin >> s;
+    board.setRow(r, s);
+  }
+  
   int64 ret = 0, retDup = 0;
   for_inc(loop, 4) {
-    //for_inc(r, nRow) cout << board[r] << endl;
+    for_inc(r, nRow) LOG(1, board[r]);
     
     fill0(f);
-
-    for_inc(r, nRow) for_inc(c, nCol) side[r][c] = getSide(r, c);
-
+    
+    for_inc(r, nRow) for_inc(c, nCol) good[r][c] = !isSide(board, r, c) && board[r][c] == '.';
+    
     for_inc_range(c, 1, nCol - 2) {
       if (board[0][c] == '.') {
         f[2][DDOWN][0][c] = 1;
       }
     }
-
+    
     for_inc(r, nRow) {
       for_dec_range(k, 2, 0) {
         if (k > 0)
           for_inc(c, nCol) {
-            if (board[r][c] != '.')
-              continue;
-            if (side[r][c] != -1)
+            if (!good[r][c])
               continue;
             if (c + 1 < nCol) {
               f[k - 1][DRIGHT][r][c + 1] += f[k][DDOWN][r][c];
@@ -127,27 +145,21 @@ int main() {
           }
         if (k > 0)
           for_dec(c, nCol) {
-            if (board[r][c] != '.')
-              continue;
-            if (side[r][c] != -1)
+            if (!good[r][c])
               continue;
             if (c > 0) {
               f[k - 1][DLEFT][r][c - 1] += f[k][DDOWN][r][c];
             }
           }
         for_inc(c, nCol) {
-          if (board[r][c] != '.')
-            continue;
-          if (side[r][c] != -1)
+          if (!good[r][c])
             continue;
           if (c + 1 < nCol) {
             f[k][DRIGHT][r][c + 1] += f[k][DRIGHT][r][c];
           }
         }
         for_dec(c, nCol) {
-          if (board[r][c] != '.')
-            continue;
-          if (side[r][c] != -1)
+          if (!good[r][c])
             continue;
           if (c > 0) {
             f[k][DLEFT][r][c - 1] += f[k][DLEFT][r][c];
@@ -166,36 +178,36 @@ int main() {
         }
       }
     }
-
+    
     int64 retTopBot = 0;
-
+    
     for_inc_range(c, 1, nCol - 2) {
       if (board[nRow - 1][c] != '.')
         continue;
       for_inc_range(k, 0, 2) { retTopBot += f[k][DDOWN][nRow - 1][c]; }
     }
-
-    //cout << "Top bot: " << retTopBot << endl;
+    
+    LOG(1, "Top bot: " << retTopBot);
     retDup += retTopBot;
-
+    
     int64 retTopLeft = 0;
     for_inc_range(r, 1, nRow - 2) {
       if (board[r][0] != '.')
         continue;
       for_inc_range(k, 0, 2) { retTopLeft += f[k][DLEFT][r][0]; }
     }
-    //cout << "Top left: " << retTopLeft << endl;
+    LOG(1, "Top left: " << retTopLeft);
     retDup += retTopLeft;
-
+    
     int64 retTopRight = 0;
     for_inc_range(r, 1, nRow - 2) {
       if (board[r][nCol - 1] != '.')
         continue;
       for_inc_range(k, 0, 2) { retTopRight += f[k][DRIGHT][r][nCol - 1]; }
     }
-    //cout << "Top right: " << retTopRight << endl;
+    LOG(1, "Top right: " << retTopRight);
     retDup += retTopRight;
-
+    
     int64 retTopTop = 0;
     for_inc_range(r, 1, nRow - 2) {
       for_inc_range(c, 1, nCol - 1) {
@@ -209,11 +221,13 @@ int main() {
       }
     }
     ret += retTopTop;
-    //cout << "Top top: " << retTopTop << endl;
+    LOG(1, "Top top: " << retTopTop);
     
-    rotateBoard();
+    board.rotateRight();
+    nRow = board.numRow();
+    nCol = board.numCol();
   }
-
+  
   cout << ret + retDup / 2 << endl;
   return 0;
 }
