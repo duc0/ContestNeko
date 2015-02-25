@@ -1,10 +1,16 @@
+#define SUBMIT
+
+#ifdef SUBMIT
+#define LOGLEVEL 0
+#define NDEBUG
+#else
+#define LOGLEVEL 1
+#endif
+
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
-
-//#define NDEBUG
 #include <cassert>
-
 #include <iostream>
 #include <vector>
 #include <map>
@@ -19,6 +25,8 @@
 
 using namespace std;
 
+#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
 
@@ -32,8 +40,7 @@ using namespace std;
 #define MOD 1000000007
 int MODP(int64 x) {
   int r = x % MOD;
-  if (r < 0)
-    r += MOD;
+  if (r < 0) r += MOD;
   return r;
 }
 
@@ -69,8 +76,8 @@ public:
   void rotateRight() {
     vector<string> boardRotate;
     boardRotate.resize(nCol);
-    for_inc(r, nCol) {
-      boardRotate[r].resize(nRow);
+    for_inc(c, nCol) boardRotate[c].resize(nRow);
+    for_inc(r, nRow) {
       for_inc(c, nCol) {
         boardRotate[c][nRow - 1 - r] = a[r][c];
       }
@@ -100,7 +107,9 @@ int64 f[3][3][MAXN][MAXN];
 bool good[MAXN][MAXN];
 
 int main() {
-  //freopen("input4.txt", "r", stdin);
+#ifndef SUBMIT
+  freopen("input2.txt", "r", stdin);
+#endif
   int nRow, nCol;
   cin >> nRow >> nCol;
   board.init(nRow);
@@ -112,7 +121,7 @@ int main() {
   
   int64 ret = 0, retDup = 0;
   for_inc(loop, 4) {
-    //for_inc(r, nRow) cout << board[r] << endl;
+    for_inc(r, nRow) LOG(1, board[r]);
     
     fill0(f);
     
@@ -178,7 +187,7 @@ int main() {
       for_inc_range(k, 0, 2) { retTopBot += f[k][DDOWN][nRow - 1][c]; }
     }
     
-    //cout << "Top bot: " << retTopBot << endl;
+    LOG(1, "Top bot: " << retTopBot);
     retDup += retTopBot;
     
     int64 retTopLeft = 0;
@@ -187,7 +196,7 @@ int main() {
         continue;
       for_inc_range(k, 0, 2) { retTopLeft += f[k][DLEFT][r][0]; }
     }
-    //cout << "Top left: " << retTopLeft << endl;
+    LOG(1, "Top left: " << retTopLeft);
     retDup += retTopLeft;
     
     int64 retTopRight = 0;
@@ -196,7 +205,7 @@ int main() {
         continue;
       for_inc_range(k, 0, 2) { retTopRight += f[k][DRIGHT][r][nCol - 1]; }
     }
-    //cout << "Top right: " << retTopRight << endl;
+    LOG(1, "Top right: " << retTopRight);
     retDup += retTopRight;
     
     int64 retTopTop = 0;
@@ -212,9 +221,11 @@ int main() {
       }
     }
     ret += retTopTop;
-    //cout << "Top top: " << retTopTop << endl;
+    LOG(1, "Top top: " << retTopTop);
     
     board.rotateRight();
+    nRow = board.numRow();
+    nCol = board.numCol();
   }
   
   cout << ret + retDup / 2 << endl;

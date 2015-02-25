@@ -1,10 +1,16 @@
+#define SUBMIT
+
+#ifdef SUBMIT
+#define LOGLEVEL 0
+#define NDEBUG
+#else
+#define LOGLEVEL 1
+#endif
+
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
-
-//#define NDEBUG
 #include <cassert>
-
 #include <iostream>
 #include <vector>
 #include <map>
@@ -19,6 +25,8 @@
 
 using namespace std;
 
+#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
 
@@ -29,6 +37,12 @@ using namespace std;
 
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF 2E9L
+#define MOD 1000000007
+int MODP(int64 x) {
+  int r = x % MOD;
+  if (r < 0) r += MOD;
+  return r;
+}
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
@@ -36,6 +50,8 @@ void testGen() {
 }
 
 int main() {
-  // freopen("input1.txt", "r", stdin);
+#ifndef SUBMIT
+  freopen("input1.txt", "r", stdin);
+#endif
   return 0;
 }

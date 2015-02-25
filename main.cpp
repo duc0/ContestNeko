@@ -1,10 +1,16 @@
+#define SUBMIT
+
+#ifdef SUBMIT
+#define LOGLEVEL 0
+#define NDEBUG
+#else
+#define LOGLEVEL 1
+#endif
+
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
-
-//#define NDEBUG
 #include <cassert>
-
 #include <iostream>
 #include <vector>
 #include <map>
@@ -19,7 +25,6 @@
 
 using namespace std;
 
-#define LOGLEVEL 0
 #define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
 
 #define int64 long long
@@ -45,6 +50,8 @@ void testGen() {
 }
 
 int main() {
-  // freopen("input1.txt", "r", stdin);
+#ifndef SUBMIT
+  freopen("input1.txt", "r", stdin);
+#endif
   return 0;
 }
