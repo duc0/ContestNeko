@@ -36,7 +36,8 @@ using namespace std;
 #define for_dec_range(i, x, y) for (auto i = x; i >= y; --i)
 
 #define fill0(x) memset(x, 0, sizeof(x))
-#define INT_INF 2E9L
+#define INT_INF ((int)2E9L)
+#define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
 int MODP(int64 x) {
   int r = x % MOD;

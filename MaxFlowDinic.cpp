@@ -68,11 +68,13 @@ public:
   Network(int n) { init(n); }
 };
 
-template <class T, T INF> class Dinic {
+template <class T> class Dinic {
   Network<T> &g;
   int s, t;
   vector<T> dist;
   vector<bool> block;
+  const T INF = numeric_limits<T>::max() / 2;
+  
   bool computeDist() {
     queue<int> q;
     q.push(t);
