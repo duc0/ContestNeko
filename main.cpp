@@ -50,8 +50,12 @@ void testGen() {
   fclose(stdout);
 }
 
-template<class T, class Q> using TreeCombineFunction = function<Q(const Q&, const Q&, const Q&, int, int, int)>;
-template<class T, class Q> using TreeLeafFunction = function<Q(const T&, int, int)>;
+template <class T, class Q>
+using TreeMergeFunction = function<Q(const Q &, const Q &)>;
+template <class T, class Q>
+using TreeUpdateLeafFunction = function<Q(const Q &, const T &, const T &, int, int)>;
+template <class T, class Q>
+using TreeSplitFunction = function<void(Q &, Q &, Q &, int, int, int, int)>;
 
 template <class T, class Q> struct SegmentTree {
   struct TreeNode {
@@ -61,77 +65,81 @@ template <class T, class Q> struct SegmentTree {
     int leftChild = -1,
     rightChild =
     -1; // index of the left and right children, -1 for no child
-    void init(T value, Q query) {
-      this->value = value;
-      this->query = query;
-      this->leftChild = -1;
-      this->rightChild = -1;
-      this->leaf = true;
-    }
-    TreeNode(T value, Q query) {
-      init(value, query);
-    }
   };
   
   vector<TreeNode> node;
-  const TreeCombineFunction<T,Q> combine;
-  const TreeLeafFunction<T,Q> initial;
+  const TreeMergeFunction<T, Q> merge;
+  const TreeUpdateLeafFunction<T, Q> updateLeaf;
+  const TreeSplitFunction<T, Q> split;
   const T defaultValue;
   
   int addNode(int l, int r) {
-    TreeNode newNode(defaultValue, initial(defaultValue, l, r));
+    TreeNode newNode;
+    newNode.value = defaultValue;
     node.push_back(newNode);
     return (int)node.size() - 1;
   }
   
+  void splitNode(int p, int l, int r) {
+    assert(node[p].leaf);
+    int m = (l + r) / 2;
+    node[p].leaf = false;
+    if (node[p].leftChild == -1) {
+      int c = addNode(l, m);
+      node[p].leftChild = c;
+      c = addNode(m + 1, r);
+      node[p].rightChild = c;
+    }
+    int lc = node[p].leftChild;
+    int rc = node[p].rightChild;
+    node[lc].leaf = true;
+    node[rc].leaf = true;
+    node[lc].value = node[p].value;
+    node[rc].value = node[p].value;
+    split(node[p].query, node[lc].query, node[rc].query, node[p].value, l, m, r);
+  }
+  
   void update(int p, int l, int r, int i, int j, const T &v) {
-    if (j < l || i > r) return;
+    if (j < l || i > r)
+      return;
     int m = (l + r) / 2;
     if (i <= l && r <= j) { // [i,j] covers [l,r]
       if (node[p].leaf) {
-        node[p].init(v, initial(v, l, r));
+        node[p].query = updateLeaf(node[p].query, node[p].value, v, l, r);
+        node[p].value = v;
         return;
       } else {
         node[p].leaf = true;
+        node[p].value = v;
       }
     } else if (node[p].leaf) { // [i,j] intersects [l, r]
-      node[p].leaf = false;
-      if (node[p].leftChild == -1) {
-        int c = addNode(l, m);
-        node[p].leftChild = c;
-        node[c].init(node[p].value, initial(node[p].value, l, m));
-        assert(node[p].rightChild == -1);
-        c = addNode(m + 1, r);
-        node[p].rightChild = c;
-        node[c].init(node[p].value, initial(node[p].value, m + 1, r));
-      }
+      splitNode(p, l, r);
     }
-    assert(node[p].leftChild != -1);
-    assert(node[p].rightChild != -1);
     update(node[p].leftChild, l, m, i, j, v);
     update(node[p].rightChild, m + 1, r, i, j, v);
-    node[p].query = combine(node[p].query, node[node[p].leftChild].query,
-                            node[node[p].rightChild].query, l, m, r);
+    node[p].query = merge(node[node[p].leftChild].query,
+                          node[node[p].rightChild].query);
   }
   
   Q query(int p, int l, int r, int i, int j) {
     if (i <= l && r <= j) { // [i,j] contains [l,r]
       return node[p].query;
     }
-    if (node[p].leaf && node[p].leftChild == -1) {
-      return initial(node[p].value, max(i, l), min(j, r));
+    if (node[p].leaf) { // [i,j] intersects [l, r]
+      splitNode(p, l, r);
     }
-    assert(node[p].leftChild != -1);
-    assert(node[p].rightChild != -1);
     int m = (l + r) / 2;
+    Q ret;
     if (j <= m) {
-      return query(node[p].leftChild, l, m, i, j);
+      ret = query(node[p].leftChild, l, m, i, j);
+    } else if (i >= m + 1) {
+      ret = query(node[p].rightChild, m + 1, r, i, j);
+    } else {
+      ret = merge(query(node[p].leftChild, l, m, i, j), query(node[p].rightChild, m + 1, r, i, j));
     }
-    if (i >= m + 1) {
-      return query(node[p].rightChild, m + 1, r, i, j);
-    }
-    return combine(node[p].query, query(node[p].leftChild, l, m, i, j),
-                   query(node[p].rightChild, m + 1, r, i, j), l, m, r);
+    node[p].query = merge(node[node[p].leftChild].query,
+                          node[node[p].rightChild].query);
+    return ret;
   }
   
   int minIndex, maxIndex;
@@ -139,10 +147,11 @@ template <class T, class Q> struct SegmentTree {
   
 public:
   SegmentTree(int minIndex, int maxIndex, T defaultValue,
-              const TreeCombineFunction<T,Q> &combine,
-              const TreeLeafFunction<T,Q> &initial)
-  : combine(combine), initial(initial), defaultValue(defaultValue),
-  minIndex(minIndex), maxIndex(maxIndex) {
+              const TreeMergeFunction<T, Q> &merge,
+              const TreeUpdateLeafFunction<T, Q> &updateLeaf,
+              const TreeSplitFunction<T, Q> &split)
+  : merge(merge), updateLeaf(updateLeaf), split(split),
+  defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
     root = addNode(minIndex, maxIndex);
   }
   
@@ -162,24 +171,33 @@ struct gss {
   int s, l, r, k; // s: sum, l: sum from left, r: sum from right, k: gss result
 };
 
+gss initial(int v, int l, int r) {
+  return  gss{v * (r - l + 1), v > 0 ? v * (r - l + 1) : v,
+    v > 0 ? v * (r - l + 1) : v, v > 0 ? v * (r - l + 1) : v};
+}
+
 int main() {
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
+  freopen("output2.txt", "w", stdout);
 #endif
   
   int m, n, x, a, b;
   scanf("%d", &n);
   
-  auto combine = [](const gss &cur, const gss &a, const gss &b, int leftIndex, int midIndex, int rightIndex) {
+  auto merge = [](const gss &a, const gss &b) {
     return gss{a.s + b.s, max(a.l, a.s + b.l), max(a.r + b.s, b.r),
       max(max(a.k, b.k), a.r + b.l)};
   };
-  auto initial = [](int v, int l, int r) {
-    return gss{v * (r - l + 1), v > 0 ? v * (r - l + 1) : v,
-      v > 0 ? v * (r - l + 1) : v, v > 0 ? v * (r - l + 1) : v};
+  auto updateLeaf = [](const gss &a, int oldV, int v, int l, int r) {
+    return initial(v, l, r);
+  };
+  auto split = [](gss &cur, gss &lNode, gss &rNode, int v, int leftIndex, int midIndex, int rightIndex) {
+    lNode = initial(v, leftIndex, midIndex);
+    rNode = initial(v, midIndex + 1, rightIndex);
   };
   
-  SegmentTree<int, gss> t(1, n, 0, combine, initial);
+  SegmentTree<int, gss> t(1, n, 0, merge, updateLeaf, split);
   for (int i = 1; i <= n; ++i) {
     scanf("%d", &x);
     t.update(i, i, x);
