@@ -1,10 +1,16 @@
+#define SUBMIT
+
+#ifdef SUBMIT
+#define LOGLEVEL 0
+#define NDEBUG
+#else
+#define LOGLEVEL 1
+#endif
+
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
-
-//#define NDEBUG
 #include <cassert>
-
 #include <iostream>
 #include <vector>
 #include <map>
@@ -16,9 +22,12 @@
 #include <queue>
 #include <stack>
 #include <functional>
-#include <deque>
 
 using namespace std;
+
+#define LOG(l, x)                                                              \
+if (l <= LOGLEVEL)                                                           \
+cout << x << endl
 
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
@@ -29,12 +38,27 @@ using namespace std;
 #define for_dec_range(i, x, y) for (auto i = x; i >= y; --i)
 
 #define fill0(x) memset(x, 0, sizeof(x))
-#define INT_INF 2E9L
+#define INT_INF ((int)2E9L)
+#define INT64_INF ((int64)1E18L)
+#define MOD 1000000007
+int MODP(int64 x) {
+  int r = x % MOD;
+  if (r < 0)
+    r += MOD;
+  return r;
+}
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
+
+template <class T, class Q>
+using TreeMergeFunction = function<Q(const Q &, const Q &)>;
+template <class T, class Q>
+using TreeUpdateLeafFunction = function<Q(const Q &, const T &, const T &, int, int)>;
+template <class T, class Q>
+using TreeSplitFunction = function<void(Q &, Q &, Q &, T, int, int, int)>;
 
 template <class T, class Q> struct SegmentTree {
   struct TreeNode {
@@ -44,67 +68,81 @@ template <class T, class Q> struct SegmentTree {
     int leftChild = -1,
     rightChild =
     -1; // index of the left and right children, -1 for no child
-    TreeNode(T value, Q query) : value(value), query(query) {}
   };
   
   vector<TreeNode> node;
-  const function<Q(Q, Q)> combine;
-  const function<Q(T, int, int)> initial;
+  const TreeMergeFunction<T, Q> merge;
+  const TreeUpdateLeafFunction<T, Q> updateLeaf;
+  const TreeSplitFunction<T, Q> split;
   const T defaultValue;
   
   int addNode(int l, int r) {
-    TreeNode newNode(defaultValue, initial(defaultValue, l, r));
+    TreeNode newNode;
+    newNode.value = defaultValue;
     node.push_back(newNode);
     return (int)node.size() - 1;
   }
   
-  void update(int p, int l, int r, int i, int j, const T &v) {
-    if (i <= l && r <= j) { // [i,j] covers [l,r]
-      node[p] = TreeNode(v, initial(v, l, r));
-    } else if (i <= r && l <= j) { // [i,j] intersects [l,r]
-      int m = (l + r) / 2;
-      if (node[p].leaf) {
-        node[p].leaf = false;
-        if (node[p].leftChild == -1) {
-          int c = addNode(l, m);
-          node[p].leftChild = c;
-        }
-        if (node[p].rightChild == -1) {
-          int c = addNode(m + 1, r);
-          node[p].rightChild = c;
-        }
-        // Propagate p's value to its children
-        node[node[p].leftChild] =
-        TreeNode(node[p].value, initial(node[p].value, l, m));
-        node[node[p].rightChild] =
-        TreeNode(node[p].value, initial(node[p].value, m + 1, r));
-      }
-      update(node[p].leftChild, l, m, i, j, v);
-      update(node[p].rightChild, m + 1, r, i, j, v);
-      node[p].query = combine(node[node[p].leftChild].query,
-                              node[node[p].rightChild].query);
+  void splitNode(int p, int l, int r) {
+    assert(node[p].leaf);
+    int m = (l + r) / 2;
+    node[p].leaf = false;
+    if (node[p].leftChild == -1) {
+      int c = addNode(l, m);
+      node[p].leftChild = c;
+      c = addNode(m + 1, r);
+      node[p].rightChild = c;
     }
+    int lc = node[p].leftChild;
+    int rc = node[p].rightChild;
+    node[lc].leaf = true;
+    node[rc].leaf = true;
+    node[lc].value = node[p].value;
+    node[rc].value = node[p].value;
+    split(node[p].query, node[lc].query, node[rc].query, node[p].value, l, m, r);
+  }
+  
+  void update(int p, int l, int r, int i, int j, const T &v) {
+    if (j < l || i > r)
+      return;
+    int m = (l + r) / 2;
+    if (i <= l && r <= j) { // [i,j] covers [l,r]
+      if (node[p].leaf) {
+        node[p].query = updateLeaf(node[p].query, node[p].value, v, l, r);
+        node[p].value = v;
+        return;
+      } else {
+        node[p].leaf = true;
+        node[p].value = v;
+      }
+    } else if (node[p].leaf) { // [i,j] intersects [l, r]
+      splitNode(p, l, r);
+    }
+    update(node[p].leftChild, l, m, i, j, v);
+    update(node[p].rightChild, m + 1, r, i, j, v);
+    node[p].query = merge(node[node[p].leftChild].query,
+                          node[node[p].rightChild].query);
   }
   
   Q query(int p, int l, int r, int i, int j) {
-    if (j < l || i > r) { // [i,j] does not intersect [l,r]
-      return initial(defaultValue, l, r);
-    }
-    if (i <= l && r <= j) { // [i,j] intersects [l,r]
+    if (i <= l && r <= j) { // [i,j] contains [l,r]
       return node[p].query;
     }
-    if (node[p].leaf) {
-      return initial(node[p].value, max(i, l), min(j, r));
+    if (node[p].leaf) { // [i,j] intersects [l, r]
+      splitNode(p, l, r);
     }
     int m = (l + r) / 2;
+    Q ret;
     if (j <= m) {
-      return query(node[p].leftChild, l, m, i, j);
+      ret = query(node[p].leftChild, l, m, i, j);
+    } else if (i >= m + 1) {
+      ret = query(node[p].rightChild, m + 1, r, i, j);
+    } else {
+      ret = merge(query(node[p].leftChild, l, m, i, j), query(node[p].rightChild, m + 1, r, i, j));
     }
-    if (i >= m + 1) {
-      return query(node[p].rightChild, m + 1, r, i, j);
-    }
-    return combine(query(node[p].leftChild, l, m, i, j),
-                   query(node[p].rightChild, m + 1, r, i, j));
+    node[p].query = merge(node[node[p].leftChild].query,
+                          node[node[p].rightChild].query);
+    return ret;
   }
   
   int minIndex, maxIndex;
@@ -112,10 +150,11 @@ template <class T, class Q> struct SegmentTree {
   
 public:
   SegmentTree(int minIndex, int maxIndex, T defaultValue,
-              const function<Q(Q, Q)> &combine,
-              const function<Q(T, int, int)> &initial)
-  : combine(combine), initial(initial), defaultValue(defaultValue),
-  minIndex(minIndex), maxIndex(maxIndex) {
+              const TreeMergeFunction<T, Q> &merge,
+              const TreeUpdateLeafFunction<T, Q> &updateLeaf,
+              const TreeSplitFunction<T, Q> &split)
+  : merge(merge), updateLeaf(updateLeaf), split(split),
+  defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
     root = addNode(minIndex, maxIndex);
   }
   
@@ -129,36 +168,65 @@ public:
   Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
 };
 
-// Sample: SPOJ_GSS
+// Sample: CF254_C
 
-struct gss {
-  int s, l, r, k; // s: sum, l: sum from left, r: sum from right, k: gss result
+struct ColorsQuery {
+  // Sum of colourfulness
+  int64 sum;
+  
+  // Lazy propagation of colourfulness
+  int64 delta;
+  
+  ColorsQuery() {
+    sum = 0;
+    delta = 0;
+  }
+  
+  ColorsQuery(int64 sum, int64 delta) {
+    this->sum = sum;
+    this->delta = delta;
+  }
 };
 
 int main() {
-  // freopen("input1.txt", "r", stdin);
+#ifndef SUBMIT
+  freopen("input4.txt", "r", stdin);
+#endif
   
-  int m, n, x, a, b;
-  scanf("%d", &n);
-  
-  auto combine = [](gss a, gss b) {
-    return gss{a.s + b.s, max(a.l, a.s + b.l), max(a.r + b.s, b.r),
-      max(max(a.k, b.k), a.r + b.l)};
-  };
-  auto initial = [](int v, int l, int r) {
-    return gss{v * (r - l + 1), v > 0 ? v * (r - l + 1) : v,
-      v > 0 ? v * (r - l + 1) : v, v > 0 ? v * (r - l + 1) : v};
+  int n, q, t, l, r, x;
+  cin >> n >> q;
+  auto merge = [](const ColorsQuery &lNode, const ColorsQuery &rNode) {
+    return ColorsQuery(lNode.sum + rNode.sum, 0);
   };
   
-  SegmentTree<int, gss> t(1, n, 0, combine, initial);
-  for (int i = 1; i <= n; ++i) {
-    scanf("%d", &x);
-    t.update(i, i, x);
+  auto leaf = [](const ColorsQuery &cur, const int &oldV, const int &newV,
+                 int lIndex, int rIndex) {
+    return ColorsQuery(cur.sum + 1LL * abs(newV - oldV) * (rIndex - lIndex + 1),
+                       cur.delta + 1LL * abs(newV - oldV));
+  };
+  
+  auto split = [](ColorsQuery &cur, ColorsQuery &lNode, ColorsQuery &rNode, int v,
+                  int leftIndex, int midIndex, int rightIndex) {
+    lNode.sum += cur.delta * (midIndex - leftIndex + 1);
+    lNode.delta += cur.delta;
+    rNode.sum += cur.delta * (rightIndex - midIndex);
+    rNode.delta += cur.delta;
+    cur.delta = 0;
+  };
+  
+  SegmentTree<int64, ColorsQuery> tree(1, n, 0, merge, leaf, split);
+  for_inc_range(i, 1, n) { tree.update(i, i, i); }
+  repeat(q) {
+    cin >> t;
+    if (t == 1) {
+      cin >> l >> r >> x;
+      tree.update(l, r, x);
+    } else {
+      cin >> l >> r;
+      int64 exclude = (int64)(r - l + 1) * (r + l) / 2;
+      cout << tree.query(l, r).sum - exclude << endl;
+    }
   }
-  scanf("%d", &m);
-  for (int i = 0; i < m; ++i) {
-    scanf("%d%d", &a, &b);
-    printf("%d\n", t.query(a, b).k);
-  }
+  
   return 0;
 }
