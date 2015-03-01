@@ -159,6 +159,18 @@ public:
     }
   }
   
+  // Get the kth ancestor of k, t = 0 .. depth[u]
+  int getAncestor(int u, int k) {
+    assert(0 <= k && k <= t.getDepth(u));
+    if (k == 0) {
+      return u;
+    }
+    int b = 0;
+    while ((1 << b) <= k) ++b;
+    --b;
+    return getAncestor(anc[u][b].first, k - (1 << b));
+  }
+  
   pair<int, T> getLCA(int u, int v) {
     if (t.getDepth(u) > t.getDepth(v)) {
       swap(u, v);
