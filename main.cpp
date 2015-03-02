@@ -52,34 +52,61 @@ void testGen() {
 }
 
 template<class T> class CommonSubsequence {
-  const vector<T> &seq1, &seq2;
+  vector<int> seq1, seq2;
   int l1, l2;
   
   vector<vector<int>> pos; // pos[l][i] = min{j, lcs(i, j) = l, or l2 if not exists}
 public:
-  CommonSubsequence(const vector<T> &seq1, const vector<T> &seq2, int upper): seq1(seq1), seq2(seq2) {
+  CommonSubsequence(const vector<T> &s1, const vector<T> &s2, int upper) {
+    // Discretize
+    unordered_map<T, int> valueMap;
+    int idx = 0;
+    for (auto &x: s1) {
+      if (!valueMap.count(x)) {
+        valueMap[x] = idx;
+        idx++;
+      }
+    }
+    for (auto &x: s2) {
+      if (!valueMap.count(x)) {
+        valueMap[x] = idx;
+        idx++;
+      }
+    }
+    seq1 = s1;
+    seq2 = s2;
     l1 = (int) seq1.size();
     l2 = (int) seq2.size();
+    for_inc(i, l1) {
+      seq1[i] = valueMap[seq1[i]];
+    }
+    for_inc(i, l2) {
+      seq2[i] = valueMap[seq2[i]];
+    }
     pos.resize(upper + 1);
     for (auto &v: pos) {
       v.resize(l1);
     }
     
-    unordered_map<T, int> minPos;
-    for_inc(j, l2) {
-      if (!minPos.count(seq2[j])) {
-        minPos[seq2[j]] = j;
-      }
+    vector<int> minPos;
+    int numValues = (int)valueMap.size();
+    minPos.resize(valueMap.size());
+    
+    for_inc(x, numValues) {
+      minPos[x] = l2;
+    }
+    for_dec(j, l2) {
+      minPos[seq2[j]] = j;
     }
     
-    if (minPos.count(seq1[0])) {
+    if (minPos[seq1[0]] < l2) {
       pos[1][0] = minPos[seq1[0]];
     } else {
       pos[1][0] = l2;
     }
-    for_inc_range(i, 1, l1) {
+    for_inc_range(i, 1, l1 - 1) {
       pos[1][i] = pos[1][i - 1];
-      if (minPos.count(seq1[i])) {
+      if (minPos[seq1[i]] < l2) {
         pos[1][i] = min(pos[1][i], minPos[seq1[i]]);
       }
     }
@@ -88,7 +115,9 @@ public:
       pos[l][0] = l2;
       
       int leftIndex = l2;
-      minPos.clear();
+      for_inc(x, numValues) {
+        minPos[x] = l2;
+      }
       
       for_inc_range(i, 1, l1 - 1) {
         pos[l][i] = pos[l][i - 1];
@@ -98,7 +127,7 @@ public:
             minPos[seq2[j]] = j;
           }
           leftIndex = newLeftIndex;
-          if (minPos.count(seq1[i])) {
+          if (minPos[seq1[i]] < l2) {
             LOG(1, "Update pos " << l << ", " << i << " with " << minPos[seq1[i]] << ", cur: " << pos[l][i]);
             pos[l][i] = min(pos[l][i], minPos[seq1[i]]);
           }
