@@ -46,7 +46,7 @@ int dy[] = {1, 0, -1, 0};
 
 int n;
 vector<pair<int, int>> points, origPoints;
-bool visit[10][10];
+bool visit[10][20];
 int64 best = INT64_INF;
 
 int64 dist(pair<int, int> a, pair<int, int> b) {
@@ -65,24 +65,26 @@ void updateBest() {
   
   vector<pair<int, int>> translatedPoints(n);
   for (int rootx = 0; rootx < n; ++rootx) for (int rooty = 0; rooty < n; ++rooty) {
-    for (int i = 0; i < n; ++i) {
-      translatedPoints[i] = make_pair(
-        origPoints[rootx].first + (points[i].first - points[rootx].first),
-        origPoints[rooty].second + (points[i].second - points[rooty].second)
-      );
-    }
-    
-    vector<int> perm(n);
-    for (int i = 0; i < n; ++i) {
-      perm[i] = i;
-    }
-    do {
-      int64 ret = 0;
+    for (int k = 0; k < n; ++k) {
       for (int i = 0; i < n; ++i) {
-        ret += dist(origPoints[i], translatedPoints[perm[i]]);
+        translatedPoints[i] = make_pair(
+          origPoints[rootx].first + (points[i].first - points[k].first),
+          origPoints[rooty].second + (points[i].second - points[k].second)
+        );
       }
-      best = min(best, ret);
-    } while (next_permutation(perm.begin(), perm.end()));
+      
+      vector<int> perm(n);
+      for (int i = 0; i < n; ++i) {
+        perm[i] = i;
+      }
+      do {
+        int64 ret = 0;
+        for (int i = 0; i < n; ++i) {
+          ret += dist(origPoints[i], translatedPoints[perm[i]]);
+        }
+        best = min(best, ret);
+      } while (next_permutation(perm.begin(), perm.end()));
+    }
   }
 }
 
@@ -97,12 +99,12 @@ void tryBuild(int k) {
     for (int i = 0; i < 4; ++i) {
       int x2 = x + dx[i];
       int y2 = y + dy[i];
-      if (x2 >= 0 && y2 >= 0 && !visit[x2][y2]) {
+      if (!(x2 < 0 || (x2 == 0 && y2 < 0)) && !visit[x2][10 + y2]) {
         points.push_back(make_pair(x2, y2));
-        visit[x2][y2] = true;
+        visit[x2][10 + y2] = true;
         tryBuild(k + 1);
         points.pop_back();
-        visit[x2][y2] = false;
+        visit[x2][10 + y2] = false;
       }
     }
   }
