@@ -54,5 +54,24 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  int val[26];
+  for_inc(c, 26) {
+    cin >> val[c];
+  }
+  string s;
+  cin >> s;
+  int n = (int) s.length();
+  vector<int> a(n + 1);
+  a[0] = 0;
+  for_inc_range(i, 1, n) {
+    a[i] = a[i - 1] + val[s[i - 1] - 'a'];
+  }
+  
+  map<pair<int64, char>, int> s2;
+  
+  for_inc_range(i, 0, n) {
+    s1[make_pair( )];
+  }
+  
   return 0;
 }
