@@ -97,9 +97,8 @@ void testGen() {
 }
 
 int n;
-map<int64, vector<Point2D<int64>>> byX;
-map<int64, vector<Point2D<int64>>> byY;
-unordered_set<Point2D<int64>> pointsSet;
+map<int64, unordered_set<int64>> byX;
+map<int64, unordered_set<int64>> byY;
 
 vector<Point2D<int64>> points;
 
@@ -116,9 +115,8 @@ int main() {
     cin >> x >> y;
     auto p = makePoint(x, y);
     points.push_back(p);
-    byX[x].push_back(p);
-    byY[y].push_back(p);
-    pointsSet.insert(p);
+    byX[x].insert(y);
+    byY[y].insert(x);
   }
   
   int ret = 0;
@@ -128,24 +126,30 @@ int main() {
     
     if (xPoints.size() < yPoints.size()) {
       cnt += xPoints.size();
-      for (auto &px : xPoints) if (px.y > p.y) {
-        int64 side = px.y - p.y;
-        if (pointsSet.find(makePoint(p.x + side, p.y)) != pointsSet.end() && pointsSet.find(makePoint(p.x + side, p.y + side)) != pointsSet.end()) {
-          ++ret;
+      for (auto &y2 : xPoints) if (y2 > p.y) {
+        int64 side = y2 - p.y;
+        if (yPoints.find(p.x + side) != yPoints.end()) {
+          auto x2Points = byX.find(p.x + side);
+          if (x2Points != byX.end() && (x2Points->second).find(p.y + side) != (x2Points->second).end()) {
+            ++ret;
+          }
         }
       }
     } else {
       cnt += yPoints.size();
-      for (auto &py : yPoints) if (py.x > p.x) {
-        int64 side = py.x - p.x;
-        if (pointsSet.find(makePoint(p.x, p.y + side)) != pointsSet.end() && pointsSet.find(makePoint(p.x + side, p.y + side)) != pointsSet.end()) {
-          ++ret;
+      for (auto &x2 : yPoints) if (x2 > p.x) {
+        int64 side = x2 - p.x;
+        if (xPoints.find(p.y + side) != xPoints.end()) {
+          auto x2Points = byX.find(x2);
+          if (x2Points != byX.end() && (x2Points->second).find(p.y + side) != (x2Points->second).end()) {
+            ++ret;
+          }
         }
       }
     }
   }
   
-  cout << cnt << endl;
+  //cout << cnt << endl;
   cout << ret << endl;
   return 0;
 }
