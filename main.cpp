@@ -51,13 +51,15 @@ void testGen() {
   fclose(stdout);
 }
 
-template<class T> class CommonSubsequence {
+// Compute LCS up ot length L of two sequences in O(L*(l1 + l2)) where l1, l2
+// are the length of the two sequences
+template<class T> class LongestCommonSubsequence {
   vector<int> seq1, seq2;
-  int l1, l2;
+  int l1, l2, upper;
   
   vector<vector<int>> pos; // pos[l][i] = min{j, lcs(i, j) = l, or l2 if not exists}
 public:
-  CommonSubsequence(const vector<T> &s1, const vector<T> &s2, int upper) {
+  LongestCommonSubsequence(const vector<T> &s1, const vector<T> &s2, int upper) {
     // Discretize
     unordered_map<T, int> valueMap;
     int idx = 0;
@@ -77,6 +79,10 @@ public:
     seq2 = s2;
     l1 = (int) seq1.size();
     l2 = (int) seq2.size();
+    upper=min(upper, l1);
+    upper=min(upper, l2);
+    this->upper = upper;
+    
     for_inc(i, l1) {
       seq1[i] = valueMap[seq1[i]];
     }
@@ -128,7 +134,6 @@ public:
           }
           leftIndex = newLeftIndex;
           if (minPos[seq1[i]] < l2) {
-            LOG(1, "Update pos " << l << ", " << i << " with " << minPos[seq1[i]] << ", cur: " << pos[l][i]);
             pos[l][i] = min(pos[l][i], minPos[seq1[i]]);
           }
           
@@ -139,12 +144,14 @@ public:
   }
   
   // Is there a j so that {lcs(i, j) = l}
-  bool hasCommonSubsequence(int i, int l) {
+  bool hasLCS(int i, int l) {
+    if (l > upper) return false;
     return pos[l][i] != l2;
   }
   
   // Return min{j, lcs(i, j) = l}
-  int getPos(int i, int l) {
+  int getMinPos(int i, int l) {
+    assert(hasLCS(i, l));
     return pos[l][i];
   }
 };
@@ -167,14 +174,14 @@ int main() {
     s2.push_back(x);
   }
   int maxCS = s / e;
-  CommonSubsequence<int> cs(s1, s2, maxCS);
+  LongestCommonSubsequence<int> lcs(s1, s2, maxCS);
   
   int best = 0;
   for_inc_range(l, 1, maxCS) {
     int remainingEnergy = s - l * e;
     for_inc(i, l1) {
-      if (cs.hasCommonSubsequence(i, l)) {
-        int j = cs.getPos(i, l);
+      if (lcs.hasLCS(i, l)) {
+        int j = lcs.getMinPos(i, l);
         if (i + 1 + j + 1 <= remainingEnergy) {
           best = l;
           break;
