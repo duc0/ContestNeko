@@ -122,7 +122,7 @@ void testGen() {
 
 int main() {
 #ifndef SUBMIT
-  freopen("input2.txt", "r", stdin);
+  freopen("input5.txt", "r", stdin);
 #endif
   
   int n, k;
@@ -131,15 +131,19 @@ int main() {
   cin >> s;
   
   vector<ModInt<int, MOD>> combKMinus1(n + 1);
-  combKMinus1[k - 1] = 1;
-  for_inc_range(i, k, n) {
-    combKMinus1[i] = combKMinus1[i - 1] * i / (i - (k - 1));
+  if (k >= 1) {
+    combKMinus1[k - 1] = 1;
+    for_inc_range(i, k, n) {
+      combKMinus1[i] = combKMinus1[i - 1] * i / (i - (k - 1));
+    }
   }
 
   vector<ModInt<int, MOD>> combKMinus2(n + 1);
-  combKMinus2[k - 2] = 1;
-  for_inc_range(i, k - 1, n) {
-    combKMinus2[i] = combKMinus2[i - 1] * i / (i - (k - 2));
+  if (k >= 2) {
+    combKMinus2[k - 2] = 1;
+    for_inc_range(i, k - 1, n) {
+      combKMinus2[i] = combKMinus2[i - 1] * i / (i - (k - 2));
+    }
   }
   
   vector<ModInt<int, MOD>> tenPower(n + 1);
@@ -150,16 +154,20 @@ int main() {
 
   ModInt<int, MOD> begin, end, ret, sum, last, sum1;
   
-  for_inc_range(l, 1, n) {
-    begin = begin * 10 + s[l - 1] - '0';
-    if (l == n) {
-      if (k == 0) {
-        cout << begin << endl;
-      } else {
-        break;
-      }
+  if (k == 0) {
+    begin = 0;
+    for_inc_range(l, 1, n) {
+      begin = begin * 10 + s[l - 1] - '0';
     }
-    LOG(2, "Begin: " << begin);
+    cout << begin << endl;
+    return 0;
+  }
+  for_inc_range(l, 1, n - 1) {
+    begin = begin * 10 + s[l - 1] - '0';
+    if (n - l - 1 < k - 1) {
+      break;
+    }
+    LOG(1, "Begin: " << begin);
     LOG(2, "Comb: " << k - 1 << " " << n - l - 1 << " " << combKMinus1[n - l - 1]);
     ret = ret + begin * combKMinus1[n - l - 1];
   }
@@ -168,25 +176,34 @@ int main() {
   end = 0;
   for_inc_range(l, 1, n - 1) {
     end = end + tenPower[l - 1] * (s[n - l] - '0');
-    LOG(1, "End: " << end);
+    if (n - l - 1 < k - 1) {
+      break;
+    }
+    LOG(1, "End: " << end);    
     ret = ret + end * combKMinus1[n - l - 1];
   }
   LOG(1, "End val: " << ret);
   
-  sum = 0;
-  last = s[n - 1 - 1] - '0';
-  for_inc_range(i, 2, n - 1) {
-    sum = sum + s[i - 1] - '0';
-  }
-  sum1 = sum;
-  LOG(1, "Sum : " << sum);
-  ret = ret + sum * combKMinus2[n - 3];
-  for_inc_range(l, 2, n - 2) {
-    sum = sum - last;
-    sum = sum * 10;
-    sum1 = sum1 - (s[l - 1] - '0');
-    sum = sum + sum1;
-    ret = ret + sum * combKMinus2[n - l - 2];
+  if (n >= 3 && k >= 2) {
+    sum = 0;
+    last = s[n - 1 - 1] - '0';
+    for_inc_range(i, 2, n - 1) {
+      sum = sum + s[i - 1] - '0';
+    }
+    sum1 = sum;
+    LOG(1, "Sum : " << sum);
+    LOG(1, "Last " << last);
+    ret = ret + sum * combKMinus2[n - 3];
+    for_inc_range(l, 2, n - 2) {
+      sum = sum - last;
+      sum = sum * 10;
+      sum1 = sum1 - (s[l - 1] - '0');
+      sum = sum + sum1;
+      last = last + tenPower[l - 1] * (s[n - l - 1] - '0');
+      LOG(2, "Last " << last);
+      LOG(2, "Sum1 " << sum1);
+      ret = ret + sum * combKMinus2[n - l - 2];
+    }
   }
   
   cout << ret << endl;
