@@ -97,8 +97,8 @@ void testGen() {
 }
 
 int n;
-map<int64, unordered_set<int64>> byX;
-map<int64, unordered_set<int64>> byY;
+unordered_map<int64, unordered_set<int64>> byX;
+unordered_map<int64, unordered_set<int64>> byY;
 
 vector<Point2D<int64>> points;
 
