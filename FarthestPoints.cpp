@@ -22,13 +22,12 @@
 #include <queue>
 #include <stack>
 #include <functional>
-#include <unordered_set>
-#include <unordered_map>
-#include <random>
 
 using namespace std;
 
-#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+#define LOG(l, x)                                                              \
+if (l <= LOGLEVEL)                                                           \
+cout << x << endl
 
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
@@ -44,7 +43,8 @@ using namespace std;
 #define MOD 1000000007
 int MODP(int64 x) {
   int r = x % MOD;
-  if (r < 0) r += MOD;
+  if (r < 0)
+    r += MOD;
   return r;
 }
 
@@ -83,87 +83,99 @@ namespace std {
   };
 }
 
-void testGen() {
-  freopen("biginput1.txt", "w", stdout);
-  int n = 100000;
-  cout << n << endl;
-  unordered_set<Point2D<int64>> p;
+// O(nlogn)
+template <class T> class ConvexHull {
+  vector<Point2D<T>> upper;
+  vector<Point2D<T>> lower;
   
-  random_device rd;
-  mt19937_64 gen(rd());
-  uniform_int_distribution<int64> dis;
-  const int64 MAX = 1000;
+public:
+  ConvexHull(const vector<Point2D<T>> &points) {
+    vector<Point2D<T>> p = points;
+    int j = 0, k = 0, n = (int)p.size();
+    sort(p.begin(), p.end());
+    upper.resize(2 * n);
+    lower.resize(2 * n);
+    for_inc(i, n) {
+      while (j >= 2 && cross(lower[j - 2], lower[j - 1], p[i]) <= 0)
+        j--;
+      while (k >= 2 && cross(upper[k - 2], upper[k - 1], p[i]) >= 0)
+        k--;
+      lower[j++] = p[i];
+      upper[k++] = p[i];
+    }
+    upper.resize(k);
+    lower.resize(j);
+  }
   
-  repeat(n) {
-    while(1) {
-      int64 x = dis(gen) % MAX;
-      int64 y = dis(gen) % MAX;
-      if (p.find(makePoint(x, y)) == p.end()) {
-        p.insert(makePoint(x, y));
-        cout << x << " " << y << endl;
-        break;
+  const vector<Point2D<T>> &getUpperHull() const { return upper; }
+  
+  const vector<Point2D<T>> &getLowerHull() const { return lower; }
+};
+
+// O(nlogn)
+template <class T> class FarthestTwoPoints {
+  T dist;
+  
+public:
+  FarthestTwoPoints(const vector<Point2D<T>> &p) {
+    assert(p.size() >= 2);
+    ConvexHull<T> ch(p);
+    const vector<Point2D<T>> &u = ch.getUpperHull();
+    const vector<Point2D<T>> &l = ch.getLowerHull();
+    int i = 0, j, m;
+    j = (int)u.size() - 1;
+    m = (int)l.size() - 1;
+    dist = numeric_limits<T>::min();
+    while (i < m || j > 0) {
+      T d = u[i].distance(l[j]);
+      if (d > dist) {
+        dist = d;
+      }
+      if (i == m)
+        j--;
+      else if (j == 0)
+        i++;
+      else {
+        if ((l[j] - l[j - 1]).crossProduct(u[i + 1] - u[i]) > 0)
+          i++;
+        else
+          j--;
       }
     }
   }
+  
+  T getFarthestDistance() { return dist; }
+};
+
+void testGen() {
+  freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
 
-int n;
-unordered_map<int64, unordered_set<int64>> byX;
-unordered_map<int64, unordered_set<int64>> byY;
-
-vector<Point2D<int64>> points;
-
-// Sample: CF243 D
-
 int main() {
 #ifndef SUBMIT
-  //testGen();
-  freopen("biginput1.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
-  cin >> n;
-  int64 x, y;
-  int64 cnt = 0;
-  repeat(n) {
-    cin >> x >> y;
-    auto p = makePoint(x, y);
-    points.push_back(p);
-    byX[x].insert(y);
-    byY[y].insert(x);
-  }
-  
-  int ret = 0;
-  for (auto &p: points) {
-    auto &xPoints = byX[p.x];
-    auto &yPoints = byY[p.y];
+  int nTest;
+  cin >> nTest;
+  repeat(nTest) {
+    int n;
+    cin >> n;
+    int64 x, y;
+    vector<Point2D<int64>> p;
+    repeat(n) {
+      cin >> x >> y;
+      p.push_back(makePoint(x, y));
+    }
     
-    if (xPoints.size() < yPoints.size()) {
-      cnt += xPoints.size();
-      for (auto &y2 : xPoints) if (y2 > p.y) {
-        int64 side = y2 - p.y;
-        if (yPoints.find(p.x + side) != yPoints.end()) {
-          auto x2Points = byX.find(p.x + side);
-          if (x2Points != byX.end() && (x2Points->second).find(p.y + side) != (x2Points->second).end()) {
-            ++ret;
-          }
-        }
-      }
+    if (n == 1) {
+      cout << 0 << endl;
     } else {
-      cnt += yPoints.size();
-      for (auto &x2 : yPoints) if (x2 > p.x) {
-        int64 side = x2 - p.x;
-        if (xPoints.find(p.y + side) != xPoints.end()) {
-          auto x2Points = byX.find(x2);
-          if (x2Points != byX.end() && (x2Points->second).find(p.y + side) != (x2Points->second).end()) {
-            ++ret;
-          }
-        }
-      }
+      FarthestTwoPoints<int64> ftp(p);
+      cout << ftp.getFarthestDistance() << endl;
     }
   }
   
-  //cout << cnt << endl;
-  cout << ret << endl;
   return 0;
 }
