@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -52,7 +52,30 @@ void testGen() {
 
 int main() {
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  string s;
+  cin >> s;
+  map<char, int> ch;
+  for (auto c: s) {
+    ch[c]++;
+  }
+  int best = 0;
+  for (auto p: ch) {
+    best = max(best, p.second);
+  }
+  int k = 0;
+  for (auto p: ch) {
+    if (p.second == best) ++k;
+  }
+  
+  int64 ret = 1;
+  for_inc_range(i, 1, n) {
+    ret = MODP(ret * k);
+  }
+  cout << ret << endl;
   return 0;
 }
