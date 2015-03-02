@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -38,7 +38,7 @@ using namespace std;
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF ((int)2E9L)
 #define INT64_INF ((int64)1E18L)
-#define MOD 1000000007
+#define MOD 1000000009
 int MODP(int64 x) {
   int r = x % MOD;
   if (r < 0) r += MOD;
@@ -50,9 +50,87 @@ void testGen() {
   fclose(stdout);
 }
 
+vector<pair<int, int>> points;
+map<pair<int, int>, int> idx;
+vector<int> deg;
+vector<vector<int>> child;
+
 int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  int n;
+  cin >> n;
+  int x, y;
+  for_inc(i, n) {
+    cin >> x >> y;
+    auto p = make_pair(x, y);
+    points.push_back(p);
+    idx[p] = i;
+  }
+  
+  deg.resize(n);
+  child.resize(n);
+  for_inc(i, n) {
+    x = points[i].first;
+    y = points[i].second;
+    
+    deg[i] = 0;
+    if (idx.count(make_pair(x - 1, y + 1))) {
+      ++deg[i];
+    }
+    if (idx.count(make_pair(x, y + 1))) {
+      ++deg[i];
+    }
+    if (idx.count(make_pair(x + 1, y + 1))) {
+      ++deg[i];
+    }
+    
+    pair<int, int> p;
+    p = make_pair(x - 1, y - 1);
+    if (idx.count(p)) {
+      child[i].push_back(idx[p]);
+    }
+    p = make_pair(x, y - 1);
+    if (idx.count(p)) {
+      child[i].push_back(idx[p]);
+    }
+    p = make_pair(x + 1, y - 1);
+    if (idx.count(p)) {
+      child[i].push_back(idx[p]);
+    }
+  }
+  
+  set<int> freeNode;
+  for_inc(i, n) {
+    if (deg[i] == 0) {
+      freeNode.insert(i);
+    }
+  }
+  
+  int64 ret = 0;
+  bool turn = true;
+  while (!freeNode.empty()) {
+    int u;
+    if (turn) {
+      u = *(--freeNode.end());
+    } else {
+      u = *freeNode.begin();
+    }
+    turn = !turn;
+    
+    //LOG(1, u);
+    ret = MODP(ret * n + u);
+    
+    freeNode.erase(u);
+    for (auto &v: child[u]) {
+      deg[v]--;
+      if (deg[v] == 0) {
+        freeNode.insert(v);
+      }
+    }
+  }
+  
+  cout << ret << endl;
   return 0;
 }
