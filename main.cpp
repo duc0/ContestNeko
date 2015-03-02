@@ -53,11 +53,11 @@ void testGen() {
 vector<pair<int, int>> points;
 map<pair<int, int>, int> idx;
 vector<int> deg;
-vector<vector<int>> child;
+vector<vector<int>> parent, child;
 
 int main() {
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input5.txt", "r", stdin);
 #endif
   int n;
   cin >> n;
@@ -70,46 +70,59 @@ int main() {
   }
   
   deg.resize(n);
+  parent.resize(n);
   child.resize(n);
   for_inc(i, n) {
     x = points[i].first;
     y = points[i].second;
     
-    deg[i] = 0;
-    if (idx.count(make_pair(x - 1, y + 1))) {
-      ++deg[i];
-    }
-    if (idx.count(make_pair(x, y + 1))) {
-      ++deg[i];
-    }
-    if (idx.count(make_pair(x + 1, y + 1))) {
-      ++deg[i];
-    }
-    
     pair<int, int> p;
-    p = make_pair(x - 1, y - 1);
+    p = make_pair(x - 1, y + 1);
     if (idx.count(p)) {
       child[i].push_back(idx[p]);
+    }
+    p = make_pair(x, y + 1);
+    if (idx.count(p)) {
+      child[i].push_back(idx[p]);
+    }
+    p = make_pair(x + 1, y + 1);
+    if (idx.count(p)) {
+      child[i].push_back(idx[p]);
+    }
+
+    p = make_pair(x - 1, y - 1);
+    if (idx.count(p)) {
+      parent[i].push_back(idx[p]);
     }
     p = make_pair(x, y - 1);
     if (idx.count(p)) {
-      child[i].push_back(idx[p]);
+      parent[i].push_back(idx[p]);
     }
     p = make_pair(x + 1, y - 1);
     if (idx.count(p)) {
-      child[i].push_back(idx[p]);
+      parent[i].push_back(idx[p]);
     }
+    deg[i] = (int)parent[i].size();
   }
   
   set<int> freeNode;
   for_inc(i, n) {
-    if (deg[i] == 0) {
+    bool isFree = true;
+    for (auto &v: child[i]) {
+      if (deg[v] == 1) {
+        isFree = false;
+        break;
+      }
+    }
+    if (isFree) {
       freeNode.insert(i);
     }
   }
   
   int64 ret = 0;
   bool turn = true;
+  vector<bool> erase;
+  erase.resize(n);
   while (!freeNode.empty()) {
     int u;
     if (turn) {
@@ -118,14 +131,31 @@ int main() {
       u = *freeNode.begin();
     }
     turn = !turn;
+    erase[u] = true;
     
-    //LOG(1, u);
+    LOG(1, u);
     ret = MODP(ret * n + u);
     
     freeNode.erase(u);
-    for (auto &v: child[u]) {
+    for (auto &v: child[u]) if (!erase[v]) {
       deg[v]--;
-      if (deg[v] == 0) {
+      if (deg[v] == 1) {
+        for (auto &w : parent[v]) {
+          if (!erase[w]) {
+            freeNode.erase(w);
+          }
+        }
+      }
+    }
+    for (auto &v: parent[u]) if (!erase[v]) {
+      bool isFree = true;
+      for (auto &w: child[v]) {
+        if (!erase[w] && deg[w] == 1) {
+          isFree = false;
+          break;
+        }
+      }
+      if (isFree) {
         freeNode.insert(v);
       }
     }
