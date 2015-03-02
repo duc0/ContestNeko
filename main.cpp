@@ -45,24 +45,14 @@ int dx[] = {0, 1, 0, -1};
 int dy[] = {1, 0, -1, 0};
 
 int n;
-vector<pair<int, int>> points, origPoints;
-bool visit[10][20];
+vector<pair<int, int>> origPoints;
 int64 best = INT64_INF;
 
 int64 dist(pair<int, int> a, pair<int, int> b) {
   return abs((int64)a.first - b.first) + abs((int64)a.second - b.second);
 }
 
-set<vector<pair<int, int>>> hasSeen;
-
-void updateBest() {
-  vector<pair<int, int>> state = points;
-  sort(state.begin(), state.end());
-  if (hasSeen.find(state) != hasSeen.end()) {
-    return;
-  }
-  hasSeen.insert(state);
-  
+void updateBest(const vector<pair<int, int>> &points) {
   vector<pair<int, int>> translatedPoints(n);
   for (int rootx = 0; rootx < n; ++rootx) for (int rooty = 0; rooty < n; ++rooty) {
     for (int k = 0; k < n; ++k) {
@@ -88,27 +78,52 @@ void updateBest() {
   }
 }
 
-void tryBuild(int k) {
-  if (k == n + 1) {
-    updateBest();
-    return;
-  }
-  for (int t = 0; t < (int) points.size(); ++t) {
-    int x = points[t].first;
-    int y = points[t].second;
-    for (int i = 0; i < 4; ++i) {
-      int x2 = x + dx[i];
-      int y2 = y + dy[i];
-      if (!(x2 < 0 || (x2 == 0 && y2 < 0)) && !visit[x2][10 + y2]) {
-        points.push_back(make_pair(x2, y2));
-        visit[x2][10 + y2] = true;
-        tryBuild(k + 1);
-        points.pop_back();
-        visit[x2][10 + y2] = false;
+class EnumerateConnectedCells {
+  vector<pair<int, int>> points;
+  vector<vector<bool>> visit;
+  function<void(const vector<pair<int, int>>&)> callback;
+  set<vector<pair<int, int>>> seen;
+  
+  void tryBuild(int k) {
+    if (k == n + 1) {
+      vector<pair<int, int>> state = points;
+      sort(state.begin(), state.end());
+      if (seen.count(state)) {
+        return;
+      }
+      seen.insert(state);
+      callback(points);
+      return;
+    }
+    for (int t = 0; t < (int) points.size(); ++t) {
+      int x = points[t].first;
+      int y = points[t].second;
+      for (int i = 0; i < 4; ++i) {
+        int x2 = x + dx[i];
+        int y2 = y + dy[i];
+        if (!(x2 < 0 || (x2 == 0 && y2 < 0)) && !visit[x2][10 + y2]) {
+          points.push_back(make_pair(x2, y2));
+          visit[x2][10 + y2] = true;
+          tryBuild(k + 1);
+          points.pop_back();
+          visit[x2][10 + y2] = false;
+        }
       }
     }
   }
-}
+public:
+  EnumerateConnectedCells(int numCells, function<void(const vector<pair<int, int>>&)> callback) {
+    this->callback = callback;
+    points.clear();
+    points.push_back(make_pair(0, 0));
+    visit.resize(numCells);
+    for (auto &v: visit) {
+      v.resize(numCells * 2);
+    }
+    seen.clear();
+    tryBuild(2);
+  }
+};
 
 class FoxConnection3 {
 public:
@@ -119,13 +134,8 @@ public:
      for_inc(i, n) {
        origPoints.push_back(make_pair(x[i], y[i]));
      }
-     fill0(visit);
-     points.clear();
-     hasSeen.clear();
-     points.push_back(make_pair(0, 0));
-     visit[0][0] = true;
      best = INT64_INF;
-     tryBuild(2);
+     EnumerateConnectedCells e(n, updateBest);
      return best;
    }
 };
