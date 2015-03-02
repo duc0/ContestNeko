@@ -65,11 +65,10 @@ template <class T> struct Point2D {
   T distance(const Point2D &p) const {
     return (x - p.x) * (x - p.x) + (y - p.y) * (y - p.y);
   }
-  friend std::ostream& operator<< (std::ostream& stream, const Point2D<T>& p) {
+  friend std::ostream &operator<<(std::ostream &stream, const Point2D<T> &p) {
     stream << "Point (" << p.x << ", " << p.y << ")";
     return stream;
   }
-
 };
 template <class T>
 T cross(const Point2D<T> &o, const Point2D<T> &a, const Point2D<T> &b) {
@@ -91,7 +90,7 @@ template <class T> class ConvexHull {
 public:
   ConvexHull(const vector<Point2D<T>> &points) {
     vector<Point2D<T>> p = points;
-    int j = 0, k = 0, n = (int) p.size();
+    int j = 0, k = 0, n = (int)p.size();
     sort(p.begin(), p.end());
     upper.resize(2 * n);
     lower.resize(2 * n);
@@ -117,19 +116,18 @@ template <class T> class FarthestTwoPoints {
 
 public:
   FarthestTwoPoints(const vector<Point2D<T>> &p) {
+    assert(p.size() >= 2);
     ConvexHull<T> ch(p);
-    const vector<Point2D<T>> u = ch.getUpperHull();
+    const vector<Point2D<T>> &u = ch.getUpperHull();
     const vector<Point2D<T>> &l = ch.getLowerHull();
     int i = 0, j, m;
     j = (int)u.size() - 1;
     m = (int)l.size() - 1;
     dist = numeric_limits<T>::min();
     while (i < m || j > 0) {
-      T d =  u[i].distance(l[j]);
+      T d = u[i].distance(l[j]);
       if (d > dist) {
         dist = d;
-        LOG(1, "Point1: " << u[i]);
-        LOG(1, "Point2: " << l[j]);
       }
       if (i == m)
         j--;
@@ -156,20 +154,26 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
-  
-  int n;
-  cin >> n;
-  int x;
-  int64 s = 0;
-  
-  vector<Point2D<int64>> p;
-  for_inc_range(i, 1, n) {
-    cin >> x;
-    s += x;
-    p.push_back(makePoint((int64)i, s));
+
+  int nTest;
+  cin >> nTest;
+  repeat(nTest) {
+    int n;
+    cin >> n;
+    int64 x, y;
+    vector<Point2D<int64>> p;
+    repeat(n) {
+      cin >> x >> y;
+      p.push_back(makePoint(x, y));
+    }
+
+    if (n == 1) {
+      cout << 0 << endl;
+    } else {
+      FarthestTwoPoints<int64> ftp(p);
+      cout << ftp.getFarthestDistance() << endl;
+    }
   }
-  
-  FarthestTwoPoints<int64> ftp(p);
-  cout << ftp.getFarthestDistance() << endl;
+
   return 0;
 }
