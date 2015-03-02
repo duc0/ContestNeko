@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -22,6 +22,7 @@
 #include <queue>
 #include <stack>
 #include <functional>
+#include <unordered_map>
 
 using namespace std;
 
@@ -50,9 +51,109 @@ void testGen() {
   fclose(stdout);
 }
 
+template<class T> class CommonSubsequence {
+  const vector<T> &seq1, &seq2;
+  int l1, l2;
+  
+  vector<vector<int>> pos; // pos[l][i] = min{j, lcs(i, j) = l, or l2 if not exists}
+public:
+  CommonSubsequence(const vector<T> &seq1, const vector<T> &seq2, int upper): seq1(seq1), seq2(seq2) {
+    l1 = (int) seq1.size();
+    l2 = (int) seq2.size();
+    pos.resize(upper + 1);
+    for (auto &v: pos) {
+      v.resize(l1);
+    }
+    
+    unordered_map<T, int> minPos;
+    for_inc(j, l2) {
+      if (!minPos.count(seq2[j])) {
+        minPos[seq2[j]] = j;
+      }
+    }
+    
+    if (minPos.count(seq1[0])) {
+      pos[1][0] = minPos[seq1[0]];
+    } else {
+      pos[1][0] = l2;
+    }
+    for_inc_range(i, 1, l1) {
+      pos[1][i] = pos[1][i - 1];
+      if (minPos.count(seq1[i])) {
+        pos[1][i] = min(pos[1][i], minPos[seq1[i]]);
+      }
+    }
+    
+    for_inc_range(l, 2, upper) {
+      pos[l][0] = l2;
+      
+      int leftIndex = l2;
+      minPos.clear();
+      
+      for_inc_range(i, 1, l1 - 1) {
+        pos[l][i] = pos[l][i - 1];
+        if (pos[l - 1][i - 1] != l2) {
+          int newLeftIndex = pos[l - 1][i - 1] + 1;
+          for_dec_range(j, leftIndex - 1, newLeftIndex) {
+            minPos[seq2[j]] = j;
+          }
+          leftIndex = newLeftIndex;
+          if (minPos.count(seq1[i])) {
+            LOG(1, "Update pos " << l << ", " << i << " with " << minPos[seq1[i]] << ", cur: " << pos[l][i]);
+            pos[l][i] = min(pos[l][i], minPos[seq1[i]]);
+          }
+          
+        }
+      }
+    }
+    
+  }
+  
+  // Is there a j so that {lcs(i, j) = l}
+  bool hasCommonSubsequence(int i, int l) {
+    return pos[l][i] != l2;
+  }
+  
+  // Return min{j, lcs(i, j) = l}
+  int getPos(int i, int l) {
+    return pos[l][i];
+  }
+};
+
+int l1, l2, s, e;
+vector<int> s1, s2;
+
 int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  cin >> l1 >> l2 >> s >> e;
+  int x;
+  repeat(l1) {
+    cin >> x;
+    s1.push_back(x);
+  }
+  repeat(l2) {
+    cin >> x;
+    s2.push_back(x);
+  }
+  int maxCS = s / e;
+  CommonSubsequence<int> cs(s1, s2, maxCS);
+  
+  int best = 0;
+  for_inc_range(l, 1, maxCS) {
+    int remainingEnergy = s - l * e;
+    for_inc(i, l1) {
+      if (cs.hasCommonSubsequence(i, l)) {
+        int j = cs.getPos(i, l);
+        if (i + 1 + j + 1 <= remainingEnergy) {
+          best = l;
+          break;
+        }
+      }
+    }
+  }
+  
+  cout << best << endl;
   return 0;
 }
