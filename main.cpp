@@ -50,10 +50,97 @@ void testGen() {
   fclose(stdout);
 }
 
+class DirectedGraph {
+  vector<vector<int>> nodeFrom;
+  vector<vector<int>> nodeTo;
+  vector<int> degIn, degOut;
+  vector<bool> erase;
+  int _minNode, _maxNode;
+public:
+  void init(bool zeroBased, int n) {
+    if (zeroBased) {
+      _minNode = 0;
+      _maxNode = n - 1;
+    } else {
+      _minNode = 1;
+      _maxNode = n;
+    }
+    nodeFrom.resize(_maxNode + 1);
+    nodeTo.resize(_maxNode + 1);
+    degIn.resize(_maxNode + 1);
+    degOut.resize(_maxNode + 1);
+    erase.resize(_maxNode + 1);
+    for_inc_range(u, _minNode, _maxNode) {
+      degIn[u] = 0;
+      degOut[u] = 0;
+      nodeFrom[u].clear();
+      nodeTo[u].clear();
+      erase[u] = false;
+    }
+  }
+  
+  void addEdge(int u, int v) {
+    nodeFrom[u].push_back(v);
+    degOut[u]++;
+    
+    nodeTo[v].push_back(u);
+    degIn[v]++;
+  }
+  
+  const vector<int> getNodeFrom(int u) const {
+    vector<int> r;
+    for (auto &v: nodeFrom[u]) {
+      if (!erase[v]) {
+        r.push_back(v);
+      }
+    }
+    return r;
+  }
+
+  const vector<int> getNodeTo(int u) const {
+    vector<int> r;
+    for (auto &v: nodeTo[u]) {
+      if (!erase[v]) {
+        r.push_back(v);
+      }
+    }
+    return r;
+
+  }
+  
+  int getDegIn(int u) const {
+    assert(!erase[u]);
+    return degIn[u];
+  }
+
+  int getDegOut(int u) const {
+    assert(!erase[u]);
+    return degOut[u];
+  }
+
+  void removeNode(int u) {
+    assert(!erase[u]);
+    for (auto &v: getNodeFrom(u)) {
+      degIn[v]--;
+    }
+    for (auto &v: getNodeTo(u)) {
+      degOut[v]--;
+    }
+    erase[u] = true;
+  }
+};
+
 vector<pair<int, int>> points;
 map<pair<int, int>, int> idx;
-vector<int> deg;
-vector<vector<int>> parent, child;
+
+bool isFreeNode(const DirectedGraph &g, int u) {
+  for (auto &v: g.getNodeFrom(u)) {
+    if (g.getDegIn(v) == 1) {
+      return false;
+    }
+  }
+  return true;
+}
 
 int main() {
 #ifndef SUBMIT
@@ -69,93 +156,54 @@ int main() {
     idx[p] = i;
   }
   
-  deg.resize(n);
-  parent.resize(n);
-  child.resize(n);
+  DirectedGraph g;
+  g.init(true, n);
+  
   for_inc(i, n) {
     x = points[i].first;
     y = points[i].second;
-    
-    pair<int, int> p;
-    p = make_pair(x - 1, y + 1);
-    if (idx.count(p)) {
-      child[i].push_back(idx[p]);
+    for_inc_range(d, -1, 1) {
+      pair<int, int> p = make_pair(x + d, y + 1);
+      if (idx.count(p)) {
+        g.addEdge(i, idx[p]);
+      }
     }
-    p = make_pair(x, y + 1);
-    if (idx.count(p)) {
-      child[i].push_back(idx[p]);
-    }
-    p = make_pair(x + 1, y + 1);
-    if (idx.count(p)) {
-      child[i].push_back(idx[p]);
-    }
-
-    p = make_pair(x - 1, y - 1);
-    if (idx.count(p)) {
-      parent[i].push_back(idx[p]);
-    }
-    p = make_pair(x, y - 1);
-    if (idx.count(p)) {
-      parent[i].push_back(idx[p]);
-    }
-    p = make_pair(x + 1, y - 1);
-    if (idx.count(p)) {
-      parent[i].push_back(idx[p]);
-    }
-    deg[i] = (int)parent[i].size();
   }
   
   set<int> freeNode;
-  for_inc(i, n) {
-    bool isFree = true;
-    for (auto &v: child[i]) {
-      if (deg[v] == 1) {
-        isFree = false;
-        break;
-      }
-    }
-    if (isFree) {
-      freeNode.insert(i);
+  for_inc(u, n) {
+    if (isFreeNode(g, u)) {
+      freeNode.insert(u);
     }
   }
   
   int64 ret = 0;
   bool turn = true;
-  vector<bool> erase;
-  erase.resize(n);
+
   while (!freeNode.empty()) {
     int u;
     if (turn) {
-      u = *(--freeNode.end());
+      u = *freeNode.rbegin();
     } else {
       u = *freeNode.begin();
     }
     turn = !turn;
-    erase[u] = true;
     
     LOG(1, u);
     ret = MODP(ret * n + u);
     
     freeNode.erase(u);
-    for (auto &v: child[u]) if (!erase[v]) {
-      deg[v]--;
-      if (deg[v] == 1) {
-        for (auto &w : parent[v]) {
-          if (!erase[w]) {
-            freeNode.erase(w);
-          }
+    g.removeNode(u);
+    
+    for (auto &v: g.getNodeFrom(u)) {
+      if (g.getDegIn(v) == 1) {
+        for (auto &w : g.getNodeTo(v)) {
+          freeNode.erase(w);
         }
       }
     }
-    for (auto &v: parent[u]) if (!erase[v]) {
-      bool isFree = true;
-      for (auto &w: child[v]) {
-        if (!erase[w] && deg[w] == 1) {
-          isFree = false;
-          break;
-        }
-      }
-      if (isFree) {
+    for (auto &v: g.getNodeTo(u)) {
+      if (isFreeNode(g, v)) {
         freeNode.insert(v);
       }
     }
