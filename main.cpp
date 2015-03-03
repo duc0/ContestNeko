@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -52,7 +52,22 @@ void testGen() {
 
 int main() {
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  string s;
+  cin >> s;
+  int d = s.back() - '0';
+  if (d % 2 == 1) {
+    cout << 0 << endl;
+    return 0;
+  }
+  if (s.length() > 1) {
+    d = d + (s[s.length() - 2] - '0') * 10;
+  }
+  if (d % 4 == 0) {
+    cout << 4 << endl;
+  } else {
+    cout << 0 << endl;
+  }
   return 0;
 }
