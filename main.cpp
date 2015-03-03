@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -45,14 +45,112 @@ int MODP(int64 x) {
   return r;
 }
 
+template <class T> class Trie {
+  vector<vector<pair<int, T>>> child;
+  int root;
+  int n;
+  
+public:
+  Trie() {
+    reset();
+  }
+  void reset() {
+    child.clear();
+    child.push_back({});
+    root = 0;
+    n = 1;
+  }
+  
+  const vector<pair<int, T>>& getChild(int u) const {
+    return child[u];
+  }
+  
+  template<class Iterator> void addWord(Iterator begin, Iterator end) {
+    int curNode = root;
+    for (auto it = begin; it != end; ++it) {
+      T c = *it;
+      bool found = false;
+      for (auto &v: child[curNode]) {
+        if (v.second == c) {
+          curNode = v.first;
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        ++n;
+        child.push_back({});
+        child[curNode].push_back(make_pair(n - 1, c));
+        curNode = n - 1;
+      }
+    }
+  }
+  
+  int getRoot() const {
+    return root;
+  }
+  
+  int getSize() const {
+    return n;
+  }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
 
+Trie<char> trie;
+
+vector<bool> win;
+vector<bool> lose;
+
+void dfs(int u) {
+  win[u] = false;
+  if (trie.getChild(u).size() == 0) {
+    lose[u] = true;
+  } else {
+    lose[u] = false;
+  }
+  for (auto &v: trie.getChild(u)) {
+    LOG(1, "Edge " << u << " " << v.first << " " << v.second);    
+    dfs(v.first);
+    if (!win[v.first]) {
+      win[u] = true;
+    }
+    if (!lose[v.first]) {
+      lose[u] = true;
+    }
+  }
+}
 int main() {
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input5.txt", "r", stdin);
 #endif
+  
+  int n, k;
+  cin >> n >> k;
+  repeat(n) {
+    string s;
+    cin >> s;
+    trie.addWord(s.begin(), s.end());
+  }
+  LOG(1, trie.getSize());
+  win.resize(trie.getSize());
+  lose.resize(trie.getSize());
+  dfs(trie.getRoot());
+  bool canWin = win[trie.getRoot()];
+  bool canLose = lose[trie.getRoot()];
+  if (canWin) {
+    if (canLose) {
+      cout << "First";
+    } else if (k % 2 == 1) {
+      cout << "First";
+    } else {
+      cout << "Second";
+    }
+  } else {
+    cout << "Second";
+  }
   return 0;
 }
