@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -52,7 +52,25 @@ void testGen() {
 
 int main() {
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  int n;
+  vector<pair<int,int>> a;
+  cin >> n;
+  for_inc(i, n) {
+    int x, y;
+    cin >> x >> y;
+    a.push_back(make_pair(x, y));
+  }
+  sort(a.begin(), a.end());
+  int maxY = 0;
+  for_inc(i, n) {
+    if (a[i].second < maxY) {
+      cout << "Happy Alex";
+      return 0;
+    }
+    maxY = max(maxY, a[i].second);
+  }
+  cout << "Poor Alex";
   return 0;
 }
