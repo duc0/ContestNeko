@@ -115,6 +115,41 @@ public:
   }
   
 };
+
+template<class T> class ComboUtils {
+  
+public:
+  // Return a vector c[i] = C(i, k) for i <= n, O(n)
+  static vector<T> getCombByK(int n, int k) {
+    vector<T> c(n + 1);
+    c[k] = 1;
+    for_inc_range(i, k + 1, n) {
+      c[i] = c[i - 1] * i / (i - k);
+    }
+    return c;
+  }
+  
+  // Return a vector c[i] = C(n, i) for i <= n, O(n)
+  static vector<T> getCombByN(int n) {
+    vector<T> c(n + 1);
+    c[0] = 1;
+    for_inc_range(i, 1, n) {
+      c[i] = c[i - 1] * (n - i + 1)/ i;
+    }
+    return c;
+  }
+  
+  // Return a vector p[i] = a^i for i <= n, O(n)
+  static vector<T> getPower(int n, T a) {
+    vector<T> p(n + 1);
+    p[0] = 1;
+    for_inc_range(i, 1, n) {
+      p[i] = p[i - 1] * a;
+    }
+    return p;
+  }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -130,27 +165,17 @@ int main() {
   cin >> n >> k;
   cin >> s;
   
-  vector<ModInt<int, MOD>> combKMinus1(n + 1);
+  vector<ModInt<int, MOD>> combKMinus1;
   if (k >= 1) {
-    combKMinus1[k - 1] = 1;
-    for_inc_range(i, k, n) {
-      combKMinus1[i] = combKMinus1[i - 1] * i / (i - (k - 1));
-    }
+    combKMinus1 = ComboUtils<ModInt<int, MOD>>::getCombByK(n, k - 1);
   }
 
-  vector<ModInt<int, MOD>> combKMinus2(n + 1);
+  vector<ModInt<int, MOD>> combKMinus2;
   if (k >= 2) {
-    combKMinus2[k - 2] = 1;
-    for_inc_range(i, k - 1, n) {
-      combKMinus2[i] = combKMinus2[i - 1] * i / (i - (k - 2));
-    }
+    combKMinus2 = ComboUtils<ModInt<int, MOD>>::getCombByK(n, k - 2);
   }
   
-  vector<ModInt<int, MOD>> tenPower(n + 1);
-  tenPower[0] = 1;
-  for_inc_range(i, 1, n) {
-    tenPower[i] = tenPower[i - 1] * 10;
-  }
+  vector<ModInt<int, MOD>> tenPower = ComboUtils<ModInt<int, MOD>>::getPower(n, 10);
 
   ModInt<int, MOD> begin, end, ret, sum, last, sum1;
   
