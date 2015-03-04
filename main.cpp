@@ -51,6 +51,7 @@ void testGen() {
 }
 
 int main() {
+  ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
