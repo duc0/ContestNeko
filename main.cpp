@@ -182,40 +182,42 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input2.txt", "r", stdin);
+  freopen("input5.txt", "r", stdin);
 #endif
   
   int n, m;
   cin >> n >> m;
-  vector<vector<int>> adj(n + 1);
-  vector<pair<pair<int, int>, int>> edge(m + 1);
+  map<int, vector<pair<int, int>>> edge;
   for_inc(i, m) {
     int u, v, w;
     cin >> u >> v >> w;
-    edge[i] = make_pair(make_pair(u, v), w);
-    adj[u].push_back(i);
+    edge[w].push_back(make_pair(u, v));
   }
   
-  
-  DirectedGraph g;
-  g.init(m);
-  
-  for_inc(i, m) {
-    int u, v, w;
-    u = edge[i].first.first;
-    v = edge[i].first.second;
-    w = edge[i].second;
+  vector<int> f(n + 1), tmp(n + 1);
+  int best = 0;
+  for (auto &weightEntry: edge) {
+    vector<pair<int, int>> &listE = weightEntry.second;
     
-    for (auto &e: adj[v]) {
-      if (w < edge[e].second) {
-        g.addEdge(i + 1, e + 1);
-        LOG(1, "Add edge " << i + 1 << " " << e + 1);
-      }
+    for (auto &e: listE) {
+      int v = e.second;
+      tmp[v] = f[v];
+    }
+    for (auto &e: listE) {
+      int u = e.first, v = e.second;
+      tmp[v] = max(tmp[v], f[u] + 1);
+    }
+    for (auto &e: listE) {
+      int v = e.second;
+      f[v] = tmp[v];
     }
   }
   
-  LongestPath lp(g);
-  cout << lp.getLongestPath() + 1 << endl;
+  for_inc_range(i, 1, n) {
+    best = max(best, f[i]);
+  }
+  
+  cout << best << endl;
   
   return 0;
 }
