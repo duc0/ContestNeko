@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -25,7 +25,9 @@
 
 using namespace std;
 
-#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+#define LOG(l, x)                                                              \
+  if (l <= LOGLEVEL)                                                           \
+  cout << x << endl
 
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
@@ -41,9 +43,35 @@ using namespace std;
 #define MOD 1000000007
 int MODP(int64 x) {
   int r = x % MOD;
-  if (r < 0) r += MOD;
+  if (r < 0)
+    r += MOD;
   return r;
 }
+
+template <class T> class BinaryIndexedTree {
+  vector<T> val;
+  int n;
+
+public:
+  BinaryIndexedTree(int n) {
+    this->n = n;
+    val.resize(n + 1);
+  }
+  void add(int i, int v) {
+    for (; i <= n; i += i & -i)
+      val[i] += v;
+  }
+  T sum(int i) {
+    assert(i >= 0);
+    if (i == 0)
+      return 0;
+    T s = 0;
+    for (; i > 0; i -= i & -i)
+      s += val[i];
+    return s;
+  }
+  T sum(int i1, int i2) { return sum(i2) - sum(i1 - 1); }
+};
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
@@ -51,8 +79,36 @@ void testGen() {
 }
 
 int main() {
+  ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+
+  int n;
+  cin >> n;
+  vector<int> a(n);
+  for_inc(i, n) { cin >> a[i]; }
+  map<int, int> seen;
+  vector<pair<int, int>> f(n), g(n);
+  for_inc(i, n) { f[i] = make_pair(++seen[a[i]], i); }
+  seen.clear();
+  for_dec(i, n) { g[i] = make_pair(++seen[a[i]], i); }
+
+  sort(f.begin(), f.end());
+  sort(g.begin(), g.end());
+
+  int j = 0;
+
+  BinaryIndexedTree<int> tree(n);
+  int64 ret = 0;
+  for_inc(i, n) {
+    while (j < n && g[j].first < f[i].first) {
+      tree.add(g[j].second + 1, 1);
+      ++j;
+    }
+    ret += tree.sum(f[i].second + 1 + 1, n);
+  }
+  cout << ret << endl;
+
   return 0;
 }
