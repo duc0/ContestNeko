@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -52,7 +52,24 @@ void testGen() {
 
 int main() {
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  map<int, int> m;
+  int n;
+  cin >> n;
+  repeat(n) {
+    int x;
+    cin >> x;
+    m[x]++;
+  }
+  int64 best, ret;
+  if (m.size() == 1) {
+    ret = (int64)n * (n - 1) / 2;
+    best = 0;
+  } else {
+    best = (m.rbegin()->first - m.begin()->first);
+    ret = (int64) (m.begin()->second) * (m.rbegin()->second);
+  }
+  cout << best << " "<< ret << endl;
   return 0;
 }
