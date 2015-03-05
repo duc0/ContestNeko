@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -45,6 +45,39 @@ int MODP(int64 x) {
   return r;
 }
 
+template <class T> class BinaryIndexedTree {
+  vector<T> val;
+  int n, minIndex, maxIndex;
+  
+public:
+  BinaryIndexedTree(int n): BinaryIndexedTree(1, n) {}
+  
+  BinaryIndexedTree(int minIndex, int maxIndex) {
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+    this->n = maxIndex - minIndex + 1;
+    val.resize(n + 1);
+  }
+  
+  void add(int i, int v) {
+    i = i - minIndex + 1;
+    for (; i <= n; i += i & -i) {
+      val[i] += v;
+    }
+  }
+  T sum(int i) {
+    i = i - minIndex + 1;
+    if (i <= 0) return 0;
+    if (i > n) i = n;
+    T s = 0;
+    for (; i > 0; i -= i & -i)
+      s += val[i];
+    return s;
+  }
+  
+  T sum(int i1, int i2) { return sum(i2) - sum(i1 - 1); }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -58,7 +91,7 @@ void solveSmall() {
     vector<int> point;
     repeat(b) {
       int x;
-      cin >> x;
+      scanf("%d", &x);
       point.push_back(x);
     }
     p.push_back(point);
@@ -82,7 +115,7 @@ void solve1() {
   vector<int> a;
   repeat(n) {
     int x;
-    cin >> x;
+    scanf("%d", &x);
     a.push_back(x);
   }
   sort(a.begin(), a.end());
@@ -94,18 +127,48 @@ void solve1() {
   }
   cout << ret << endl;
 }
+
+void solve2() {
+  vector<pair<int, int>> a;
+  repeat(n) {
+    int x, y;
+    scanf("%d%d", &x, &y);
+    a.push_back(make_pair(x, y));
+  }
+  
+  sort(a.begin(), a.end(), [](const pair<int, int> &p1, const pair<int, int> &p2){ return p1.first + p1.second < p2.first + p2.second; });
+  
+  BinaryIndexedTree<int> tree(1 - m, m - 1);
+  
+  int j = 0;
+  int64 ret = 0;
+  
+  for_inc(i, n) {
+    while (j < i && a[j].first + a[j].second + d < a[i].first + a[i].second) {
+      tree.add(a[j].first - a[j].second, - 1);
+      ++j;
+    }
+    ret += tree.sum(a[i].first - a[i].second - d, a[i].first - a[i].second + d);
+    tree.add(a[i].first - a[i].second, 1);
+  }
+  
+  cout << ret << endl;
+  
+}
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("biginput1.txt", "r", stdin);
 #endif
   
-  cin >> b >> n >> d >> m;
+  scanf("%d%d%d%d", &b, &n, &d, &m);
   if (n <= 2000) {
     solveSmall();
   } else {
     if (b == 1) {
       solve1();
+    } else if (b == 2) {
+      solve2();
     }
   }
   
