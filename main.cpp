@@ -56,26 +56,25 @@ vector<pair<int, int>> a;
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
   
   cin >> n;
+  int maxH = 0;
   repeat(n) {
     int h, k;
     cin >> h >> k;
     a.push_back(make_pair(h, k));
+    maxH = max(maxH, h);
   }
   
   sort(a.begin(), a.end());
   
   int curH = 0;
-  vector<int> s;
+  vector<int> s(maxH);
   for (auto &p: a) {
     int h = p.first, k = p.second;
     if (h > curH) {
-      repeat(h - curH) {
-        s.push_back(0);
-      }
       curH = h;
     }
     int need = k;
