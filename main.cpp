@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -50,10 +50,56 @@ void testGen() {
   fclose(stdout);
 }
 
+int n;
+vector<pair<int, int>> a;
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  cin >> n;
+  repeat(n) {
+    int h, k;
+    cin >> h >> k;
+    a.push_back(make_pair(h, k));
+  }
+  
+  sort(a.begin(), a.end());
+  
+  int curH = 0;
+  vector<int> s;
+  for (auto &p: a) {
+    int h = p.first, k = p.second;
+    if (h > curH) {
+      repeat(h - curH) {
+        s.push_back(0);
+      }
+      curH = h;
+    }
+    int need = k;
+    int i = curH - 1;
+    while (need > 0) {
+      int skip = 0;
+      while (i > 0 && s[i - 1] == s[i]) {
+        --i;
+        ++skip;
+      }
+      int j = i + min(need - 1, skip);
+      for_dec_range(k, j, i) {
+        --need;
+        ++s[k];
+      }
+      --i;
+    }
+  }
+  
+  int64 ret = 0;
+  for (auto &x: s) {
+    ret += (int64) x * (x - 1) / 2;
+  }
+  
+  cout << ret << endl;
   return 0;
 }
