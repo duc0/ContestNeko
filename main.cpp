@@ -50,10 +50,64 @@ void testGen() {
   fclose(stdout);
 }
 
+int b, n, d, m;
+
+void solveSmall() {
+  vector<vector<int>> p;
+  repeat(n) {
+    vector<int> point;
+    repeat(b) {
+      int x;
+      cin >> x;
+      point.push_back(x);
+    }
+    p.push_back(point);
+  }
+  int ret = 0;
+  for_inc(i, n) {
+    for_inc(j, i) {
+      int dist = 0;
+      for_inc(k, b) {
+        dist += abs(p[i][k] - p[j][k]);
+      }
+      if (dist <= d) {
+        ++ret;
+      }
+    }
+  }
+  cout << ret << endl;
+}
+
+void solve1() {
+  vector<int> a;
+  repeat(n) {
+    int x;
+    cin >> x;
+    a.push_back(x);
+  }
+  sort(a.begin(), a.end());
+  int j = 0;
+  int64 ret = 0;
+  for_inc(i, n) {
+    while (j < i && a[i] - a[j] > d) ++j;
+    ret += i - j;
+  }
+  cout << ret << endl;
+}
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  cin >> b >> n >> d >> m;
+  if (n <= 2000) {
+    solveSmall();
+  } else {
+    if (b == 1) {
+      solve1();
+    }
+  }
+  
   return 0;
 }
