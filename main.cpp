@@ -50,13 +50,83 @@ void testGen() {
   fclose(stdout);
 }
 
+template <class T> class BinaryIndexedTree {
+  vector<T> val;
+  int n, minIndex, maxIndex;
+  
+public:
+  BinaryIndexedTree(int n): BinaryIndexedTree(1, n) {}
+  
+  BinaryIndexedTree(int minIndex, int maxIndex) {
+    init(minIndex, maxIndex);
+  }
+  
+  BinaryIndexedTree() {}
+  
+  void init(int minIndex, int maxIndex) {
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+    this->n = maxIndex - minIndex + 1;
+    val.resize(n + 1);
+  }
+  
+  void add(int i, int v) {
+    i = i - minIndex + 1;
+    for (; i <= n; i += i & -i) {
+      val[i] += v;
+    }
+  }
+  T sum(int i) {
+    i = i - minIndex + 1;
+    if (i <= 0) return 0;
+    if (i > n) i = n;
+    T s = 0;
+    for (; i > 0; i -= i & -i)
+      s += val[i];
+    return s;
+  }
+  
+  T sum(int i1, int i2) { return sum(i2) - sum(i1 - 1); }
+};
+
+template <class T> class RangeUpdateArray {
+  BinaryIndexedTree<T> tree;
+  int minIndex, maxIndex;
+  
+public:
+  RangeUpdateArray(int n): RangeUpdateArray(1, n) {}
+
+  RangeUpdateArray(int minIndex, int maxIndex) {
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+    tree.init(minIndex, maxIndex);
+  }
+
+  void add(int i, int j, T v) {
+    assert(minIndex <= i && i <= j && j <= maxIndex);
+    if (j < maxIndex) {
+      tree.add(j + 1, -v);
+    }
+    tree.add(i, v);
+  }
+
+  T get(int i) {
+    assert (minIndex <= i && i <= maxIndex);
+    return tree.sum(i);
+  }
+  
+  const T operator[](int i) {
+    return get(i);
+  }
+};
+
 int n;
 vector<pair<int, int>> a;
 
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input2.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
   cin >> n;
@@ -71,7 +141,7 @@ int main() {
   sort(a.begin(), a.end());
   
   int curH = 0;
-  vector<int> s(maxH);
+  RangeUpdateArray<int> s(0, maxH - 1);
   for (auto &p: a) {
     int h = p.first, k = p.second;
     if (h > curH) {
@@ -86,16 +156,17 @@ int main() {
         ++skip;
       }
       int j = i + min(need - 1, skip);
-      for_dec_range(k, j, i) {
-        --need;
-        ++s[k];
+      need -= (j - i + 1);
+      if (i >= 0 && i <= j) {
+        s.add(i, j, 1);
       }
       --i;
     }
   }
   
   int64 ret = 0;
-  for (auto &x: s) {
+  for (int i = 0; i < maxH; ++i) {
+    int x = s[i];
     ret += (int64) x * (x - 1) / 2;
   }
   
