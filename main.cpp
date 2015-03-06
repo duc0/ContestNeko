@@ -102,6 +102,8 @@ public:
     tree.init(minIndex, maxIndex);
   }
 
+  // Do a[k] = a[k] + v for i <= k <= j
+  // O(logn)
   void add(int i, int j, T v) {
     assert(minIndex <= i && i <= j && j <= maxIndex);
     if (j < maxIndex) {
@@ -110,6 +112,7 @@ public:
     tree.add(i, v);
   }
 
+  // Return a[i] in O(logn)
   T get(int i) {
     assert (minIndex <= i && i <= maxIndex);
     return tree.sum(i);
@@ -120,13 +123,27 @@ public:
   }
 };
 
+template<class T> T binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+  T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+  while (leftIndex <= rightIndex) {
+    midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+    if (predicate(midIndex)) {
+      ret = midIndex;
+      rightIndex = midIndex - 1;
+    } else {
+      leftIndex = midIndex + 1;
+    }
+  }
+  return ret;
+}
+
 int n;
 vector<pair<int, int>> a;
 
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input2.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
   cin >> n;
@@ -144,41 +161,18 @@ int main() {
   RangeUpdateArray<int> s(0, maxH - 1);
   for (auto &p: a) {
     int h = p.first, k = p.second;
-    if (h > curH) {
-      curH = h;
-    }
-    
+    curH = h;
     int i = curH - k;
     if (i == 0 || s[i] != s[i - 1]) {
       s.add(i, curH - 1, 1);
     } else {
-      int leftIndex = i, rightIndex = curH - 1, midIndex, ret = curH;
       int x = s[i];
-      while (leftIndex <= rightIndex) {
-        midIndex = (leftIndex + rightIndex) / 2;
-        if (s[midIndex] < x) {
-          ret = midIndex;
-          rightIndex = midIndex - 1;
-        } else {
-          leftIndex = midIndex + 1;
-        }
-      }
+      int ret = binarySearchMin<int>(i, curH - 1, [&](int midIndex){return s[midIndex] < x;});
       if (ret != curH) {
         s.add(ret, curH - 1, 1);
         k -= (curH - ret);
       }
-      
-      leftIndex = 0, rightIndex = i, ret = i;
-      while (leftIndex <= rightIndex){
-        midIndex = (leftIndex + rightIndex) / 2;
-        if (s[midIndex] == x) {
-          ret = midIndex;
-          rightIndex = midIndex - 1;
-        } else {
-          leftIndex = midIndex + 1;
-        }
-      }
-      
+      ret = binarySearchMin<int>(0, i, [&](int midIndex){return s[midIndex] == x;});
       s.add(ret, ret + k - 1, 1);
     }
   }
