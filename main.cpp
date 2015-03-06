@@ -126,7 +126,7 @@ vector<pair<int, int>> a;
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
   
   cin >> n;
@@ -147,20 +147,39 @@ int main() {
     if (h > curH) {
       curH = h;
     }
-    int need = k;
-    int i = curH - 1;
-    while (need > 0) {
-      int skip = 0;
-      while (i > 0 && s[i - 1] == s[i]) {
-        --i;
-        ++skip;
+    
+    int i = curH - k;
+    if (i == 0 || s[i] != s[i - 1]) {
+      s.add(i, curH - 1, 1);
+    } else {
+      int leftIndex = i, rightIndex = curH - 1, midIndex, ret = curH;
+      int x = s[i];
+      while (leftIndex <= rightIndex) {
+        midIndex = (leftIndex + rightIndex) / 2;
+        if (s[midIndex] < x) {
+          ret = midIndex;
+          rightIndex = midIndex - 1;
+        } else {
+          leftIndex = midIndex + 1;
+        }
       }
-      int j = i + min(need - 1, skip);
-      need -= (j - i + 1);
-      if (i >= 0 && i <= j) {
-        s.add(i, j, 1);
+      if (ret != curH) {
+        s.add(ret, curH - 1, 1);
+        k -= (curH - ret);
       }
-      --i;
+      
+      leftIndex = 0, rightIndex = i, ret = i;
+      while (leftIndex <= rightIndex){
+        midIndex = (leftIndex + rightIndex) / 2;
+        if (s[midIndex] == x) {
+          ret = midIndex;
+          rightIndex = midIndex - 1;
+        } else {
+          leftIndex = midIndex + 1;
+        }
+      }
+      
+      s.add(ret, ret + k - 1, 1);
     }
   }
   
