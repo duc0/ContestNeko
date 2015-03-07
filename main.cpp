@@ -50,31 +50,56 @@ void testGen() {
   fclose(stdout);
 }
 
-template <class T> int sortAndCountInversions(vector<T> a, int l, int r)
-{
-  if (l>=r) return 0;
-  int m=(l+r)/2;
-  int s=sortAndCountInversions(a,l,m) + sortAndCountInversions(a,m+1,r);
-  int i=0, j=m+1, k=l, n1=m-l+1;
-  vector<T> L(n1);
-  for (int i=0; i<n1; ++i) L[i]=a[l+i];
-  while (i<n1 && j<=r)
-    if (L[i] > a[j])
-    {
-      a[k++]=a[j++];
-      s+=n1-i;
+
+template<class T> T binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+  T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+  while (leftIndex <= rightIndex) {
+    midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+    if (predicate(midIndex)) {
+      ret = midIndex;
+      leftIndex = midIndex + 1;
+    } else {
+      rightIndex = midIndex - 1;
     }
-    else
-      a[k++]=L[i++];
-  while (i<n1) a[k++]=L[i++];
-  while (j<=r) a[k++]=a[j++];
-  return s;
+  }
+  return ret;
 }
+
+// O(nlogn)
+template <class T> class LongestIncreasingSubsequence {
+  int n, longest;
+  vector<int> minVal; // minVal[k] = min{a[i], lis(i) = k}
+  
+public:
+  template<class Iterator> LongestIncreasingSubsequence(Iterator begin, Iterator end) {
+    vector<T> seq(begin, end);
+    
+    n = (int) seq.size();
+    
+    minVal.resize(n + 1);
+    minVal[1] = seq[0];
+    
+    longest = 1;
+    for_inc_range(i, 1, n - 1) {
+      int k = binarySearchMax<int>(1, longest, [&](int l) {return minVal[l] < seq[i];});
+      if (k == longest) {
+        longest++;
+        minVal[longest] = seq[i];
+      } else {
+        minVal[k + 1] = min(minVal[k + 1], seq[i]);
+      }
+    }
+  }
+  
+  int getLength() {
+    return longest;
+  }
+};
 
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input4.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
   int n, m;
@@ -95,12 +120,15 @@ int main() {
   
   vector<pair<int, int>> pos(nBooks + 1);
   
+  bool hasEmpty = false;
   for_inc_range(i, 1, n) {
     for_inc_range(j, 1, m) {
       int x;
       cin >> x;
       if (x > 0) {
         pos[x] = make_pair(i, j);
+      } else {
+        hasEmpty = true;
       }
     }
   }
@@ -122,7 +150,7 @@ int main() {
     }
     
     if (!same) {
-      if (book.size() == m) {
+      if (book.size() == m && !hasEmpty) {
         cout << -1 << endl;
         return 0;
       }
@@ -132,9 +160,15 @@ int main() {
         book[j] = pos[book[j]].second;
         LOG(1, book[j]);
       }
+
+      LongestIncreasingSubsequence<int> lis(book.begin(), book.end());
       
-      int need = sortAndCountInversions<int>(book, 0,(int) book.size() - 1);
-      ret += need;
+      int need = (int) book.size() - lis.getLength();
+      if (book.size() == m) {
+        ret += need + 1;
+      } else {
+        ret += need;
+      }
     }
   }
   
