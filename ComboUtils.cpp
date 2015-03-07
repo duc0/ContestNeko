@@ -138,21 +138,21 @@ public:
   
   // Number of ways to choose k objects from n objects
   T C(int n, int k) {
-    assert (1 <= n && n <= maxN);
-    assert (0 <= k && k <= n);
+    assert (0 <= n && n <= maxN);
+    if (k < 0 || k > n) return 0;
     return factorial[n] * inverseFactorial[k] * inverseFactorial[n - k];
   }
   
   // Number of ways to choose k objects from n objects and ordering is important
   T A(int n, int k) {
-    assert (1 <= n && n <= maxN);
-    assert (0 <= k && k <= n);
+    assert (0 <= n && n <= maxN);
+    if (k < 0 || k > n) return 0;
     return factorial[n] * inverseFactorial[n - k];
   }
   
   // Number of ways to arrange n objects
   T P(int n) {
-    assert (1 <= n && n <= maxN);
+    assert (0 <= n && n <= maxN);
     return factorial[n];
   }
   
@@ -197,7 +197,7 @@ void testGen() {
   fclose(stdout);
 }
 
-// Sample: CF295_C
+// Sample CF295_C
 int main() {
 #ifndef SUBMIT
   freopen("input5.txt", "r", stdin);
@@ -208,15 +208,7 @@ int main() {
   cin >> n >> k;
   cin >> s;
   
-  vector<ModInt<int, MOD>> combKMinus1;
-  if (k >= 1) {
-    combKMinus1 = ComboUtils<ModInt<int, MOD>>::getCombByK(n, k - 1);
-  }
-  
-  vector<ModInt<int, MOD>> combKMinus2;
-  if (k >= 2) {
-    combKMinus2 = ComboUtils<ModInt<int, MOD>>::getCombByK(n, k - 2);
-  }
+  ComboUtils<ModInt<int, MOD>> combo(n);
   
   vector<ModInt<int, MOD>> tenPower = ComboUtils<ModInt<int, MOD>>::getPower(n, 10);
   
@@ -235,9 +227,7 @@ int main() {
     if (n - l - 1 < k - 1) {
       break;
     }
-    LOG(1, "Begin: " << begin);
-    LOG(2, "Comb: " << k - 1 << " " << n - l - 1 << " " << combKMinus1[n - l - 1]);
-    ret = ret + begin * combKMinus1[n - l - 1];
+    ret = ret + begin * combo.C(n - l - 1, k - 1);
   }
   LOG(1, "Begin val: " << ret);
   
@@ -248,7 +238,7 @@ int main() {
       break;
     }
     LOG(1, "End: " << end);
-    ret = ret + end * combKMinus1[n - l - 1];
+    ret = ret + end * combo.C(n - l - 1, k -1);
   }
   LOG(1, "End val: " << ret);
   
@@ -261,7 +251,7 @@ int main() {
     sum1 = sum;
     LOG(1, "Sum : " << sum);
     LOG(1, "Last " << last);
-    ret = ret + sum * combKMinus2[n - 3];
+    ret = ret + sum * combo.C(n - 3, k - 2);
     for_inc_range(l, 2, n - 2) {
       sum = sum - last;
       sum = sum * 10;
@@ -270,7 +260,7 @@ int main() {
       last = last + tenPower[l - 1] * (s[n - l - 1] - '0');
       LOG(2, "Last " << last);
       LOG(2, "Sum1 " << sum1);
-      ret = ret + sum * combKMinus2[n - l - 2];
+      ret = ret + sum * combo.C(n - l - 2, k - 2);
     }
   }
   
