@@ -131,7 +131,6 @@ int64 solve7(int k) {
 }
 
 int64 solve8(int k) {
-  return 8;
   if (k < 2) {
     return 2;
   }
@@ -139,9 +138,18 @@ int64 solve8(int k) {
   int64 ret3 = 0;
   if (k >= 3) {
     int nNode = 30;
-    ret3 = choose3(k) * (  -  3 * 2);
+    int64 r = 0;
+    for_inc_range(i, 2, nNode) {
+      if (i % 2 == 0) {
+        r = r * 2 + 1;
+      } else {
+        r = r * 2 - 1;
+      }
+    }
+    r = r * 2;
+    ret3 = choose3(k) * (3 * r  -  3 * 2);
   }
-  return 0;
+  return ret2 + ret3;
 }
 
 int main() {
