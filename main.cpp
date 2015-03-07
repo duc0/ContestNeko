@@ -53,7 +53,54 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input5.txt", "r", stdin);
 #endif
+  
+  int numMeal;
+  cin >> numMeal;
+  vector<int> price(numMeal + 1);
+  for_inc_range(i, 1, numMeal) {
+    cin >> price[i];
+  }
+  
+  int menuPrice;
+  cin >> menuPrice;
+  vector<int> menu(5);
+  for_inc_range(i, 1, 4) {
+    cin >> menu[i];
+  }
+  
+  int traySize;
+  cin >> traySize;
+  vector<int> tray(numMeal + 1);
+  
+  int curPrice = 0;
+  
+  for_inc_range(i, 1, traySize) {
+    int x;
+    cin >> x;
+    tray[x]++;
+    curPrice += price[x];
+  }
+  
+  int best = curPrice;
+  
+  int numMenu = 1;
+  while (1) {
+    bool found = false;
+    for_inc_range(i, 1, 4) {
+      if (tray[menu[i]] > 0) {
+        found = true;
+        tray[menu[i]]--;
+        curPrice -= price[menu[i]];
+      }
+    }
+    if (!found) break;
+    curPrice += menuPrice;
+    best = min(best, curPrice);
+    numMenu++;
+  }
+  
+  cout << best << endl;
   return 0;
 }
