@@ -76,15 +76,27 @@ public:
   template <class Q> ModInt operator-(const Q &y) const {
     return ModInt(x - get(y));
   }
+  template <class Q> ModInt& operator-=(const Q &y) {
+    x = NumberTheory<T>::modulo(x - get(y), M);
+    return *this;
+  }
   template <class Q> bool operator!=(const Q &y) const {
     return x != get(y);
   }
   template <class Q> ModInt operator*(const Q &y) const {
     return ModInt((int64)x * get(y));
   }
+  template <class Q> ModInt& operator*=(const Q &y) {
+    x = NumberTheory<T>::modulo((int64)x * get(y), M);
+    return *this;
+  }
   template <class Q> ModInt operator/(const Q &y) const {
     return ModInt(
                   (int64)x * NumberTheory<T>::modularInverse(get(y), MOD));
+  }
+  template <class Q> ModInt& operator/=(const Q &y) {
+    x = NumberTheory<T>::modulo((int64)x * NumberTheory<T>::modularInverse(get(y), MOD), M);
+    return *this;
   }
   ModInt &operator=(const T &y) {
     x = NumberTheory<T>::modulo(y, M);
