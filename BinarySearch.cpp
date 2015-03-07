@@ -123,19 +123,65 @@ public:
   }
 };
 
-template<class T> T binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
-  T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
-  while (leftIndex <= rightIndex) {
-    midIndex = leftIndex + (rightIndex - leftIndex) / 2;
-    if (predicate(midIndex)) {
-      ret = midIndex;
-      rightIndex = midIndex - 1;
-    } else {
-      leftIndex = midIndex + 1;
+class BinarySearch {
+public:
+  static template<class T> T binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+    while (leftIndex <= rightIndex) {
+      midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+      if (predicate(midIndex)) {
+        ret = midIndex;
+        rightIndex = midIndex - 1;
+      } else {
+        leftIndex = midIndex + 1;
+      }
     }
+    return ret;
   }
-  return ret;
-}
+
+  static template<class T> T binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+    while (leftIndex <= rightIndex) {
+      midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+      if (predicate(midIndex)) {
+        ret = midIndex;
+        leftIndex = midIndex + 1;
+      } else {
+        rightIndex = midIndex - 1;
+      }
+    }
+    return ret;
+  }
+
+  static double binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+      m = l + (r - l) / 2;
+      if (predicate(m)) {
+        ret = m;
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+    return ret;
+  }
+  
+  static double binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+      m = l + (r - l) / 2;
+      if (predicate(m)) {
+        l = m;
+        ret = m;
+      } else {
+        r = m;
+      }
+    }
+    return ret;
+  }
+
+};
 
 int n;
 vector<pair<int, int>> a;
