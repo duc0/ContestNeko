@@ -50,10 +50,135 @@ void testGen() {
   fclose(stdout);
 }
 
+int64 choose2(int64 k) {
+  return k * (k - 1) / 2;
+}
+
+int64 choose3(int64 k) {
+  return k * (k - 1) * (k - 2) / 6;
+}
+
+
+int64 solve1(int k) {
+  if (k < 2) {
+    return 0;
+  }
+  int64 nNode = 20;
+  
+  int64 ret2 = choose2(k) * 2;
+  
+  int64 ret3 = 0;
+  if (k >= 3) {
+    ret3 = choose3(k) * (3LL * (1LL << (nNode - 1)) - 3 * 2);
+  }
+  
+  return ret2 + ret3;
+}
+
+int64 solve2(int k) {
+  if (k < 3) {
+    return 0;
+  }
+  return choose3(k) * 3 * (1 << 5);
+}
+
+int64 solve3(int k) {
+  if (k < 2) {
+    return 0;
+  }
+  
+  int64 ret2 = choose2(k) * 2;
+  
+  int64 ret3 = 0;
+  if (k >= 3) {
+    ret3 = choose3(k) * (3 * (1 << 3) - 3 * 2);
+  }
+  
+  return ret2 + ret3;
+}
+
+int64 solve4(int k) {
+  if (k < 2) {
+    return 0;
+  }
+  int64 ret2 = choose2(k) * 2;
+  int64 ret3 = 0;
+  if (k >= 3) {
+    ret3 = choose3(k) * (3 * (1 << 13) - 3 * 2);
+  }
+  return ret2 + ret3;
+}
+
+int64 solve5(int k) {
+  if (k < 3) {
+    return 0;
+  }
+  return choose3(k) * 3 * 2 * 2;
+}
+
+int64 solve6(int k) {
+  if (k < 3) {
+    return 0;
+  }
+  return choose3(k) * 3;
+}
+
+int64 solve7(int k) {
+  if (k < 3) {
+    return 0;
+  }
+  return choose3(k) * 3 * (1 << 5);
+}
+
+int64 solve8(int k) {
+  if (k < 2) {
+    return 2;
+  }
+  int64 ret2 = choose2(k) * 2;
+  int64 ret3 = 0;
+  if (k >= 3) {
+    int nNode = 30;
+    ret3 = choose3(k) * (  -  3 * 2);
+  }
+  return 0;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  int n, k;
+  cin >> n >> k;
+  
+  int64 ret = 0;
+  switch (n) {
+    case 1:
+      ret = solve1(k);
+      break;
+    case 2:
+      ret = solve2(k);
+      break;
+    case 3:
+      ret = solve3(k);
+      break;
+    case 4:
+      ret = solve4(k);
+      break;
+    case 5:
+      ret = solve5(k);
+      break;
+    case 6:
+      ret = solve6(k);
+      break;
+    case 7:
+      ret = solve7(k);
+      break;
+    case 8:
+      ret = solve8(k);
+      break;
+  }
+  
+  cout << ret << endl;
   return 0;
 }
