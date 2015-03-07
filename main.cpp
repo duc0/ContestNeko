@@ -50,10 +50,51 @@ void testGen() {
   fclose(stdout);
 }
 
+int n, k;
+vector<int> a, pos;
+
+int getDist(int x, int y) {
+  if (pos[x] < pos[y]) {
+    return pos[y] - pos[x];
+  }
+  return pos[y] + n - pos[x];
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  
+  cin >> n >> k;
+  
+  a.resize(n + 1);
+  pos.resize(n + 1);
+  
+  for_inc_range(i, 1, n) {
+    cin >> a[i];
+    pos[a[i]] = i;
+  }
+  
+  vector<int64> ans(n + 1);
+  
+  ans[1] = getDist(n, 1);
+  for_inc_range(i, 2, n) {
+    ans[i] = ans[i - 1] + getDist(i - 1, i);
+  }
+  
+  int64 ret = 0;
+  
+  if (k >= n) {
+    ret = ret + (k / n) * ans[n];
+  }
+  
+  if (k % n > 0) {
+    ret = ret + ans[k % n];
+  }
+  
+  ret -= getDist(n, 1);
+  ret += pos[1] - 1;
+  cout << ret << endl;
   return 0;
 }
