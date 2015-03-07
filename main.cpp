@@ -120,7 +120,7 @@ int64 solve6(int k) {
   if (k < 3) {
     return 0;
   }
-  return choose3(k) * 3;
+  return choose3(k) * 6;
 }
 
 int64 solve7(int k) {
@@ -131,6 +131,7 @@ int64 solve7(int k) {
 }
 
 int64 solve8(int k) {
+  return 8;
   if (k < 2) {
     return 2;
   }
