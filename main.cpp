@@ -85,6 +85,10 @@ public:
   template <class Q> ModInt operator-(const Q &y) const {
     return ModInt(x - get(y));
   }
+  template <class Q> ModInt& operator-=(const Q &y) {
+    x = NumberTheory<T>::modulo(x - get(y), M);
+    return *this;
+  }
   template <class Q> bool operator!=(const Q &y) const {
     return x != get(y);
   }
@@ -125,6 +129,64 @@ template <class T> vector<T> getArrayFromDiffArray(const vector<T> &s, int minIn
   return a;
 }
 
+
+template<class T> class ComboUtils {
+  vector<T> factorial;
+  vector<T> inverseFactorial;
+  int maxN;
+public:
+  // Compute some combo numbers with up to n objects.
+  ComboUtils(int n) {
+    this->maxN = n;
+    factorial.resize(n + 1);
+    factorial[0] = 1;
+    for_inc_range(i, 1, n) {
+      factorial[i] = factorial[i - 1] * i;
+    }
+    inverseFactorial.resize(n + 1);
+    T one = 1;
+    for_inc_range(i, 0, n) {
+      inverseFactorial[i] = one / factorial[i];
+    }
+  }
+  
+  T C(int n, int k) {
+    assert (1 <= n && n <= maxN);
+    assert (0 <= k && k <= n);
+    return factorial[n] * inverseFactorial[k] * inverseFactorial[n - k];
+  }
+  
+  // Return a vector c[i] = C(i, k) for i <= n, O(n)
+  static vector<T> getCombByK(int n, int k) {
+    vector<T> c(n + 1);
+    c[k] = 1;
+    for_inc_range(i, k + 1, n) {
+      c[i] = c[i - 1] * i / (i - k);
+    }
+    return c;
+  }
+  
+  // Return a vector c[i] = C(n, i) for i <= n, O(n)
+  static vector<T> getCombByN(int n) {
+    vector<T> c(n + 1);
+    c[0] = 1;
+    for_inc_range(i, 1, n) {
+      c[i] = c[i - 1] * (n - i + 1)/ i;
+    }
+    return c;
+  }
+  
+  // Return a vector p[i] = a^i for i <= n, O(n)
+  static vector<T> getPower(int n, T a) {
+    vector<T> p(n + 1);
+    p[0] = 1;
+    for_inc_range(i, 1, n) {
+      p[i] = p[i - 1] * a;
+    }
+    return p;
+  }
+};
+
 #define MAXK 100
 
 int main() {
@@ -134,7 +196,6 @@ int main() {
 #endif
   
   int n, q;
-  
   cin >> n >> q;
   
   vector<ModInt<int, MOD>> a(n + 1);
@@ -151,17 +212,14 @@ int main() {
     diff[i].resize(n + 1);
   }
   
+  ComboUtils<ModInt<int, MOD>> comboUtils(MAXK + n - 1);
   repeat(q) {
     int l, r, k;
     cin >> l >> r >> k;
-    diff[k + 1][l] = diff[k + 1][l] + 1;
+    diff[k + 1][l] += 1;
     if (r < n) {
-      int row = k + 1;
-      ModInt<int, MOD> t = 1;
       for_inc_range(kk, 0, k) {
-        diff[row][r + 1] = diff[row][r + 1] - t;
-        t = t * (kk + 1 + r - l) / (kk + 1);
-        row--;
+        diff[k + 1 - kk][r + 1] -= comboUtils.C(kk + r - l, kk);
       } 
     }
   }
