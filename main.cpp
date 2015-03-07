@@ -95,9 +95,17 @@ public:
   template <class Q> ModInt operator*(const Q &y) const {
     return ModInt((int64)x * get(y));
   }
+  template <class Q> ModInt& operator*=(const Q &y) {
+    x = NumberTheory<T>::modulo((int64)x * get(y), M);
+    return *this;
+  }
   template <class Q> ModInt operator/(const Q &y) const {
     return ModInt(
                   (int64)x * NumberTheory<T>::modularInverse(get(y), MOD));
+  }
+  template <class Q> ModInt& operator/=(const Q &y) {
+    x = NumberTheory<T>::modulo((int64)x * NumberTheory<T>::modularInverse(get(y), MOD), M);
+    return *this;
   }
   ModInt &operator=(const T &y) {
     x = NumberTheory<T>::modulo(y, M);
@@ -150,10 +158,29 @@ public:
     }
   }
   
+  // Number of ways to choose k objects from n objects
   T C(int n, int k) {
     assert (1 <= n && n <= maxN);
     assert (0 <= k && k <= n);
     return factorial[n] * inverseFactorial[k] * inverseFactorial[n - k];
+  }
+
+  // Number of ways to choose k objects from n objects and ordering is important
+  T A(int n, int k) {
+    assert (1 <= n && n <= maxN);
+    assert (0 <= k && k <= n);
+    return factorial[n] * inverseFactorial[n - k];
+  }
+  
+  // Number of ways to arrange n objects
+  T P(int n) {
+    assert (1 <= n && n <= maxN);
+    return factorial[n];
+  }
+  
+  // Number of ways to choose k objects from n objects, with repetition
+  T repeatC(int n, int k) {
+    return C(n + k - 1, k);
   }
   
   // Return a vector c[i] = C(i, k) for i <= n, O(n)
@@ -189,6 +216,8 @@ public:
 
 #define MAXK 100
 
+
+// Sample: CF 239_C
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
