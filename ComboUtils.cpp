@@ -117,8 +117,50 @@ public:
 };
 
 template<class T> class ComboUtils {
-  
+  vector<T> factorial;
+  vector<T> inverseFactorial;
+  int maxN;
 public:
+  // Compute some combo numbers with up to n objects.
+  ComboUtils(int n) {
+    this->maxN = n;
+    factorial.resize(n + 1);
+    factorial[0] = 1;
+    for_inc_range(i, 1, n) {
+      factorial[i] = factorial[i - 1] * i;
+    }
+    inverseFactorial.resize(n + 1);
+    T one = 1;
+    for_inc_range(i, 0, n) {
+      inverseFactorial[i] = one / factorial[i];
+    }
+  }
+  
+  // Number of ways to choose k objects from n objects
+  T C(int n, int k) {
+    assert (1 <= n && n <= maxN);
+    assert (0 <= k && k <= n);
+    return factorial[n] * inverseFactorial[k] * inverseFactorial[n - k];
+  }
+  
+  // Number of ways to choose k objects from n objects and ordering is important
+  T A(int n, int k) {
+    assert (1 <= n && n <= maxN);
+    assert (0 <= k && k <= n);
+    return factorial[n] * inverseFactorial[n - k];
+  }
+  
+  // Number of ways to arrange n objects
+  T P(int n) {
+    assert (1 <= n && n <= maxN);
+    return factorial[n];
+  }
+  
+  // Number of ways to choose k objects from n objects, with repetition
+  T repeatC(int n, int k) {
+    return C(n + k - 1, k);
+  }
+  
   // Return a vector c[i] = C(i, k) for i <= n, O(n)
   static vector<T> getCombByK(int n, int k) {
     vector<T> c(n + 1);
