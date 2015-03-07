@@ -134,7 +134,7 @@ template <class T> vector<T> getArrayFromDiffArray(const vector<T> &s, int minIn
   vector<T> a(s.size());
   a[minIndex] = s[minIndex];
   for_inc_range(i, minIndex + 1, maxIndex) {
-    a[i] = a[i - 1] + s[i];
+    a[i] = MODP(a[i - 1] + s[i]);
   }
   return a;
 }
@@ -186,19 +186,14 @@ int main() {
   
   cin >> n >> q;
   
-  vector<ModInt<int, MOD>> a(n + 1);
+  vector<int> a(n + 1);
   for_inc_range(i, 1, n) {
     int x;
     cin >> x;
     a[i] = x;
   }
-
-  vector<ModInt<int, MOD>> comb[MAXK + 1];
-  for_inc_range(k, 0, MAXK) {
-    comb[k] = ComboUtils<ModInt<int, MOD>>::getCombByK(k + n - 1, k);
-  }
   
-  vector<ModInt<int, MOD>> diff[MAXK + 2];
+  vector<int> diff[MAXK + 2];
   
   
   diff[0] = a;
@@ -209,22 +204,24 @@ int main() {
   repeat(q) {
     int l, r, k;
     cin >> l >> r >> k;
-    diff[k + 1][l] = diff[k + 1][l] + 1;
+    diff[k + 1][l] = MODP(diff[k + 1][l] + 1);
     if (r < n) {
-      int row = 0;
-      for_dec_range(kk, k, 0) {
-        ModInt<int, MOD> t = comb[kk][kk + r - l];
-        row++;
-        diff[row][r + 1] = diff[row][r + 1] - t;
+      int row = k + 1;
+      ModInt<int, MOD> t = 1;
+      for_inc_range(kk, 0, k) {
+//        ModInt<int, MOD> t = comb[kk][kk + r - l];
+        diff[row][r + 1] = MODP(diff[row][r + 1] - t.get());
+        t = t * (kk + 1 + r - l) / (kk + 1);
+        row--;
       } 
     }
   }
   
-  vector<ModInt<int, MOD>> ans = diff[MAXK + 1];
+  vector<int> ans = diff[MAXK + 1];
   for_dec_range(k, MAXK, 0) {
     ans = getArrayFromDiffArray(ans, 1, n);
     for_inc_range(i, 1, n) {
-      ans[i] = ans[i] + diff[k][i];
+      ans[i] = MODP(ans[i] + diff[k][i]);
     }
   }
   
