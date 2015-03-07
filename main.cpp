@@ -50,10 +50,61 @@ void testGen() {
   fclose(stdout);
 }
 
+double binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+  double l = minRange, r = maxRange, m, ret = maxRange + 1;
+  while (r - l > epsilon) {
+    m = l + (r - l) / 2;
+    if (predicate(m)) {
+      ret = m;
+      l = m;
+    } else {
+      r = m;
+    }
+  }
+  return ret;
+}
+
+int n, k;
+vector<int> a;
+
+bool hasAtLeast(double average) {
+  double sum = 0;
+  for_inc_range(i, 1, k - 1) {
+    sum += a[i] - average;
+  }
+  
+  double bestNow = -1e18, best = -1e18;
+  for_inc_range(i, k, n) {
+    sum += a[i] - average;
+    
+    bestNow = max(sum, bestNow + a[i] - average);
+    best = max(best, bestNow);
+    
+    sum -= a[i - k + 1] - average;
+  }
+  
+  return best >= 0;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input4.txt", "r", stdin);
 #endif
+  
+  cin >> n >> k;
+  a.resize(n + 1);
+  
+  double sum = 0;
+  for_inc_range(i, 1, n) {
+    cin >> a[i];
+    sum = max(sum, (double)a[i]);
+  }
+  
+  
+  double ret = binarySearchMaxReal(0, sum, 1e-4, [](double average) {return hasAtLeast(average);});
+  
+  printf("%.6lf", ret);
+  
   return 0;
 }
