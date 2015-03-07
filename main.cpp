@@ -50,10 +50,95 @@ void testGen() {
   fclose(stdout);
 }
 
+template <class T> int sortAndCountInversions(vector<T> a, int l, int r)
+{
+  if (l>=r) return 0;
+  int m=(l+r)/2;
+  int s=sortAndCountInversions(a,l,m) + sortAndCountInversions(a,m+1,r);
+  int i=0, j=m+1, k=l, n1=m-l+1;
+  vector<T> L(n1);
+  for (int i=0; i<n1; ++i) L[i]=a[l+i];
+  while (i<n1 && j<=r)
+    if (L[i] > a[j])
+    {
+      a[k++]=a[j++];
+      s+=n1-i;
+    }
+    else
+      a[k++]=L[i++];
+  while (i<n1) a[k++]=L[i++];
+  while (j<=r) a[k++]=a[j++];
+  return s;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input4.txt", "r", stdin);
 #endif
+  
+  int n, m;
+  cin >> n >> m;
+  vector<vector<int>> a(n + 1);
+  
+  int nBooks = 0;
+  
+  for_inc_range(i, 1, n) {
+    a[i].resize(m + 1);
+    for_inc_range(j, 1, m) {
+      int x;
+      cin >> x;
+      a[i][j] = x;
+      nBooks = max(nBooks, x);
+    }
+  }
+  
+  vector<pair<int, int>> pos(nBooks + 1);
+  
+  for_inc_range(i, 1, n) {
+    for_inc_range(j, 1, m) {
+      int x;
+      cin >> x;
+      if (x > 0) {
+        pos[x] = make_pair(i, j);
+      }
+    }
+  }
+  
+  int ret = 0;
+  
+  for_inc_range(i, 1, n) {
+    bool same = true;
+    vector<int> book;
+    for_inc_range(j, 1, m) {
+      int x = a[i][j];
+      if (x > 0) {
+        assert(pos[x].first == i);
+        if (pos[x].second != j) {
+          same = false;
+        }
+        book.push_back(x);
+      }
+    }
+    
+    if (!same) {
+      if (book.size() == m) {
+        cout << -1 << endl;
+        return 0;
+      }
+      LOG(1, "Row " << i);
+      
+      for_inc(j, book.size()) {
+        book[j] = pos[book[j]].second;
+        LOG(1, book[j]);
+      }
+      
+      int need = sortAndCountInversions<int>(book, 0,(int) book.size() - 1);
+      ret += need;
+    }
+  }
+  
+  cout << ret << endl;
+  
   return 0;
 }
