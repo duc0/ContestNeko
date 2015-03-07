@@ -39,11 +39,6 @@ using namespace std;
 #define INT_INF ((int)2E9L)
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
-int MODP(int64 x) {
-  int r = x % MOD;
-  if (r < 0) r += MOD;
-  return r;
-}
 
 template <class T> class NumberTheory {
   static void extendedEuclid(T a, T b, T &x, T &y) {
@@ -121,58 +116,14 @@ void testGen() {
   fclose(stdout);
 }
 
-template <class T> vector<T> getDiffArray(const vector<T> &a, int minIndex, int maxIndex) {
-  vector<T> s(a.size());
-  s[minIndex] = a[minIndex];
-  for_inc_range(i, minIndex + 1, maxIndex) {
-    s[i] = a[i] - a[i - 1];
-  }
-  return s;
-}
-
 template <class T> vector<T> getArrayFromDiffArray(const vector<T> &s, int minIndex, int maxIndex) {
   vector<T> a(s.size());
   a[minIndex] = s[minIndex];
   for_inc_range(i, minIndex + 1, maxIndex) {
-    a[i] = MODP(a[i - 1] + s[i]);
+    a[i] = a[i - 1] + s[i];
   }
   return a;
 }
-
-template<class T> class ComboUtils {
-  
-public:
-  // Return a vector c[i] = C(i, k) for i <= n, O(n)
-  static vector<T> getCombByK(int n, int k) {
-    vector<T> c(n + 1);
-    c[k] = 1;
-    for_inc_range(i, k + 1, n) {
-      c[i] = c[i - 1] * i / (i - k);
-    }
-    return c;
-  }
-  
-  // Return a vector c[i] = C(n, i) for i <= n, O(n)
-  static vector<T> getCombByN(int n) {
-    vector<T> c(n + 1);
-    c[0] = 1;
-    for_inc_range(i, 1, n) {
-      c[i] = c[i - 1] * (n - i + 1)/ i;
-    }
-    return c;
-  }
-  
-  // Return a vector p[i] = a^i for i <= n, O(n)
-  static vector<T> getPower(int n, T a) {
-    vector<T> p(n + 1);
-    p[0] = 1;
-    for_inc_range(i, 1, n) {
-      p[i] = p[i - 1] * a;
-    }
-    return p;
-  }
-};
-
 
 #define MAXK 100
 
@@ -186,15 +137,14 @@ int main() {
   
   cin >> n >> q;
   
-  vector<int> a(n + 1);
+  vector<ModInt<int, MOD>> a(n + 1);
   for_inc_range(i, 1, n) {
     int x;
     cin >> x;
     a[i] = x;
   }
   
-  vector<int> diff[MAXK + 2];
-  
+  vector<ModInt<int, MOD>> diff[MAXK + 2];
   
   diff[0] = a;
   for_inc_range(i, 1, MAXK + 1) {
@@ -204,24 +154,23 @@ int main() {
   repeat(q) {
     int l, r, k;
     cin >> l >> r >> k;
-    diff[k + 1][l] = MODP(diff[k + 1][l] + 1);
+    diff[k + 1][l] = diff[k + 1][l] + 1;
     if (r < n) {
       int row = k + 1;
       ModInt<int, MOD> t = 1;
       for_inc_range(kk, 0, k) {
-//        ModInt<int, MOD> t = comb[kk][kk + r - l];
-        diff[row][r + 1] = MODP(diff[row][r + 1] - t.get());
+        diff[row][r + 1] = diff[row][r + 1] - t;
         t = t * (kk + 1 + r - l) / (kk + 1);
         row--;
       } 
     }
   }
   
-  vector<int> ans = diff[MAXK + 1];
+  vector<ModInt<int, MOD>> ans = diff[MAXK + 1];
   for_dec_range(k, MAXK, 0) {
     ans = getArrayFromDiffArray(ans, 1, n);
     for_inc_range(i, 1, n) {
-      ans[i] = MODP(ans[i] + diff[k][i]);
+      ans[i] = ans[i] + diff[k][i];
     }
   }
   
