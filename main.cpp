@@ -54,7 +54,7 @@ int n, k;
 vector<int> a, pos;
 
 int getDist(int x, int y) {
-  if (pos[x] < pos[y]) {
+  if (pos[x] <= pos[y]) {
     return pos[y] - pos[x];
   }
   return pos[y] + n - pos[x];
@@ -63,7 +63,7 @@ int getDist(int x, int y) {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input3.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
   cin >> n >> k;
