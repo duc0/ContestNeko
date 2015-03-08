@@ -233,6 +233,14 @@ vector<int> queryResult;
 vector<int> maxPos;
 vector<int> prevEq;
 
+// Algorithm: we look at each group of equal elements
+// Divide the groups into small and big groups.
+// Small groups have less than sqrt(N) elements will be processed
+// by a O(NKlogN) = O(Nsqrt(N)logN) algorithm where K is the largest size
+// of a group.
+// Each big group will be processed by a O(NlogN) algorithm, but there
+// can be at most sqrt(N) big groups, so it is also O(Nsqrt(N)logN).
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
