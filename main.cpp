@@ -160,6 +160,66 @@ public:
   Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
 };
 
+class BinarySearch {
+public:
+  template<class T> static T binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+    while (leftIndex <= rightIndex) {
+      midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+      if (predicate(midIndex)) {
+        ret = midIndex;
+        rightIndex = midIndex - 1;
+      } else {
+        leftIndex = midIndex + 1;
+      }
+    }
+    return ret;
+  }
+  
+  template<class T> static T binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+    while (leftIndex <= rightIndex) {
+      midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+      if (predicate(midIndex)) {
+        ret = midIndex;
+        leftIndex = midIndex + 1;
+      } else {
+        rightIndex = midIndex - 1;
+      }
+    }
+    return ret;
+  }
+  
+  static double binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+      m = l + (r - l) / 2;
+      if (predicate(m)) {
+        ret = m;
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+    return ret;
+  }
+  
+  static double binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+      m = l + (r - l) / 2;
+      if (predicate(m)) {
+        l = m;
+        ret = m;
+      } else {
+        r = m;
+      }
+    }
+    return ret;
+  }
+  
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -172,18 +232,6 @@ vector<int> countGroup;
 vector<int> queryResult;
 vector<int> maxPos;
 vector<int> prevEq;
-
-struct MinMaxPos {
-  int minPos, maxPos;
-  MinMaxPos() {
-    minPos = n + 1;
-    maxPos = 0;
-  }
-  MinMaxPos(int minPos, int maxPos) {
-    this->minPos = minPos;
-    this->maxPos = maxPos;
-  }
-};
 
 int main() {
   ios::sync_with_stdio(false);
@@ -252,34 +300,28 @@ int main() {
     }
   }
   
-  SegmentTree<int, MinMaxPos> tree
-  (
-   1,
-   n,
-   0,
-   [](const MinMaxPos &l, const MinMaxPos &r) {return MinMaxPos{min(l.minPos, r.minPos), max(l.maxPos, r.maxPos)};},
-   [](const MinMaxPos &cur, int oldV, int v, int l, int r) {return (v == 1) ? MinMaxPos{l, r} : MinMaxPos();},
-   [](MinMaxPos &curQ, MinMaxPos &lQ, MinMaxPos &rQ, int curV, int l, int mid, int r) {}
-   );
-  
   for_dec_range(i, n, 1) {
     if (countGroup[a[i]] > cutOff) {
-      // Clear the tree
-      tree.update(1, n, 0);
-      
-      LOG(1, "Group of a[i]=" << a[i] << " is big");
+            LOG(1, "Group of a[i]=" << a[i] << " is big");
+      int g = countGroup[a[i]];
       // Big group
+      vector<int> group(g + 1);
+      int t = g;
       int j = i;
       while (j > 0) {
-        tree.update(j, j, 1);
+        group[t] = j;
+        t--;
         LOG(1, "Add element at " << j);
         j = prevEq[j];
       }
       for (auto &q: query) {
         int l = q.first.second, r = q.first.first, id = q.second;
-        MinMaxPos ans = tree.query(l, r);
-        LOG(1, "Process query  " << l << " " << r << " result " << ans.maxPos - ans.minPos);
-        queryResult[id] = max(queryResult[id], ans.maxPos - ans.minPos);
+
+        int minPos = BinarySearch::binarySearchMin<int>(1, g, [&](int i){ return group[i] >= l;});
+        if (minPos != g + 1 && group[minPos] <= r) {
+          int maxPos = BinarySearch::binarySearchMax<int>(1, g, [&](int i){ return group[i] <= r;});
+          queryResult[id] = max(queryResult[id], group[maxPos] - group[minPos]);
+        }
       }
       
       // Just mark that this group has been processed.
