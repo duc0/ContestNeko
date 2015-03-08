@@ -125,7 +125,7 @@ public:
 
 class BinarySearch {
 public:
-  static template<class T> T binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+  template<class T> static T binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
     T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
     while (leftIndex <= rightIndex) {
       midIndex = leftIndex + (rightIndex - leftIndex) / 2;
@@ -138,8 +138,8 @@ public:
     }
     return ret;
   }
-
-  static template<class T> T binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+  
+  template<class T> static T binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
     T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
     while (leftIndex <= rightIndex) {
       midIndex = leftIndex + (rightIndex - leftIndex) / 2;
@@ -152,7 +152,7 @@ public:
     }
     return ret;
   }
-
+  
   static double binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
     double l = minRange, r = maxRange, m, ret = maxRange + 1;
     while (r - l > epsilon) {
@@ -180,7 +180,7 @@ public:
     }
     return ret;
   }
-
+  
 };
 
 int n;
