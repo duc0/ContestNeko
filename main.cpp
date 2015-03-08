@@ -191,21 +191,21 @@ int main() {
   freopen("input2.txt", "r", stdin);
 #endif
   
-  cin >> n >> m >> nQuery;
+  scanf("%d%d%d", &n, &m, &nQuery);
   a.resize(n + 1);
   
   countGroup.resize(m + 1);
   maxPos.resize(m + 1);
   prevEq.resize(n + 1);
   for_inc_range(i, 1, n) {
-    cin >> a[i];
+    scanf("%d", &a[i]);
     countGroup[a[i]]++;
   }
   
   queryResult.resize(nQuery);
   for_inc(i, nQuery) {
     int l, r;
-    cin >> l >> r;
+    scanf("%d%d", &l, &r);
     query.push_back(make_pair(make_pair(r, l), i));
   }
   
