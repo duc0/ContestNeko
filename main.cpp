@@ -20,15 +20,53 @@ using namespace std;
 #define repeat(x) for(auto repeat_var=0;repeat_var<x;++repeat_var)
 #define fill0(x) memset(x, 0, sizeof(x))
 
+#define MOD 1000000007
+
 int64 lcm(int64 a, int64 b) {
   return (int64) ( a * b) / __gcd(a, b);
 }
+
+void factor(int n, vector<int> &factor, vector<int> &power) {
+  factor.clear();
+  power.clear();
+  for (int i=2; i*i<=n; ++i) {
+    if (n%i == 0) {
+      factor.push_back(i);
+      int p;
+      for (p=0; n%i==0; n/=i, ++p);
+      power.push_back(p);
+    }
+  }
+  if (n>1) {
+    factor.push_back(n);
+    power.push_back(1);
+  }
+}
+
+map<int, int> cnt;
+
 class ThePermutationGame {
 public:
    int findMin( int n ) {
-     int64 ret = 1;
+     cnt.clear();
      for (int i = 1; i <= n; ++i) {
-       ret = lcm(ret, i);
+       vector<int> f, p;
+       factor(i, f, p);
+       for (int k = 0; k < f.size(); ++k) {
+         if (cnt.count(f[k])) {
+           cnt[f[k]] = max(cnt[f[k]], p[k]);
+         } else {
+           cnt[f[k]] = p[k];
+         }
+       }
+     }
+     int64 ret = 1;
+     for (auto &e: cnt) {
+       int64 p = 1;
+       repeat(e.second) {
+         p = (p * (e.first)) % MOD;
+       }
+       ret = (ret * p) % MOD;
      }
      return (int)ret;
    }
