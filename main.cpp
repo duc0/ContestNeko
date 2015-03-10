@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -55,5 +55,53 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  vector<deque<int>> pile(n);
+  int total = 0;
+  for_inc(i, n) {
+    int s;
+    cin >> s;
+    total += s;
+    repeat(s) {
+      int x;
+      cin >> x;
+      pile[i].push_back(x);
+    }
+  }
+  
+  int sum1 = 0, sum2 = 0;
+  bool turn1 = true;
+  repeat(total) {
+    if (turn1) {
+      int best = 0, bestI = -1;
+      for_inc(i, n) {
+        if (!pile[i].empty()) {
+          if (pile[i].front() > best) {
+            best = pile[i].front();
+            bestI = i;
+          }
+        }
+      }
+      sum1 += best;
+      pile[bestI].pop_front();
+    } else {
+      int best = 0, bestI = -1;
+      for_inc(i, n) {
+        if (!pile[i].empty()) {
+          if (pile[i].back() > best) {
+            best = pile[i].back();
+            bestI = i;
+          }
+        }
+      }
+      sum2 += best;
+      pile[bestI].pop_back();
+    }
+    turn1 = !turn1;
+  }
+  
+  cout << sum1 << " " << sum2 << endl;
   return 0;
 }
