@@ -55,5 +55,28 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  int n, k;
+  cin >> n >> k;
+  vector<int> p(n + 1);
+  vector<int> pos(n + 1);
+  for_inc_range(i, 1, n) {
+    cin >> p[i];
+    pos[p[i]] = i;
+  }
+  
+  for_inc_range(i, 1, n) {
+    if (k == 0) break;
+    int j = p[i];
+    if (j != n - i + 1) {
+      pos[j] = pos[n - i + 1];
+      swap(p[i], p[pos[n - i + 1]]);
+      pos[n - i + 1] = i;
+      k--;
+    }
+  }
+  
+  for_inc_range(i, 1, n) {
+    cout << p[i] << " ";
+  }
   return 0;
 }
