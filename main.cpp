@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -38,8 +38,7 @@ using namespace std;
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF ((int)2E9L)
 #define INT64_INF ((int64)1E18L)
-#define MOD 1000000007
-int MODP(int64 x) {
+int MODP(int64 x, int MOD) {
   int r = x % MOD;
   if (r < 0) r += MOD;
   return r;
@@ -55,5 +54,24 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  if (n % 2 == 0) {
+    cout << -1 << endl;
+  } else {
+    for_inc(i, n) {
+      cout << MODP(i - (n - 1 - i), n) << " ";
+    }
+    cout << endl;
+    for_dec(i, n) {
+      cout << i << " ";
+    }
+    cout << endl;
+    for_inc(i, n) {
+      cout << i << " ";
+    }
+    cout << endl;
+  }
   return 0;
 }
