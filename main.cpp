@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -53,7 +53,70 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  
+  int n, k;
+  cin >> n >> k;
+  int maxV = 0, minV = INT_INF;
+  vector<int> a(n + 1);
+  for_inc_range(i, 1, n) {
+    cin >> a[i];
+    maxV = max(maxV, a[i]);
+    minV = min(minV, a[i]);
+  }
+  
+  int maxDiff = maxV - minV;
+  vector<vector<pair<int, int>>> pairDiff(maxDiff + 1);
+  vector<bool> cannotDelete(maxDiff + 1);
+  fill(cannotDelete.begin(), cannotDelete.end(), false);
+  
+  for_inc_range(i, 1, n) {
+    for_inc_range(j, 1, i - 1) {
+      int x = abs(a[i] - a[j]);
+      if (pairDiff[x].size() == k) {
+        cannotDelete[x] = true;
+      } else {
+        pairDiff[x].push_back(make_pair(a[i], a[j]));
+      }
+    }
+  }
+  
+  for (int m = 1; ;++m) {
+    bool ok = true;
+    map<int, set<int>> group;
+    for (int x = 0; x <= maxDiff; x += m) {
+      if (cannotDelete[x]) {
+        ok = false;
+        break;
+      }
+      
+      for (auto &p : pairDiff[x]) {
+        int r = p.first % m;
+        assert(r == (p.second % m));
+        group[r].insert(p.first);
+        group[r].insert(p.second);
+      }
+      
+      if (group.size() > k) {
+        ok = false;
+        break;
+      }
+      
+      int totalDelete = 0;
+      for (auto &g: group) {
+        totalDelete += g.second.size();
+      }
+      totalDelete -= group.size();
+      if (totalDelete > k) {
+        ok = false;
+        break;
+      }
+    }
+    if (!ok) continue;
+    cout << m;
+    return 0;
+  }
+  
   return 0;
 }
