@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -55,5 +55,27 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  int n;
+  cin >> n;
+  vector<int> x(n);
+  for_inc(i, n) {
+    cin >> x[i];
+  }
+  sort(x.begin(), x.end());
+  vector<int> pile;
+  for_inc(i, n) {
+    bool found = false;
+    for (auto &p: pile) {
+      if (x[i] >= p) {
+        found = true;
+        p++;
+        break;
+      }
+    }
+    if (!found) {
+      pile.push_back(1);
+    }
+  }
+  cout << pile.size();
   return 0;
 }
