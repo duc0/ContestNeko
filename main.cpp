@@ -55,5 +55,21 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  int n, m, x, y, a, b;
+  cin >> n >> m >> x >> y >> a >> b;
+  
+  int g = __gcd(a, b);
+  a /= g;
+  b /= b;
+  
+  int k = min(n / a, m / b);
+  int width = a * k;
+  int height = b * k;
+  assert(width <= n);
+  assert(height <= m);
+  
+  if (width % 2 == 1) {
+    
+  }
   return 0;
 }
