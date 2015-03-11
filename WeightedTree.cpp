@@ -1,10 +1,16 @@
+//#define SUBMIT
+
+#ifdef SUBMIT
+#define LOGLEVEL 0
+#define NDEBUG
+#else
+#define LOGLEVEL 1
+#endif
+
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
-
-#define NDEBUG
 #include <cassert>
-
 #include <iostream>
 #include <vector>
 #include <map>
@@ -14,9 +20,12 @@
 #include <array>
 #include <type_traits>
 #include <queue>
+#include <stack>
 #include <functional>
 
 using namespace std;
+
+#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
 
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
@@ -27,26 +36,14 @@ using namespace std;
 #define for_dec_range(i, x, y) for (auto i = x; i >= y; --i)
 
 #define fill0(x) memset(x, 0, sizeof(x))
-#define INT_INF 2E9L
-
-#define ntype int
-#define N_INF INT_INF
-
+#define INT_INF ((int)2E9L)
+#define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
-inline int MODP(int64 x) {
+int MODP(int64 x) {
   int r = x % MOD;
-  if (r < 0)
-    r += MOD;
+  if (r < 0) r += MOD;
   return r;
 }
-
-void testGen() {
-  freopen("biginput1.txt", "w", stdout);
-  fclose(stdout);
-}
-
-int n;
-
 
 // Weighted undirected tree
 template <class T> class WeightedTree {
@@ -61,7 +58,7 @@ template <class T> class WeightedTree {
   int root;
   
 public:
-  vector<pair<int, T>> &getAdjacent(int u) { return adj[u]; }
+  const vector<pair<int, T>> &getAdjacent(int u) const { return adj[u]; }
   
   void reset(int size) {
     this->n = size;
@@ -91,15 +88,15 @@ public:
     }
   }
   
-  int getParent(int u) { return p[u].first; }
+  int getParent(int u) const { return p[u].first; }
   
-  T getWeight(int u) { return p[u].second; }
+  T getWeight(int u) const { return p[u].second; }
   
-  int getDepth(int u) { return depth[u]; }
+  int getDepth(int u) const { return depth[u]; }
   
-  size_t getSize() { return n; }
+  size_t getSize() const { return n; }
   
-  int getRoot() { return root; }
+  int getRoot() const { return root; }
   
   void setRoot(int u) {
     for_inc_range(v, 1, n) {
@@ -116,223 +113,220 @@ public:
   }
 };
 
-// LCA O(logn)
-template <class T, class Q> class LowestCommonAncestor {
-  // anc[i][j] = ancestor 2^j dist away from i and a combined value generated
-  // from the path from i to that ancestor,
-  // default to the min weight
-  vector<vector<pair<int, Q>>> anc;
-  WeightedTree<T> &t;
-  function<Q(Q, Q)> combine;
+template<class T> class TreeToArray {
+  const WeightedTree<T> &tree;
+  
+  int timeStamp;
+  // sequence[start[u], finish[u]] = subtree rooted at u
+  vector<int> start, finish, sequence;
+  
+  void dfs(int u) {
+    timeStamp++;
+    sequence[timeStamp] = u;
+    start[u] = timeStamp;
+    for (auto &v: tree.getAdjacent(u)) {
+      if (start[v.first] == 0) {
+        dfs(v.first);
+      }
+    }
+    finish[u] = timeStamp;
+  }
   
 public:
-  LowestCommonAncestor(WeightedTree<T> &tree)
-  : LowestCommonAncestor(
-                         tree, [](WeightedTree<T> &t, int u) { return t.getWeight(u); },
-                         [](Q a, Q b) { return min(a, b); }) {}
-  
-  LowestCommonAncestor(WeightedTree<T> &tree,
-                       const function<Q(WeightedTree<T> &, int)> &getInitial,
-                       const function<Q(Q, Q)> &combine)
-  : t(tree), combine(combine) {
-    anc.resize(t.getSize() + 1);
-    for_inc_range(i, 1, t.getSize()) {
-      if (i != t.getRoot()) {
-        anc[i].push_back(make_pair(t.getParent(i), getInitial(t, i)));
-      }
-    }
-    for (int k = 1;; ++k) {
-      bool ok = false;
-      for_inc_range(i, 1, t.getSize()) {
-        if (anc[i].size() >= k) {
-          int j = anc[i][k - 1].first;
-          if (anc[j].size() >= k) {
-            int x = anc[j][k - 1].first;
-            anc[i].push_back(make_pair(
-                                       x, combine(anc[i][k - 1].second, anc[j][k - 1].second)));
-            ok = true;
-          }
-        }
-      }
-      if (!ok)
-        break;
-    }
+  TreeToArray(const WeightedTree<T> &tree): tree(tree) {
+    timeStamp = 0;
+    start.resize(tree.getSize() + 1);
+    finish.resize(tree.getSize() + 1);
+    sequence.resize(tree.getSize() + 1);
+    dfs(tree.getRoot());
   }
   
-  // Get the kth ancestor of k, t = 0 .. depth[u]
-  int getAncestor(int u, int k) {
-    assert(0 <= k && k <= t.getDepth(u));
-    if (k == 0) {
-      return u;
-    }
-    int b = 0;
-    while ((1 << b) <= k) ++b;
-    --b;
-    return getAncestor(anc[u][b].first, k - (1 << b));
+  const WeightedTree<T>& getTree() const {
+    return tree;
   }
   
-  pair<int, T> getLCA(int u, int v) {
-    if (t.getDepth(u) > t.getDepth(v)) {
-      swap(u, v);
-    }
-    if (t.getDepth(v) > t.getDepth(u)) {
-      for_dec(i, anc[v].size()) {
-        int w = anc[v][i].first;
-        if (t.getDepth(w) >= t.getDepth(u)) {
-          pair<int, T> p = getLCA(u, w);
-          p.second = min(anc[v][i].second, p.second);
-          return p;
-        }
-      }
-    } else { // depth[v] == depth[u]
-      if (u == v) {
-        return make_pair(u, INT_INF);
-      }
-      for_dec(i, anc[u].size()) {
-        int x = anc[u][i].first;
-        int y = anc[v][i].first;
-        if (x != y || i == 0) {
-          pair<int, T> p = getLCA(x, y);
-          p.second = combine(anc[u][i].second, p.second);
-          p.second = combine(anc[v][i].second, p.second);
-          return p;
-        }
-      }
-    }
-    return make_pair(-1, -1);
+  int getStartTime(int u) const {
+    return start[u];
+  }
+  
+  int getFinishTime(int u) const {
+    return finish[u];
   }
 };
 
-// Sample problem: CF 282 - D
-#define MAXN 100100
-bool visit[MAXN];
-
-WeightedTree<int> tree;
-int sumWeight[MAXN]; // sum weight from root
-
-int cntNode[MAXN];
-int sumDist[MAXN];
-int sumSqrDist[MAXN]; // sum sqr dist from u to all nodes in subtree root u
-
-int sumAllSqrDist[MAXN]; // sum sqr dist from u to all other nodes
-int sumAllDist[MAXN];    // sum dist from u to all other nodes
-
-int getDistInc(int w, int v) {
-  return MODP((int64)cntNode[v] * w + sumDist[v]);
-}
-
-int getSqrDistInc(int w, int v) {
-  int sqrDistInc = MODP((int64)w * w);
-  sqrDistInc = MODP((int64)sqrDistInc * cntNode[v]);
-  sqrDistInc = MODP(sqrDistInc + (int64)2 * w * sumDist[v]);
-  sqrDistInc = MODP(sqrDistInc + sumSqrDist[v]);
-  return sqrDistInc;
-}
-
-void dfs(int u) {
-  visit[u] = true;
-  cntNode[u] = 1;
-  sumDist[u] = 0;
-  sumSqrDist[u] = 0;
+template <class T> class BinaryIndexedTree {
+  vector<T> val;
+  int n, minIndex, maxIndex;
   
-  for (auto &e : tree.getAdjacent(u)) {
-    int v = e.first, w = e.second;
-    if (v != tree.getParent(u) && !visit[v]) {
-      sumWeight[v] = MODP(sumWeight[u] + w);
-      dfs(v);
-      cntNode[u] += cntNode[v];
-      sumDist[u] = MODP(sumDist[u] + getDistInc(w, v));
-      sumSqrDist[u] = MODP(sumSqrDist[u] + getSqrDistInc(w, v));
+public:
+  BinaryIndexedTree(int n): BinaryIndexedTree(1, n) {}
+  
+  BinaryIndexedTree(int minIndex, int maxIndex) {
+    init(minIndex, maxIndex);
+  }
+  
+  BinaryIndexedTree() {}
+  
+  void init(int minIndex, int maxIndex) {
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+    this->n = maxIndex - minIndex + 1;
+    val.resize(n + 1);
+  }
+  
+  void add(int i, int v) {
+    i = i - minIndex + 1;
+    for (; i <= n; i += i & -i) {
+      val[i] += v;
     }
   }
-}
-
-void dfsSumAllDist(int u) {
-  visit[u] = true;
-  for (auto &e : tree.getAdjacent(u)) {
-    int v = e.first, w = e.second;
-    if (v != tree.getParent(u) && !visit[v]) {
-      int nOutside = n - cntNode[v];
-      int retSumDist = sumAllDist[u];
-      retSumDist = MODP(retSumDist - getDistInc(w, v));
-      
-      int retSumSqrDist = sumAllSqrDist[u];
-      retSumSqrDist = MODP(retSumSqrDist - getSqrDistInc(w, v));
-      int inc = MODP((int64)w * w);
-      inc = MODP((int64)inc * nOutside);
-      inc = MODP(inc + (int64)2 * w * retSumDist);
-      retSumSqrDist = MODP(retSumSqrDist + inc);
-      
-      retSumDist = MODP(retSumDist + (int64)w * nOutside);
-      retSumDist = MODP(retSumDist + sumDist[v]);
-      sumAllDist[v] = retSumDist;
-      
-      retSumSqrDist = MODP(retSumSqrDist + sumSqrDist[v]);
-      sumAllSqrDist[v] = retSumSqrDist;
-      
-      dfsSumAllDist(v);
-    }
+  T sum(int i) {
+    i = i - minIndex + 1;
+    if (i <= 0) return 0;
+    if (i > n) i = n;
+    T s = 0;
+    for (; i > 0; i -= i & -i)
+      s += val[i];
+    return s;
   }
+  
+  T sum(int i1, int i2) { return sum(i2) - sum(i1 - 1); }
+};
+
+template <class T> class RangeUpdateArray {
+  BinaryIndexedTree<T> tree;
+  int minIndex, maxIndex;
+  
+public:
+  RangeUpdateArray() {}
+  
+  RangeUpdateArray(int n) {
+    init(1, n);
+  }
+  
+  RangeUpdateArray(int minIndex, int maxIndex) {
+    init(minIndex, maxIndex);
+  }
+  
+  void init(int minIndex, int maxIndex) {
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+    tree.init(minIndex, maxIndex);
+  }
+  
+  // Do a[k] = a[k] + v for i <= k <= j
+  // O(logn)
+  void add(int i, int j, T v) {
+    assert(minIndex <= i && i <= j && j <= maxIndex);
+    if (j < maxIndex) {
+      tree.add(j + 1, -v);
+    }
+    tree.add(i, v);
+  }
+  
+  // Return a[i] in O(logn)
+  T get(int i) {
+    assert (minIndex <= i && i <= maxIndex);
+    return tree.sum(i);
+  }
+  
+  const T operator[](int i) {
+    return get(i);
+  }
+};
+
+template <class T, class W> class RangeUpdateTree {
+  const TreeToArray<W> &treeToArray;
+  RangeUpdateArray<T> a;
+  int n;
+public:
+  RangeUpdateTree(const TreeToArray<W> &treeToArray): treeToArray(treeToArray) {
+    n = (int) treeToArray.getTree().getSize();
+    a.init(1, n);
+  }
+  
+  // Add a value to a node
+  void addNode(int u, const T &val) {
+    assert(1 <= u && u <= n);
+    int p = treeToArray.getStartTime(u);
+    a.add(p, p, val);
+  }
+  
+  // Add a value to all node at a rooted-subtree
+  void addSubtree(int u, const T &val) {
+    assert(1 <= u && u <= n);
+    a.add(treeToArray.getStartTime(u), treeToArray.getFinishTime(u), val);
+  }
+  
+  // Return the value at node u
+  T get(int u) {
+    assert(1 <= u && u <= n);
+    return a.get(treeToArray.getStartTime(u));
+  }
+  
+  const T operator[](int u) {
+    return get(u);
+  }
+};
+
+void testGen() {
+  freopen("biginput1.txt", "w", stdout);
+  fclose(stdout);
 }
 
+// CF 225 - C
 int main() {
-  // testGen();
+  ios::sync_with_stdio(false);
+#ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
+#endif
   
-  scanf("%d", &n);
-  tree.reset(n);
-  int a, b, c;
+  int n, q;
+  cin >> n >> q;
+  vector<int> a(n + 1);
+  for_inc_range(i, 1, n) cin >> a[i];
+  
+  WeightedTree<int> tree(n);
   repeat(n - 1) {
-    scanf("%d%d%d", &a, &b, &c);
-    tree.addEdge(a, b, c);
+    int u, v;
+    cin >> u >> v;
+    tree.addEdge(u, v, 1);
   }
   tree.setRoot(1);
-  fill0(visit);
-  sumWeight[1] = 0;
-  dfs(1);
   
-  fill0(visit);
-  sumAllSqrDist[1] = sumSqrDist[1];
-  sumAllDist[1] = sumDist[1];
-  dfsSumAllDist(1);
+  TreeToArray<int> treeToArray(tree);
   
-  LowestCommonAncestor<int, int> tree_lca(tree);
-  int q;
-  scanf("%d", &q);
-  int u, v;
+  RangeUpdateTree<int, int> odd(treeToArray);
+  RangeUpdateTree<int, int> even(treeToArray);
+  for_inc_range(u, 1, n) {
+    odd.addNode(u, a[u]);
+    even.addNode(u, a[u]);
+  }
+  
   repeat(q) {
-    scanf("%d%d", &u, &v);
-    int ret;
-    if (u == v) {
-      ret = MODP(2 * sumSqrDist[u] - sumAllSqrDist[u]);
-    } else {
-      int x = tree_lca.getLCA(u, v).first;
-      if (x == v) {
-        int w = MODP(sumWeight[u] - sumWeight[v]);
-        
-        int nOutside = n - cntNode[v];
-        ret = 0;
-        ret = MODP(sumAllSqrDist[v] - sumSqrDist[v]);
-        
-        int retSumDist = MODP(sumAllDist[v] - sumDist[v]);
-        
-        int inc = MODP((int64)w * w);
-        inc = MODP((int64)inc * nOutside);
-        inc = MODP(inc + (int64)2 * w * retSumDist);
-        
-        ret = MODP(ret + inc);
-        ret = MODP(sumAllSqrDist[u] - 2 * ret);
+    int t;
+    cin >> t;
+    if (t == 1) {
+      int u, val;
+      cin >> u >> val;
+      
+      if (tree.getDepth(u) % 2 == 0) {
+        even.addSubtree(u, val);
+        odd.addSubtree(u, -val);
       } else {
-        int w = MODP(sumWeight[u] - sumWeight[x]);
-        w = MODP(w + sumWeight[v] - sumWeight[x]);
-        int inc = MODP((int64)w * w);
-        inc = MODP((int64)inc * cntNode[v]);
-        inc = MODP(inc + (int64)2 * w * sumDist[v]);
-        ret = MODP(sumSqrDist[v] + inc);
-        ret = MODP(2 * ret - sumAllSqrDist[u]);
+        odd.addSubtree(u, val);
+        even.addSubtree(u, -val);
+      }
+    } else {
+      int u;
+      cin >> u;
+      
+      if (tree.getDepth(u) % 2 == 0) {
+        cout << even[u] << endl;
+      } else {
+        cout << odd[u] << endl;
       }
     }
-    cout << ret << endl;
   }
   
   return 0;
