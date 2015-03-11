@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -141,11 +141,15 @@ public:
     dfs(tree.getRoot());
   }
   
-  int getStartTime(int u) {
+  const WeightedTree<T>& getTree() const {
+    return tree;
+  }
+  
+  int getStartTime(int u) const {
     return start[u];
   }
   
-  int getFinishTime(int u) {
+  int getFinishTime(int u) const {
     return finish[u];
   }
 };
@@ -194,9 +198,17 @@ template <class T> class RangeUpdateArray {
   int minIndex, maxIndex;
   
 public:
-  RangeUpdateArray(int n): RangeUpdateArray(1, n) {}
+  RangeUpdateArray() {}
+  
+  RangeUpdateArray(int n) {
+    init(1, n);
+  }
   
   RangeUpdateArray(int minIndex, int maxIndex) {
+    init(minIndex, maxIndex);
+  }
+  
+  void init(int minIndex, int maxIndex) {
     this->minIndex = minIndex;
     this->maxIndex = maxIndex;
     tree.init(minIndex, maxIndex);
@@ -220,6 +232,40 @@ public:
   
   const T operator[](int i) {
     return get(i);
+  }
+};
+
+template <class T, class W> class RangeUpdateTree {
+  const TreeToArray<W> &treeToArray;
+  RangeUpdateArray<T> a;
+  int n;
+public:
+  RangeUpdateTree(const TreeToArray<W> &treeToArray): treeToArray(treeToArray) {
+    n = (int) treeToArray.getTree().getSize();
+    a.init(1, n);
+  }
+  
+  // Add a value to a node
+  void addNode(int u, const T &val) {
+    assert(1 <= u && u <= n);
+    int p = treeToArray.getStartTime(u);
+    a.add(p, p, val);
+  }
+  
+  // Add a value to all node at a rooted-subtree
+  void addSubtree(int u, const T &val) {
+    assert(1 <= u && u <= n);
+    a.add(treeToArray.getStartTime(u), treeToArray.getFinishTime(u), val);
+  }
+  
+  // Return the value at node u
+  T get(int u) {
+    assert(1 <= u && u <= n);
+    return a.get(treeToArray.getStartTime(u));
+  }
+  
+  const T operator[](int u) {
+    return get(u);
   }
 };
 
@@ -249,12 +295,11 @@ int main() {
   
   TreeToArray<int> treeToArray(tree);
   
-  RangeUpdateArray<int> odd(n);
-  RangeUpdateArray<int> even(n);
+  RangeUpdateTree<int, int> odd(treeToArray);
+  RangeUpdateTree<int, int> even(treeToArray);
   for_inc_range(u, 1, n) {
-    int p = treeToArray.getStartTime(u);
-    odd.add(p, p, a[u]);
-    even.add(p, p, a[u]);
+    odd.addNode(u, a[u]);
+    even.addNode(u, a[u]);
   }
   
   repeat(q) {
@@ -264,23 +309,21 @@ int main() {
       int u, val;
       cin >> u >> val;
       
-      int start = treeToArray.getStartTime(u);
-      int finish = treeToArray.getFinishTime(u);
       if (tree.getDepth(u) % 2 == 0) {
-        even.add(start, finish, val);
-        odd.add(start, finish, -val);
+        even.addSubtree(u, val);
+        odd.addSubtree(u, -val);
       } else {
-        odd.add(start, finish, val);
-        even.add(start, finish, -val);
+        odd.addSubtree(u, val);
+        even.addSubtree(u, -val);
       }
     } else {
       int u;
       cin >> u;
       
       if (tree.getDepth(u) % 2 == 0) {
-        cout << even[treeToArray.getStartTime(u)] << endl;
+        cout << even[u] << endl;
       } else {
-        cout << odd[treeToArray.getStartTime(u)] << endl;
+        cout << odd[u] << endl;
       }
     }
   }
