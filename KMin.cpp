@@ -52,6 +52,10 @@ int posRight[MAXN][MAXN];
 int ret[MAXK];
 
 // Compute all min(ai, ..., ai + k - 1) for each i in O(n)
+// Usage: KMin(k): initialize KMin algorithm with the given k
+// absorb(x): absorb the next element
+// getMin() return the minimum among the last absorbed k elements
+
 template <class T> class KMin {
   deque<pair<int, T>> a;
   int k;

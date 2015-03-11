@@ -53,6 +53,8 @@ void testGen() {
 
 // Compute LCS up ot length L of two sequences in O(L*(l1 + l2)) where l1, l2
 // are the length of the two sequences
+// Usage: construct with the two sequences, and L
+
 template<class T> class LongestCommonSubsequence {
   vector<int> seq1, seq2;
   int l1, l2, upper;

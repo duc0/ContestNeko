@@ -112,7 +112,10 @@ public:
   const vector<Point2D<T>> &getLowerHull() const { return lower; }
 };
 
+// Usage: construct the algorithm with a set of 2D points
+// And then get the farthest two points
 // O(nlogn)
+
 template <class T> class FarthestTwoPoints {
   T dist;
   

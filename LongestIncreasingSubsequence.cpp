@@ -65,7 +65,11 @@ template<class T> T binarySearchMax(const T &minIndex, const T &maxIndex, const 
   return ret;
 }
 
+// Find LIS in O(nlogn)
+// Usage: construct with iterators
+// Then query the LIS
 // O(nlogn)
+
 template <class T> class LongestIncreasingSubsequence {
   int n, longest;
   vector<int> minVal; // minVal[k] = min{a[i], lis(i) = k}

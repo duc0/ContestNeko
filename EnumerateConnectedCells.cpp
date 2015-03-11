@@ -81,6 +81,9 @@ void updateBest(const vector<pair<int, int>> &points) {
 // Enumerate all the set of possible connected cells (in a grid)
 // The origin is picked at (0, 0). No other cells (x, y) should have
 // x < 0 or (x == 0 and y < 0).
+// Usage EnumerateConnectedCells(n, callBack): set n and the callback function
+// that get calls when each connected set is found
+
 class EnumerateConnectedCells {
   vector<pair<int, int>> points;
   vector<vector<bool>> visit;

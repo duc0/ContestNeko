@@ -116,12 +116,14 @@ public:
   
 };
 
+// Usage:
+// Construct comboUtils(n): Compute some combo numbers with up to n objects.
+
 template<class T> class ComboUtils {
   vector<T> factorial;
   vector<T> inverseFactorial;
   int maxN;
 public:
-  // Compute some combo numbers with up to n objects.
   ComboUtils(int n) {
     this->maxN = n;
     factorial.resize(n + 1);
