@@ -1,4 +1,4 @@
-#define SUBMIT
+//#define SUBMIT
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -47,13 +47,68 @@ int MODP(int64 x) {
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
+  int nTest = 100;
+  cout << nTest << endl;
+  repeat(nTest) {
+    int n = 100, k = 105;
+    cout << n << " " << k << endl;
+    repeat(n) {
+      cout << rand() % 200 + 1 << " ";
+    }
+    cout << endl;
+  }
   fclose(stdout);
+}
+
+int64 solve(const vector<int> &a, int k) {
+  int n = (int) a.size();
+  int lastP = -1;
+  int64 ret = 0;
+  for_inc(i, n) {
+    if (a[i] > k) {
+      lastP = i;
+    }
+    if (lastP != - 1) {
+      ret += lastP + 1;
+    }
+  }
+  return ret;
+}
+
+int64 solveSlow(const vector<int> &a, int k) {
+  int n = (int) a.size();
+
+  int64 ret = 0;
+  for_inc(i, n) {
+    int best = 0;
+    for_inc_range(j, i, n - 1) {
+      best = max(best, a[j]);
+      if (best > k) {
+        ret++;
+      }
+    }
+  }
+  
+  return ret;
 }
 
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  //testGen();
+  freopen("biginput1.txt", "r", stdin);
 #endif
+  int nTest;
+  cin >> nTest;
+  repeat(nTest) {
+    int n, k;
+    cin >> n >> k;
+    vector<int> a(n);
+    for_inc(i, n) {
+      cin >> a[i];
+    }
+    cout << solve(a, k) << endl;
+    assert(solveSlow(a, k) == solve(a, k));
+  }
   return 0;
 }
