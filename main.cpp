@@ -53,7 +53,52 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  
+  int n, h, loseHeight;
+  
+  cin >> n >> h >> loseHeight;
+  
+  vector<vector<int>> nPeople(n + 1);
+  for_inc_range(i, 1, n) {
+    nPeople[i].resize(h + 1);
+  }
+  
+  for_inc_range(i, 1, n) {
+    int u;
+    cin >> u;
+    repeat(u) {
+      int f;
+      cin >> f;
+      nPeople[i][f]++;
+    }
+  }
+  
+  vector<vector<int>> f;
+  f.resize(h + 1);
+  for_inc_range(i, 1, h) {
+    f[i].resize(n + 1);
+  }
+  
+  vector<int> g(h + 1);
+  
+  for_inc_range(curH, 1, h) {
+    g[curH] = 0;
+    for_inc_range(i, 1, n) {
+      int p = nPeople[i][curH];
+      if (curH == 1) {
+        f[curH][i] = p;
+      } else {
+        f[curH][i] = p + f[curH - 1][i];
+        if (curH > loseHeight) {
+          f[curH][i] = max(f[curH][i], p + g[curH - loseHeight]);
+        }
+      }
+      g[curH] = max(g[curH], f[curH][i]);
+    }
+  }
+
+  cout << g[h] << endl;
   return 0;
 }
