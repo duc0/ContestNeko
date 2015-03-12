@@ -45,9 +45,448 @@ int MODP(int64 x) {
   return r;
 }
 
+template <class T, class Q>
+using TreeMergeFunction = function<Q(const Q &, const Q &)>;
+template <class T, class Q>
+using TreeUpdateLeafFunction = function<Q(const Q &, const T &, const T &, int, int)>;
+template <class T, class Q>
+using TreeSplitFunction = function<void(Q &, Q &, Q &, T, int, int, int)>;
+template <class T, class Q>
+using TreeInitFunction = function<Q(const T&, int, int)>;
+
+
+template <class T, class Q> struct SegmentTree {
+  struct TreeNode {
+    bool leaf = true; // All elements in the leaf node's segment are the same
+    T value;
+    Q query;
+    int leftChild = -1,
+    rightChild =
+    -1; // index of the left and right children, -1 for no child
+  };
+  
+  vector<TreeNode> node;
+  TreeMergeFunction<T, Q> merge;
+  TreeUpdateLeafFunction<T, Q> updateLeaf;
+  TreeSplitFunction<T, Q> split;
+  TreeInitFunction<T, Q> init;
+  const T defaultValue;
+  
+  int addNode(int l, int r) {
+    TreeNode newNode;
+    newNode.value = defaultValue;
+    node.push_back(newNode);
+    return (int)node.size() - 1;
+  }
+  
+  void splitNode(int p, int l, int r) {
+    assert(node[p].leaf);
+    int m = (l + r) / 2;
+    node[p].leaf = false;
+    if (node[p].leftChild == -1) {
+      int c = addNode(l, m);
+      node[p].leftChild = c;
+      c = addNode(m + 1, r);
+      node[p].rightChild = c;
+    }
+    int lc = node[p].leftChild;
+    int rc = node[p].rightChild;
+    node[lc].leaf = true;
+    node[rc].leaf = true;
+    node[lc].value = node[p].value;
+    node[rc].value = node[p].value;
+    split(node[p].query, node[lc].query, node[rc].query, node[p].value, l, m, r);
+  }
+  
+  void update(int p, int l, int r, int i, int j, const T &v) {
+    if (j < l || i > r)
+      return;
+    int m = (l + r) / 2;
+    if (i <= l && r <= j) { // [i,j] covers [l,r]
+      if (node[p].leaf) {
+        node[p].query = updateLeaf(node[p].query, node[p].value, v, l, r);
+        node[p].value = v;
+        return;
+      } else {
+        node[p].leaf = true;
+        node[p].value = v;
+      }
+    } else if (node[p].leaf) { // [i,j] intersects [l, r]
+      splitNode(p, l, r);
+    }
+    update(node[p].leftChild, l, m, i, j, v);
+    update(node[p].rightChild, m + 1, r, i, j, v);
+    node[p].query = merge(node[node[p].leftChild].query,
+                          node[node[p].rightChild].query);
+  }
+  
+  Q query(int p, int l, int r, int i, int j) {
+    if (i <= l && r <= j) { // [i,j] contains [l,r]
+      return node[p].query;
+    }
+    if (node[p].leaf) { // [i,j] intersects [l, r]
+      splitNode(p, l, r);
+    }
+    int m = (l + r) / 2;
+    Q ret;
+    if (j <= m) {
+      ret = query(node[p].leftChild, l, m, i, j);
+    } else if (i >= m + 1) {
+      ret = query(node[p].rightChild, m + 1, r, i, j);
+    } else {
+      ret = merge(query(node[p].leftChild, l, m, i, j), query(node[p].rightChild, m + 1, r, i, j));
+    }
+    node[p].query = merge(node[node[p].leftChild].query,
+                          node[node[p].rightChild].query);
+    return ret;
+  }
+  
+  int minIndex, maxIndex;
+  int root;
+  
+public:
+  // First way to specify a segment tree, usually use when lazy propagation is needed.
+  // Q merge(Q, Q) that merges the query from left and right children
+  // Q updateLeaf(Q cur, T oldV, T curV, int l, int r) return the updated
+  //   query in a leaf node if its old value is oldV and new value is curV
+  // split(Q& cur, Q &lChild, Q &rChild, int curV, int l, int m, int r)
+  //   modify the query in the current node and it's left and right children when
+  // a split action happens.
+  SegmentTree(int minIndex, int maxIndex, T defaultValue,
+              const TreeMergeFunction<T, Q> &merge,
+              const TreeUpdateLeafFunction<T, Q> &updateLeaf,
+              const TreeSplitFunction<T, Q> &split)
+  : merge(merge), updateLeaf(updateLeaf), split(split),
+  defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
+    root = addNode(minIndex, maxIndex);
+  }
+  
+  // The second way to specify a segment tree:
+  // a merge function
+  // an init function (v, l, r) that initilize the query based on
+  // the value of the node and the node interval
+  SegmentTree(int minIndex, int maxIndex, T defaultValue,
+              const TreeMergeFunction<T, Q> &merge,
+              const function<Q(T, int, int)> &init)
+  : merge(merge),
+  defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex), init(init) {
+    updateLeaf = [&] (const Q &cur, T oldV, T curV, int l, int r) {
+      return this->init(curV, l, r);
+    };
+    split = [&](Q &cur, Q &lQ, Q &rQ, T v, int l, int m, int r) {
+      lQ = this->init(v, l, m);
+      rQ = this->init(v, m + 1, r);
+    };
+    root = addNode(minIndex, maxIndex);
+  }
+  
+  
+  // Set all elements in [i, j] to be v
+  void update(int i, int j, T v) { update(root, minIndex, maxIndex, i, j, v); }
+  
+  // Query augmented data in [i, j]
+  Q query(int i, int j) { return query(root, minIndex, maxIndex, i, j); }
+  
+  // Query augmented data in the whole range
+  Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
+};
+
+// Weighted undirected tree
+template <class T> class WeightedTree {
+  vector<vector<pair<int, T>>> adj;
+  
+  // p [u] = parent of u and weight p[u] -> u
+  vector<pair<int, T>> p;
+  
+  vector<int> depth;
+  
+  int n;
+  int root;
+  
+public:
+  const vector<pair<int, T>> &getAdjacent(int u) const { return adj[u]; }
+  
+  void reset(int size) {
+    this->n = size;
+    adj.resize(n + 1);
+    for_inc_range(i, 1, n) adj[i].clear();
+    p.resize(n + 1);
+    depth.resize(n + 1);
+    for_inc_range(i, 1, n) {
+      p[i] = make_pair(-1, -1);
+      depth[i] = 0;
+    }
+  }
+  
+  WeightedTree() {}
+  
+  WeightedTree(int n) { reset(n); }
+  
+  void dfs(int u) {
+    for (auto &e : adj[u]) {
+      int v = e.first;
+      int c = e.second;
+      if (p[v].first == -1) {
+        p[v] = make_pair(u, c);
+        depth[v] = depth[u] + 1;
+        dfs(v);
+      }
+    }
+  }
+  
+  int getParent(int u) const { return p[u].first; }
+  
+  T getWeight(int u) const { return p[u].second; }
+  
+  void setWeight(int u, T w) { p[u].second = w; }
+  
+  int getDepth(int u) const { return depth[u]; }
+  
+  size_t getSize() const { return n; }
+  
+  int getRoot() const { return root; }
+  
+  void setRoot(int u) {
+    for_inc_range(v, 1, n) {
+      p[v].first = -1;
+    }
+    root = u;
+    p[root].first = -2;
+    dfs(root);
+  }
+  
+  void addEdge(int u, int v, int c) {
+    adj[u].push_back(make_pair(v, c));
+    adj[v].push_back(make_pair(u, c));
+  }
+};
+
+// LCA O(logn)
+template <class T, class Q> class LowestCommonAncestor {
+  // anc[i][j] = ancestor 2^j dist away from i and a combined value generated
+  // from the path from i to that ancestor,
+  // default to the min weight
+  vector<vector<pair<int, Q>>> anc;
+  WeightedTree<T> &t;
+  function<Q(Q, Q)> combine;
+  
+public:
+  LowestCommonAncestor(WeightedTree<T> &tree)
+  : LowestCommonAncestor(
+                         tree, [](WeightedTree<T> &t, int u) { return t.getWeight(u); },
+                         [](Q a, Q b) { return min(a, b); }) {}
+  
+  LowestCommonAncestor(WeightedTree<T> &tree,
+                       const function<Q(WeightedTree<T> &, int)> &getInitial,
+                       const function<Q(Q, Q)> &combine)
+  : t(tree), combine(combine) {
+    anc.resize(t.getSize() + 1);
+    for_inc_range(i, 1, t.getSize()) {
+      if (i != t.getRoot()) {
+        anc[i].push_back(make_pair(t.getParent(i), getInitial(t, i)));
+      }
+    }
+    for (int k = 1;; ++k) {
+      bool ok = false;
+      for_inc_range(i, 1, t.getSize()) {
+        if (anc[i].size() >= k) {
+          int j = anc[i][k - 1].first;
+          if (anc[j].size() >= k) {
+            int x = anc[j][k - 1].first;
+            anc[i].push_back(make_pair(
+                                       x, combine(anc[i][k - 1].second, anc[j][k - 1].second)));
+            ok = true;
+          }
+        }
+      }
+      if (!ok)
+        break;
+    }
+  }
+  
+  // Get the kth ancestor of k, t = 0 .. depth[u]
+  int getAncestor(int u, int k) {
+    assert(0 <= k && k <= t.getDepth(u));
+    if (k == 0) {
+      return u;
+    }
+    int b = 0;
+    while ((1 << b) <= k) ++b;
+    --b;
+    return getAncestor(anc[u][b].first, k - (1 << b));
+  }
+  
+  pair<int, T> getLCA(int u, int v) {
+    if (t.getDepth(u) > t.getDepth(v)) {
+      swap(u, v);
+    }
+    if (t.getDepth(v) > t.getDepth(u)) {
+      for_dec(i, anc[v].size()) {
+        int w = anc[v][i].first;
+        if (t.getDepth(w) >= t.getDepth(u)) {
+          pair<int, T> p = getLCA(u, w);
+          p.second = min(anc[v][i].second, p.second);
+          return p;
+        }
+      }
+    } else { // depth[v] == depth[u]
+      if (u == v) {
+        return make_pair(u, INT_INF);
+      }
+      for_dec(i, anc[u].size()) {
+        int x = anc[u][i].first;
+        int y = anc[v][i].first;
+        if (x != y || i == 0) {
+          pair<int, T> p = getLCA(x, y);
+          p.second = combine(anc[u][i].second, p.second);
+          p.second = combine(anc[v][i].second, p.second);
+          return p;
+        }
+      }
+    }
+    return make_pair(-1, -1);
+  }
+};
+
+template<class T> class SubtreeSize {
+  const WeightedTree<T> &tree;
+  vector<int> subtreeSize;
+  
+  void dfs(int u) {
+    subtreeSize[u] = 1;
+    for (auto &v: tree.getAdjacent(u)) {
+      if (v.first != tree.getParent(u)) {
+        dfs(v.first);
+        subtreeSize[u] += subtreeSize[v.first];
+      }
+    }
+  }
+
+public:
+  SubtreeSize(const WeightedTree<T> &tree): tree(tree) {
+    subtreeSize.resize(tree.getSize() + 1);
+    dfs(tree.getRoot());
+  }
+  
+  const int operator[](int u) const {
+    assert(1 <= u && u <= tree.getSize());
+    return subtreeSize[u];
+  }
+};
+
+
+template<class T> class HeavyLightDecomposition {
+  const WeightedTree<T> &tree;
+  int timeStamp;
+  vector<int> start;
+  vector<int> head;
+  vector<int> path;
+  int n;
+  int nPath;
+  
+  void dfs(int u, const SubtreeSize<T> &subtreeSize) {
+    timeStamp++;
+    start[u] = timeStamp;
+    path[u] = nPath;
+    
+    int heavyCutoff = subtreeSize[u] / 2;
+    int nextNode = -1;
+    
+    for (auto &v: tree.getAdjacent(u)) {
+      if (v.first != tree.getParent(u)) {
+        if (subtreeSize[v.first] > heavyCutoff) {
+          nextNode = v.first;
+          break;
+        }
+      }
+    }
+    
+    if (nextNode != -1) {
+      head[nextNode] = head[u];
+      dfs(nextNode, subtreeSize);
+    }
+    
+    for (auto &v: tree.getAdjacent(u)) {
+      if (v.first != tree.getParent(u) && v.first != nextNode) {
+        nPath++;
+        head[v.first] = v.first;
+        dfs(v.first, subtreeSize);
+      }
+    }
+  }
+  
+public:
+  HeavyLightDecomposition(const WeightedTree<T> &tree): tree(tree) {
+    n = (int) tree.getSize();
+    timeStamp = 0;
+    nPath = 1;
+    SubtreeSize<int> subtreeSize(tree);
+    path.resize(n + 1);
+    start.resize(n + 1);
+    head.resize(n + 1);
+    head[tree.getRoot()] = tree.getRoot();
+    dfs(tree.getRoot(), subtreeSize);
+  }
+  
+  // is the path parent[u] to u light?
+  bool isLight(int u) const {
+    assert(u != tree.getRoot());
+    assert(1 <= u && u <= n);
+    return head[u] == u;
+  }
+  
+  bool isHeavy(int u) const {
+    return !isLight(u);
+  }
+  
+  int getHead(int u) const {
+    assert(1 <= u && u <= n);
+    return head[u];
+  }
+  
+  int getStartTime(int u) const {
+    assert(1 <= u && u <= n);
+    return start[u];
+  }
+  
+  int getHeadTime(int u) const {
+    assert(1 <= u && u <= n);
+    return start[head[u]];
+  }
+  
+  bool inSameHeavyPath(int u, int v) const {
+    assert(1 <= u && u <= n);
+    return head[u] == head[v];
+  }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
+}
+
+int queryUp(int u, int v, const WeightedTree<int> &tree, const HeavyLightDecomposition<int> &hld, SegmentTree<int, int>  &seg) {
+  // v is ancestor of u
+  if (u == v) {
+    return 0;
+  }
+  
+  while (u != v) {
+    int res = -INT_INF;
+    if (hld.isLight(u)) {
+      res = max(res, tree.getWeight(u));
+      u = tree.getParent(u);
+    } else {
+      if (hld.inSameHeavyPath(u, v)) {
+        res = max(res, seg.query(hld.getStartTime(v), hld.getStartTime(u)));
+        return res;
+      } else {
+        res = max(res, seg.query(hld.getHeadTime(u), hld.getStartTime(u)));
+        u = hld.getHead(u);
+      }
+    }
+  }
+  return 0;
 }
 
 int main() {
@@ -55,5 +494,71 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int nTest;
+  cin >> nTest;
+  
+  repeat(nTest) {
+    int n;
+    cin >> n;
+    
+    WeightedTree<int> tree;
+    tree.reset(n);
+    vector<pair<int, int>> edge;
+    
+    repeat(n - 1) {
+      int u, v, c;
+      cin >> u >> v >> c;
+      tree.addEdge(u, v, c);
+      edge.push_back(make_pair(u, v));
+    }
+    tree.setRoot(1);
+    
+    HeavyLightDecomposition<int> hld(tree);
+    
+    SegmentTree<int, int> seg(1, n, 0, [](int l, int r) {return max(l, r);}, [](int v, int l, int r) {return v;});
+    for_inc_range(u, 2, n) {
+      if (hld.isHeavy(u)) {
+        int s = hld.getStartTime(u);
+        seg.update(s, s, tree.getWeight(u));
+      }
+    }
+    
+    LowestCommonAncestor<int, int> lca(tree);
+    
+    while (1) {
+      string s;
+      cin >> s;
+      if (s == "DONE") {
+        break;
+      }
+      if (s == "CHANGE") {
+        int i, t;
+        cin >> i >> t;
+        int u = edge[i - 1].first;
+        int v = edge[i - 1].second;
+        if (tree.getParent(u) == v) {
+          swap(u, v);
+        }
+        
+        // u is the parent of v
+        if (hld.isLight(v)) {
+          tree.setWeight(v, t);
+        } else {
+          int s = hld.getStartTime(v);
+          seg.update(s, s, t);
+        }
+      } else if (s == "QUERY") {
+        int u, v;
+        cin >> u >> v;
+        
+        int w = lca.getLCA(u, v).first;
+        
+        int res = max(queryUp(u, w, tree, hld, seg), queryUp(v, w, tree, hld, seg));
+        
+        cout << res << endl;
+      }
+    }
+  }
   return 0;
 }
