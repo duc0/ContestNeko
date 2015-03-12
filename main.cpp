@@ -380,14 +380,13 @@ template<class T> class HeavyLightDecomposition {
   int timeStamp;
   vector<int> start;
   vector<int> head;
-  vector<int> path;
+  vector<int> node;
   int n;
-  int nPath;
   
   void dfs(int u, const SubtreeSize<T> &subtreeSize) {
     timeStamp++;
+    node[timeStamp] = u;
     start[u] = timeStamp;
-    path[u] = nPath;
     
     int heavyCutoff = subtreeSize[u] / 2;
     int nextNode = -1;
@@ -408,7 +407,6 @@ template<class T> class HeavyLightDecomposition {
     
     for (auto &v: tree.getAdjacent(u)) {
       if (v.first != tree.getParent(u) && v.first != nextNode) {
-        nPath++;
         head[v.first] = v.first;
         dfs(v.first, subtreeSize);
       }
@@ -419,11 +417,10 @@ public:
   HeavyLightDecomposition(const WeightedTree<T> &tree): tree(tree) {
     n = (int) tree.getSize();
     timeStamp = 0;
-    nPath = 1;
     SubtreeSize<int> subtreeSize(tree);
-    path.resize(n + 1);
     start.resize(n + 1);
     head.resize(n + 1);
+    node.resize(n + 1);
     head[tree.getRoot()] = tree.getRoot();
     dfs(tree.getRoot(), subtreeSize);
   }
@@ -449,6 +446,10 @@ public:
     return start[u];
   }
   
+  int getNodeAtTime(int timeStamp) const {
+    return node[timeStamp];
+  }
+  
   int getHeadTime(int u) const {
     assert(1 <= u && u <= n);
     return start[head[u]];
@@ -465,28 +466,36 @@ void testGen() {
   fclose(stdout);
 }
 
-int queryUp(int u, int v, const WeightedTree<int> &tree, const HeavyLightDecomposition<int> &hld, SegmentTree<int, int>  &seg) {
+int queryUp(int u, int v, const vector<int> &color, const WeightedTree<int> &tree, const HeavyLightDecomposition<int> &hld, SegmentTree<int, int>  &seg) {
   // v is ancestor of u
   if (u == v) {
-    return 0;
+    return (color[u] == 1) ? u : INT_INF;
   }
   
+  int res = INT_INF;
   while (u != v) {
-    int res = -INT_INF;
+    if (color[u] == 1) {
+      res = u;
+    }
     if (hld.isLight(u)) {
-      res = max(res, tree.getWeight(u));
       u = tree.getParent(u);
     } else {
       if (hld.inSameHeavyPath(u, v)) {
-        res = max(res, seg.query(hld.getStartTime(v), hld.getStartTime(u)));
+        int t = seg.query(hld.getStartTime(v), hld.getStartTime(u));
+        if (t != INT_INF) {
+          res = hld.getNodeAtTime(t);
+        }
         return res;
       } else {
-        res = max(res, seg.query(hld.getHeadTime(u), hld.getStartTime(u)));
+        int t = seg.query(hld.getHeadTime(u), hld.getStartTime(u));
+        if (t != INT_INF) {
+          res = hld.getNodeAtTime(t);
+        }
         u = hld.getHead(u);
       }
     }
   }
-  return 0;
+  return res;
 }
 
 int main() {
@@ -495,69 +504,44 @@ int main() {
   freopen("input1.txt", "r", stdin);
 #endif
   
-  int nTest;
-  cin >> nTest;
+  int n, q;
+  scanf("%d%d", &n, &q);
   
-  repeat(nTest) {
-    int n;
-    cin >> n;
-    
-    WeightedTree<int> tree;
-    tree.reset(n);
-    vector<pair<int, int>> edge;
-    
-    repeat(n - 1) {
-      int u, v, c;
-      cin >> u >> v >> c;
-      tree.addEdge(u, v, c);
-      edge.push_back(make_pair(u, v));
-    }
-    tree.setRoot(1);
-    
-    HeavyLightDecomposition<int> hld(tree);
-    
-    SegmentTree<int, int> seg(1, n, 0, [](int l, int r) {return max(l, r);}, [](int v, int l, int r) {return v;});
-    for_inc_range(u, 2, n) {
-      if (hld.isHeavy(u)) {
-        int s = hld.getStartTime(u);
-        seg.update(s, s, tree.getWeight(u));
-      }
-    }
-    
-    LowestCommonAncestor<int, int> lca(tree);
-    
-    while (1) {
-      string s;
-      cin >> s;
-      if (s == "DONE") {
-        break;
-      }
-      if (s == "CHANGE") {
-        int i, t;
-        cin >> i >> t;
-        int u = edge[i - 1].first;
-        int v = edge[i - 1].second;
-        if (tree.getParent(u) == v) {
-          swap(u, v);
-        }
-        
-        // u is the parent of v
-        if (hld.isLight(v)) {
-          tree.setWeight(v, t);
-        } else {
-          int s = hld.getStartTime(v);
-          seg.update(s, s, t);
-        }
-      } else if (s == "QUERY") {
-        int u, v;
-        cin >> u >> v;
-        
-        int w = lca.getLCA(u, v).first;
-        
-        int res = max(queryUp(u, w, tree, hld, seg), queryUp(v, w, tree, hld, seg));
-        
-        cout << res << endl;
-      }
+  WeightedTree<int> tree;
+  tree.reset(n);
+  vector<pair<int, int>> edge;
+  
+  repeat(n - 1) {
+    int u, v;
+    scanf("%d%d", &u, &v);
+    tree.addEdge(u, v, 1);
+    edge.push_back(make_pair(u, v));
+  }
+  tree.setRoot(1);
+  
+  HeavyLightDecomposition<int> hld(tree);
+  
+  SegmentTree<int, int> seg(1, n, 0, [](int l, int r) {return min(l, r);}, [](int v, int l, int r) {return (v == 1) ? l : INT_INF;});
+  
+  seg.update(1, n, 0);
+  LowestCommonAncestor<int, int> lca(tree);
+  vector<int> color(n + 1);
+  
+  repeat(q) {
+    int t;
+    scanf("%d", &t);
+    if (t == 0) {
+      int u;
+      scanf("%d", &u);
+      color[u] = 1 - color[u];
+      int s = hld.getStartTime(u);
+      seg.update(s, s, color[u]);
+    } else if (t == 1) {
+      int u;
+      scanf("%d", &u);
+      int res = queryUp(u, 1, color, tree, hld, seg);
+      if (res == INT_INF) res = -1;
+      printf("%d\n", res);
     }
   }
   return 0;
