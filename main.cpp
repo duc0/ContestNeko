@@ -223,13 +223,19 @@ public:
   WeightedTree(int n) { reset(n); }
   
   void dfs(int u) {
-    for (auto &e : adj[u]) {
-      int v = e.first;
-      int c = e.second;
-      if (p[v].first == -1) {
-        p[v] = make_pair(u, c);
-        depth[v] = depth[u] + 1;
-        dfs(v);
+    stack<int> node;
+    node.push(u);
+    while (!node.empty()) {
+      u = node.top();
+      node.pop();
+      for (auto &e : adj[u]) {
+        int v = e.first;
+        int c = e.second;
+        if (p[v].first == -1) {
+          p[v] = make_pair(u, c);
+          depth[v] = depth[u] + 1;
+          node.push(v);
+        }
       }
     }
   }
@@ -264,20 +270,34 @@ public:
 template<class T> class SubtreeSize {
   const WeightedTree<T> &tree;
   vector<int> subtreeSize;
+  vector<bool> visit;
   
   void dfs(int u) {
-    subtreeSize[u] = 1;
-    for (auto &v: tree.getAdjacent(u)) {
-      if (v.first != tree.getParent(u)) {
-        dfs(v.first);
-        subtreeSize[u] += subtreeSize[v.first];
+    stack<int> node;
+    node.push(u);
+    while (!node.empty()) {
+      u = node.top();
+      if (visit[u]) {
+        node.pop();
+        subtreeSize[u] = 1;
       }
+      for (auto &v: tree.getAdjacent(u)) {
+        if (v.first != tree.getParent(u)) {
+          if (!visit[u]) {
+            node.push(v.first);
+          } else {
+            subtreeSize[u] += subtreeSize[v.first];
+          }
+        }
+      }
+      visit[u] = true;
     }
   }
 
 public:
   SubtreeSize(const WeightedTree<T> &tree): tree(tree) {
     subtreeSize.resize(tree.getSize() + 1);
+    visit.resize(tree.getSize() + 1);
     dfs(tree.getRoot());
   }
   
@@ -297,31 +317,40 @@ template<class T> class HeavyLightDecomposition {
   int n;
   
   void dfs(int u, const SubtreeSize<T> &subtreeSize) {
-    timeStamp++;
-    node[timeStamp] = u;
-    start[u] = timeStamp;
+    stack<int> s;
+    s.push(u);
+    while (!s.empty()) {
+      u = s.top();
+      s.pop();
     
-    int heavyCutoff = subtreeSize[u] / 2;
-    int nextNode = -1;
-    
-    for (auto &v: tree.getAdjacent(u)) {
-      if (v.first != tree.getParent(u)) {
-        if (subtreeSize[v.first] > heavyCutoff) {
-          nextNode = v.first;
-          break;
+      timeStamp++;
+      node[timeStamp] = u;
+      start[u] = timeStamp;
+      
+      int heavyCutoff = subtreeSize[u] / 2;
+      int nextNode = -1;
+      
+      for (auto &v: tree.getAdjacent(u)) {
+        if (v.first != tree.getParent(u)) {
+          if (subtreeSize[v.first] > heavyCutoff) {
+            nextNode = v.first;
+            break;
+          }
         }
       }
-    }
-    
-    if (nextNode != -1) {
-      head[nextNode] = head[u];
-      dfs(nextNode, subtreeSize);
-    }
-    
-    for (auto &v: tree.getAdjacent(u)) {
-      if (v.first != tree.getParent(u) && v.first != nextNode) {
-        head[v.first] = v.first;
-        dfs(v.first, subtreeSize);
+      
+      for (auto &v: tree.getAdjacent(u)) {
+        if (v.first != tree.getParent(u) && v.first != nextNode) {
+          head[v.first] = v.first;
+          s.push(v.first);
+        }
+      }
+      
+      if (nextNode != -1) {
+        head[nextNode] = head[u];
+        // Tricky: in non-recursive DFS, if you want to visit nextNode first,
+        // you have to push it last into the stack
+        s.push(nextNode);
       }
     }
   }
