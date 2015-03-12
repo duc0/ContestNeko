@@ -77,13 +77,19 @@ public:
   WeightedTree(int n) { reset(n); }
   
   void dfs(int u) {
-    for (auto &e : adj[u]) {
-      int v = e.first;
-      int c = e.second;
-      if (p[v].first == -1) {
-        p[v] = make_pair(u, c);
-        depth[v] = depth[u] + 1;
-        dfs(v);
+    stack<int> node;
+    node.push(u);
+    while (!node.empty()) {
+      u = node.top();
+      node.pop();
+      for (auto &e : adj[u]) {
+        int v = e.first;
+        int c = e.second;
+        if (p[v].first == -1) {
+          p[v] = make_pair(u, c);
+          depth[v] = depth[u] + 1;
+          node.push(v);
+        }
       }
     }
   }
@@ -91,6 +97,8 @@ public:
   int getParent(int u) const { return p[u].first; }
   
   T getWeight(int u) const { return p[u].second; }
+  
+  void setWeight(int u, T w) { p[u].second = w; }
   
   int getDepth(int u) const { return depth[u]; }
   
