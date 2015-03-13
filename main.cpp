@@ -589,6 +589,13 @@ void testGen() {
   fclose(stdout);
 }
 
+struct Query {
+  int best = 0;
+  int lazy = 0;
+  Query() {}
+  Query(int best, int lazy): best(best), lazy(lazy) {}
+};
+
 // SPOJ QTREE3
 int main() {
   ios::sync_with_stdio(false);
@@ -614,19 +621,19 @@ int main() {
   
   HeavyLightDecomposition<int> hld(tree);
   
-  TreeMergeFunction<int, Query> merge = [](const Query &l, const Query &r) {return Query(l.sum + r.sum, 0);};
+  TreeMergeFunction<int, Query> merge = [](const Query &l, const Query &r) {return Query(max(l.best, r.best), 0);};
   TreeUpdateLeafFunction<int, Query> updateLeaf = [](const Query &cur, int oldV, int curV, int l, int r) {
-    return Query(cur.sum + curV * (r - l + 1), cur.lazy + curV);
+    return Query(cur.best + curV, cur.lazy + curV);
   };
   TreeSplitFunction<int, Query> split = [](Query &cur, Query &lQ, Query &rQ, int curV, int l, int m, int r) {
-    lQ.sum += cur.lazy * (m - l + 1);
+    lQ.best += cur.lazy;
     lQ.lazy += cur.lazy;
-    rQ.sum += cur.lazy * (r - m);
+    rQ.best += cur.lazy;
     rQ.lazy += cur.lazy;
     cur.lazy = 0;
   };
 
-  HLDSegmentTree<int, int, int> seg(1, n, 0, [](int l, int r) {return min(l, r);}, [](int v, int l, int r) {return (v == 1) ? l : INT_INF;}, hld);
+  HLDSegmentTree<int, Query, int> seg(1, n, 0, merge, updateLeaf, split, hld);
   LowestCommonAncestor<int, int> lca(tree);
   
   int q;
@@ -642,7 +649,7 @@ int main() {
       int u, v;
       cin >> u >> v;
       int w = lca.getLCA(u, v).first;
-      int res = max(seg.queryPath(w, u), seg.queryPath(w, v));
+      int res = max(seg.queryPath(w, u).best, seg.queryPath(w, v).best);
       cout << res << endl;
     }
   }
