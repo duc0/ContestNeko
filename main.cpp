@@ -585,7 +585,30 @@ public:
 };
 
 void testGen() {
-  freopen("biginput1.txt", "w", stdout);
+  freopen("biginput2.txt", "w", stdout);
+  
+  int n = 100000;
+  int q = 100000;
+  cout << n << endl;
+  int u = 2;
+  repeat(n - 1) {
+    int r = rand() % (u - 1) + 1;
+    cout << r << " " << u << endl;
+    u++;
+  }
+  
+  cout << q << endl;
+  repeat(q) {
+    if (rand() % 2 == 1) {
+      int u = rand() % n + 1;
+      int v = rand() % 20000 - 10000;
+      cout << "add " << u << " " << v << endl;
+    } else {
+      int u = rand() % n + 1;
+      int v = rand() % n + 1;
+      cout << "max " << u << " " << v << endl;
+    }
+  }
   fclose(stdout);
 }
 
@@ -600,8 +623,9 @@ struct Query {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
-  //  freopen("biginput1.out", "w", stdout);
+  //testGen();
+  freopen("biginput2.txt", "r", stdin);
+  freopen("biginput2.out", "w", stdout);
 #endif
   
   int n;
