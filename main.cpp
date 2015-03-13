@@ -624,8 +624,8 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("biginput2.txt", "r", stdin);
-  freopen("biginput2.out", "w", stdout);
+  freopen("input2.txt", "r", stdin);
+//  freopen("biginput2.out", "w", stdout);
 #endif
   
   int n;
