@@ -62,7 +62,6 @@ using TreeSplitFunction = function<void(Q &, Q &, Q &, T, int, int, int)>;
 template <class T, class Q>
 using TreeInitFunction = function<Q(const T&, int, int)>;
 
-
 template <class T, class Q> struct SegmentTree {
   struct TreeNode {
     bool leaf = true; // All elements in the leaf node's segment are the same
@@ -73,6 +72,7 @@ template <class T, class Q> struct SegmentTree {
     -1; // index of the left and right children, -1 for no child
   };
   
+protected:
   vector<TreeNode> node;
   TreeMergeFunction<T, Q> merge;
   TreeUpdateLeafFunction<T, Q> updateLeaf;
@@ -160,10 +160,10 @@ public:
   // split(Q& cur, Q &lChild, Q &rChild, int curV, int l, int m, int r)
   //   modify the query in the current node and it's left and right children when
   // a split action happens.
-  SegmentTree(int minIndex, int maxIndex, T defaultValue,
-              const TreeMergeFunction<T, Q> &merge,
-              const TreeUpdateLeafFunction<T, Q> &updateLeaf,
-              const TreeSplitFunction<T, Q> &split)
+  explicit SegmentTree(int minIndex, int maxIndex, T defaultValue,
+                       const TreeMergeFunction<T, Q> &merge,
+                       const TreeUpdateLeafFunction<T, Q> &updateLeaf,
+                       const TreeSplitFunction<T, Q> &split)
   : merge(merge), updateLeaf(updateLeaf), split(split),
   defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
     root = addNode(minIndex, maxIndex);
