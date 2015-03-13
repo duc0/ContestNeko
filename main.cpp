@@ -629,7 +629,7 @@ int main() {
 #endif
   
   int n;
-  cin >> n;
+  scanf("%d", &n);
   
   WeightedTree<int> tree;
   tree.reset(n);
@@ -637,7 +637,7 @@ int main() {
   
   repeat(n - 1) {
     int u, v;
-    cin >> u >> v;
+    scanf("%d%d", &u, &v);
     tree.addEdge(u, v, 1);
     edge.push_back(make_pair(u, v));
   }
@@ -661,20 +661,20 @@ int main() {
   LowestCommonAncestor<int, int> lca(tree);
   
   int q;
-  cin >> q;
+  scanf("%d", &q);
+  char s[10];
   repeat(q) {
-    string s;
-    cin >> s;
-    if (s == "add") {
+    scanf("%s", s);
+    if (s[0] == 'a') {
       int u, val;
-      cin >> u >> val;
+      scanf("%d%d", &u, &val);
       seg.updateSubtree(u, val);
     } else {
       int u, v;
-      cin >> u >> v;
+      scanf("%d%d", &u, &v);
       int w = lca.getLCA(u, v).first;
       int res = max(seg.queryPath(w, u).best, seg.queryPath(w, v).best);
-      cout << res << endl;
+      printf("%d\n", res);
     }
   }
   return 0;
