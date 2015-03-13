@@ -65,6 +65,7 @@ template <class T, class Q> struct SegmentTree {
     -1; // index of the left and right children, -1 for no child
   };
   
+protected:
   vector<TreeNode> node;
   TreeMergeFunction<T, Q> merge;
   TreeUpdateLeafFunction<T, Q> updateLeaf;
@@ -367,6 +368,10 @@ public:
     dfs(tree.getRoot(), subtreeSize);
   }
   
+  const WeightedTree<T>& getTree() const {
+    return tree;
+  }
+  
   // is the path parent[u] to u light?
   bool isLight(int u) const {
     assert(u != tree.getRoot());
@@ -437,6 +442,41 @@ public:
     assert(hld.getStartTime(ancestor) <= hld.getStartTime(u));
     return SegmentTree<T,Q>::query(hld.getStartTime(ancestor), hld.getStartTime(u));
   }
+  
+  Q queryNode(int u) {
+    return SegmentTree<T,Q>::query(hld.getStartTime(u), hld.getStartTime(u));
+  }
+  
+  // Query the path from ancestor to u. O(logn^2).
+  // A queryNodeFunc can be used for fast querying value of a node
+  Q queryPath(int ancestor, int u, const function<Q(int)> &queryNodeFunc) {
+    assert(hld.getStartTime(ancestor) <= hld.getStartTime(u));
+    Q res = queryNodeFunc(u);
+    while (1) {
+      res = SegmentTree<T,Q>::merge(res, queryNodeFunc(u));
+      if (u == ancestor) {
+        break;
+      }
+      if (hld.isLight(u)) {
+        u = hld.getTree().getParent(u);
+      } else {
+        if (hld.inSameHeavyPath(u, ancestor)) {
+          Q q = queryHeavyPath(ancestor, u);
+          res = SegmentTree<T,Q>::merge(res, q);
+          break;
+        } else {
+          Q q = queryHeavyPath(u);
+          res = SegmentTree<T,Q>::merge(res, q);
+          u = hld.getHead(u);
+        }
+      }
+    }
+    return res;
+  }
+  
+  Q queryPath(int ancestor, int u) {
+    return queryPath(ancestor, u, [&](int u){return queryNode(u);});
+  }
 };
   
 void testGen() {
@@ -444,43 +484,11 @@ void testGen() {
   fclose(stdout);
 }
 
-int queryUp(int u, int v, const vector<int> &color, const WeightedTree<int> &tree, const HeavyLightDecomposition<int> &hld, HLDSegmentTree<int, int, int>  &seg) {
-  // v is ancestor of u
-  int res = INT_INF;
-  while (1) {
-    if (color[u] == 1) {
-      res = u;
-    }
-    if (u == v) {
-      break;
-    }
-    if (hld.isLight(u)) {
-      u = tree.getParent(u);
-    } else {
-      if (hld.inSameHeavyPath(u, v)) {
-        int t = seg.queryHeavyPath(v, u);
-        if (t != INT_INF) {
-          res = hld.getNodeAtTime(t);
-        }
-        return res;
-      } else {
-        int t = seg.queryHeavyPath(u);
-        if (t != INT_INF) {
-          res = hld.getNodeAtTime(t);
-        }
-        u = hld.getHead(u);
-      }
-    }
-  }
-  
-  return res;
-}
-
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("biginput1.txt", "r", stdin);
-  freopen("biginput1.out", "w", stdout);
+  freopen("input1.txt", "r", stdin);
+//  freopen("biginput1.out", "w", stdout);
 #endif
   
   int n, q;
@@ -513,8 +521,8 @@ int main() {
     } else if (t == 1) {
       int u;
       scanf("%d", &u);
-      int res = queryUp(u, 1, color, tree, hld, seg);
-      if (res == INT_INF) res = -1;
+      int res = seg.queryPath(1, u, [&](int u){return (color[u] == 1) ? hld.getStartTime(u) : INT_INF;});
+      if (res == INT_INF) res = -1; else res = hld.getNodeAtTime(res);
       printf("%d\n", res);
     }
   }
