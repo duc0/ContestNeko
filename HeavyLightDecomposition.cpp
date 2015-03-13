@@ -65,6 +65,7 @@ template <class T, class Q> struct SegmentTree {
     -1; // index of the left and right children, -1 for no child
   };
   
+protected:
   vector<TreeNode> node;
   TreeMergeFunction<T, Q> merge;
   TreeUpdateLeafFunction<T, Q> updateLeaf;
@@ -152,10 +153,10 @@ public:
   // split(Q& cur, Q &lChild, Q &rChild, int curV, int l, int m, int r)
   //   modify the query in the current node and it's left and right children when
   // a split action happens.
-  SegmentTree(int minIndex, int maxIndex, T defaultValue,
-              const TreeMergeFunction<T, Q> &merge,
-              const TreeUpdateLeafFunction<T, Q> &updateLeaf,
-              const TreeSplitFunction<T, Q> &split)
+  explicit SegmentTree(int minIndex, int maxIndex, T defaultValue,
+                       const TreeMergeFunction<T, Q> &merge,
+                       const TreeUpdateLeafFunction<T, Q> &updateLeaf,
+                       const TreeSplitFunction<T, Q> &split)
   : merge(merge), updateLeaf(updateLeaf), split(split),
   defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
     root = addNode(minIndex, maxIndex);
@@ -312,8 +313,10 @@ template<class T> class HeavyLightDecomposition {
   const WeightedTree<T> &tree;
   int timeStamp;
   vector<int> start;
+  vector<int> finish;
   vector<int> head;
   vector<int> node;
+  vector<bool> visit;
   int n;
   
   void dfs(int u, const SubtreeSize<T> &subtreeSize) {
@@ -321,36 +324,41 @@ template<class T> class HeavyLightDecomposition {
     s.push(u);
     while (!s.empty()) {
       u = s.top();
-      s.pop();
       
-      timeStamp++;
-      node[timeStamp] = u;
-      start[u] = timeStamp;
-      
-      int heavyCutoff = subtreeSize[u] / 2;
-      int nextNode = -1;
-      
-      for (auto &v: tree.getAdjacent(u)) {
-        if (v.first != tree.getParent(u)) {
-          if (subtreeSize[v.first] > heavyCutoff) {
-            nextNode = v.first;
-            break;
+      if (!visit[u]) {
+        timeStamp++;
+        node[timeStamp] = u;
+        start[u] = timeStamp;
+        
+        int heavyCutoff = subtreeSize[u] / 2;
+        int nextNode = -1;
+        
+        for (auto &v: tree.getAdjacent(u)) {
+          if (v.first != tree.getParent(u)) {
+            if (subtreeSize[v.first] > heavyCutoff) {
+              nextNode = v.first;
+              break;
+            }
           }
         }
-      }
-      
-      for (auto &v: tree.getAdjacent(u)) {
-        if (v.first != tree.getParent(u) && v.first != nextNode) {
-          head[v.first] = v.first;
-          s.push(v.first);
+        
+        for (auto &v: tree.getAdjacent(u)) {
+          if (v.first != tree.getParent(u) && v.first != nextNode) {
+            head[v.first] = v.first;
+            s.push(v.first);
+          }
         }
-      }
-      
-      if (nextNode != -1) {
-        head[nextNode] = head[u];
-        // Tricky: in non-recursive DFS, if you want to visit nextNode first,
-        // you have to push it last into the stack
-        s.push(nextNode);
+        
+        if (nextNode != -1) {
+          head[nextNode] = head[u];
+          // Tricky: in non-recursive DFS, if you want to visit nextNode first,
+          // you have to push it last into the stack
+          s.push(nextNode);
+        }
+        visit[u] = true;
+      } else {
+        s.pop();
+        finish[u] = timeStamp;
       }
     }
   }
@@ -363,8 +371,14 @@ public:
     start.resize(n + 1);
     head.resize(n + 1);
     node.resize(n + 1);
+    finish.resize(n + 1);
+    visit.resize(n + 1);
     head[tree.getRoot()] = tree.getRoot();
     dfs(tree.getRoot(), subtreeSize);
+  }
+  
+  const WeightedTree<T>& getTree() const {
+    return tree;
   }
   
   // is the path parent[u] to u light?
@@ -388,6 +402,11 @@ public:
     return start[u];
   }
   
+  int getFinishTime(int u) const {
+    assert(1 <= u && u <= n);
+    return finish[u];
+  }
+  
   int getNodeAtTime(int timeStamp) const {
     return node[timeStamp];
   }
@@ -403,49 +422,92 @@ public:
   }
 };
 
+template <class T, class Q, class W> class HLDSegmentTree: SegmentTree<T,Q> {
+private:
+  const HeavyLightDecomposition<W> &hld;
+public:
+  HLDSegmentTree(int minIndex, int maxIndex, T defaultValue,
+                 const TreeMergeFunction<T, Q> &merge,
+                 const TreeUpdateLeafFunction<T, Q> &updateLeaf,
+                 const TreeSplitFunction<T, Q> &split,
+                 const HeavyLightDecomposition<W> &hld)
+  : SegmentTree<T,Q>(minIndex, maxIndex, defaultValue, merge, updateLeaf, split), hld(hld) {}
+  
+  HLDSegmentTree(int minIndex, int maxIndex, T defaultValue,
+                 const TreeMergeFunction<T, Q> &merge,
+                 const function<Q(T, int, int)> &init,
+                 const HeavyLightDecomposition<W> &hld)
+  : SegmentTree<T,Q>(minIndex, maxIndex, defaultValue, merge, init), hld(hld) {}
+  
+  void updateNode(int u, T v) {
+    int s = hld.getStartTime(u);
+    SegmentTree<T,Q>::update(s, s, v);
+  }
+  
+  void updateSubtree(int u, T v) {
+    SegmentTree<T,Q>::update(hld.getStartTime(u), hld.getFinishTime(u), v);
+  }
+  
+  // Query the range from the start of the heavy path of u to u
+  Q queryHeavyPath(int u) {
+    return SegmentTree<T,Q>::query(hld.getHeadTime(u), hld.getStartTime(u));
+  }
+  
+  // If v and u are in the same heavy path and v is an ancestor of u,
+  // query that range.
+  Q queryHeavyPath(int ancestor, int u) {
+    assert(hld.inSameHeavyPath(u, ancestor));
+    assert(hld.getStartTime(ancestor) <= hld.getStartTime(u));
+    return SegmentTree<T,Q>::query(hld.getStartTime(ancestor), hld.getStartTime(u));
+  }
+  
+  Q queryNode(int u) {
+    return SegmentTree<T,Q>::query(hld.getStartTime(u), hld.getStartTime(u));
+  }
+  
+  // Query the path from ancestor to u. O(logn^2).
+  // A queryNodeFunc can be used for fast querying value of a node
+  Q queryPath(int ancestor, int u, const function<Q(int)> &queryNodeFunc) {
+    assert(hld.getStartTime(ancestor) <= hld.getStartTime(u));
+    Q res = queryNodeFunc(u);
+    while (1) {
+      res = SegmentTree<T,Q>::merge(res, queryNodeFunc(u));
+      if (u == ancestor) {
+        break;
+      }
+      if (hld.isLight(u)) {
+        u = hld.getTree().getParent(u);
+      } else {
+        if (hld.inSameHeavyPath(u, ancestor)) {
+          Q q = queryHeavyPath(ancestor, u);
+          res = SegmentTree<T,Q>::merge(res, q);
+          break;
+        } else {
+          Q q = queryHeavyPath(u);
+          res = SegmentTree<T,Q>::merge(res, q);
+          u = hld.getHead(u);
+        }
+      }
+    }
+    return res;
+  }
+  
+  Q queryPath(int ancestor, int u) {
+    return queryPath(ancestor, u, [&](int u){return queryNode(u);});
+  }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
 
-int queryUp(int u, int v, const vector<int> &color, const WeightedTree<int> &tree, const HeavyLightDecomposition<int> &hld, SegmentTree<int, int>  &seg) {
-  // v is ancestor of u
-  int res = INT_INF;
-  while (1) {
-    if (color[u] == 1) {
-      res = u;
-    }
-    if (u == v) {
-      break;
-    }
-    if (hld.isLight(u)) {
-      u = tree.getParent(u);
-    } else {
-      if (hld.inSameHeavyPath(u, v)) {
-        int t = seg.query(hld.getStartTime(v), hld.getStartTime(u));
-        if (t != INT_INF) {
-          res = hld.getNodeAtTime(t);
-        }
-        return res;
-      } else {
-        int t = seg.query(hld.getHeadTime(u), hld.getStartTime(u));
-        if (t != INT_INF) {
-          res = hld.getNodeAtTime(t);
-        }
-        u = hld.getHead(u);
-      }
-    }
-  }
-  
-  return res;
-}
-
-// Sample: SPOJ - QTREE3
+// SPOJ QTREE3
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("biginput1.txt", "r", stdin);
-  freopen("biginput1.out", "w", stdout);
+  freopen("input1.txt", "r", stdin);
+  //  freopen("biginput1.out", "w", stdout);
 #endif
   
   int n, q;
@@ -464,10 +526,7 @@ int main() {
   tree.setRoot(1);
   
   HeavyLightDecomposition<int> hld(tree);
-  
-  SegmentTree<int, int> seg(1, n, 0, [](int l, int r) {return min(l, r);}, [](int v, int l, int r) {return (v == 1) ? l : INT_INF;});
-  
-  seg.update(1, n, 0);
+  HLDSegmentTree<int, int, int> seg(1, n, 0, [](int l, int r) {return min(l, r);}, [](int v, int l, int r) {return (v == 1) ? l : INT_INF;}, hld);
   vector<int> color(n + 1);
   
   repeat(q) {
@@ -477,13 +536,12 @@ int main() {
       int u;
       scanf("%d", &u);
       color[u] = 1 - color[u];
-      int s = hld.getStartTime(u);
-      seg.update(s, s, color[u]);
+      seg.updateNode(u, color[u]);
     } else if (t == 1) {
       int u;
       scanf("%d", &u);
-      int res = queryUp(u, 1, color, tree, hld, seg);
-      if (res == INT_INF) res = -1;
+      int res = seg.queryPath(1, u, [&](int u){return (color[u] == 1) ? hld.getStartTime(u) : INT_INF;});
+      if (res == INT_INF) res = -1; else res = hld.getNodeAtTime(res);
       printf("%d\n", res);
     }
   }

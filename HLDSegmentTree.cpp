@@ -313,8 +313,10 @@ template<class T> class HeavyLightDecomposition {
   const WeightedTree<T> &tree;
   int timeStamp;
   vector<int> start;
+  vector<int> finish;
   vector<int> head;
   vector<int> node;
+  vector<bool> visit;
   int n;
   
   void dfs(int u, const SubtreeSize<T> &subtreeSize) {
@@ -322,36 +324,41 @@ template<class T> class HeavyLightDecomposition {
     s.push(u);
     while (!s.empty()) {
       u = s.top();
-      s.pop();
       
-      timeStamp++;
-      node[timeStamp] = u;
-      start[u] = timeStamp;
-      
-      int heavyCutoff = subtreeSize[u] / 2;
-      int nextNode = -1;
-      
-      for (auto &v: tree.getAdjacent(u)) {
-        if (v.first != tree.getParent(u)) {
-          if (subtreeSize[v.first] > heavyCutoff) {
-            nextNode = v.first;
-            break;
+      if (!visit[u]) {
+        timeStamp++;
+        node[timeStamp] = u;
+        start[u] = timeStamp;
+        
+        int heavyCutoff = subtreeSize[u] / 2;
+        int nextNode = -1;
+        
+        for (auto &v: tree.getAdjacent(u)) {
+          if (v.first != tree.getParent(u)) {
+            if (subtreeSize[v.first] > heavyCutoff) {
+              nextNode = v.first;
+              break;
+            }
           }
         }
-      }
-      
-      for (auto &v: tree.getAdjacent(u)) {
-        if (v.first != tree.getParent(u) && v.first != nextNode) {
-          head[v.first] = v.first;
-          s.push(v.first);
+        
+        for (auto &v: tree.getAdjacent(u)) {
+          if (v.first != tree.getParent(u) && v.first != nextNode) {
+            head[v.first] = v.first;
+            s.push(v.first);
+          }
         }
-      }
-      
-      if (nextNode != -1) {
-        head[nextNode] = head[u];
-        // Tricky: in non-recursive DFS, if you want to visit nextNode first,
-        // you have to push it last into the stack
-        s.push(nextNode);
+        
+        if (nextNode != -1) {
+          head[nextNode] = head[u];
+          // Tricky: in non-recursive DFS, if you want to visit nextNode first,
+          // you have to push it last into the stack
+          s.push(nextNode);
+        }
+        visit[u] = true;
+      } else {
+        s.pop();
+        finish[u] = timeStamp;
       }
     }
   }
@@ -364,6 +371,8 @@ public:
     start.resize(n + 1);
     head.resize(n + 1);
     node.resize(n + 1);
+    finish.resize(n + 1);
+    visit.resize(n + 1);
     head[tree.getRoot()] = tree.getRoot();
     dfs(tree.getRoot(), subtreeSize);
   }
@@ -391,6 +400,11 @@ public:
   int getStartTime(int u) const {
     assert(1 <= u && u <= n);
     return start[u];
+  }
+  
+  int getFinishTime(int u) const {
+    assert(1 <= u && u <= n);
+    return finish[u];
   }
   
   int getNodeAtTime(int timeStamp) const {
@@ -428,6 +442,10 @@ public:
   void updateNode(int u, T v) {
     int s = hld.getStartTime(u);
     SegmentTree<T,Q>::update(s, s, v);
+  }
+  
+  void updateSubtree(int u, T v) {
+    SegmentTree<T,Q>::update(hld.getStartTime(u), hld.getFinishTime(u), v);
   }
   
   // Query the range from the start of the heavy path of u to u
@@ -484,8 +502,7 @@ void testGen() {
   fclose(stdout);
 }
 
-// Sample: SPOJ QTREE 3
-
+// SPOJ QTREE3
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
