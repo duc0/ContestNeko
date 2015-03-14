@@ -171,6 +171,17 @@ public:
     return getAncestor(anc[u][b].first, k - (1 << b));
   }
   
+  Q queryAncestor(int u, int k) {
+    assert(0 <= k && k <= t.getDepth(u));
+    if (k == 0) {
+      return u;
+    }
+    int b = 0;
+    while ((1 << b) <= k) ++b;
+    --b;
+    return combine(anc[u][b].second, queryAncestor(anc[u][b].first, k - (1 << b)));
+  }
+  
   pair<int, T> getLCA(int u, int v) {
     if (t.getDepth(u) > t.getDepth(v)) {
       swap(u, v);
