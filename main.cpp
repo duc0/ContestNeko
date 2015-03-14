@@ -55,5 +55,23 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  int n;
+  cin >> n;
+  vector<int> a(n + 1);
+  for_inc_range(i, 1, n) {
+    cin >> a[i];
+  }
+  
+  sort(a.begin() + 1, a.end());
+  
+  int64 ans = 0;
+  int i = n;
+  while (i > 0) {
+    ans += a[i];
+    i -= 2;
+  }
+  cout << ans << endl;
+  
   return 0;
+  
 }
