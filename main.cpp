@@ -95,12 +95,12 @@ int main() {
 #endif
 
   int n, q;
-  cin >> n >> q;
+  scanf("%d%d", &n, &q);
   vector<pair<int, int>> a(n + 1);
 
   for_inc_range(i, 1, n) {
     int x;
-    cin >> x;
+    scanf("%d", &x);
     a[i] = make_pair(x, i);
   }
 
@@ -108,7 +108,7 @@ int main() {
 
   for_inc_range(i, 1, q) {
     int l, r;
-    cin >> l >> r;
+    scanf("%d%d", &l, &r);
     query[i] = make_pair(l, r);
   }
 
@@ -116,7 +116,7 @@ int main() {
 
   vector<int64> qResult(q + 1);
 
-  BinaryIndexedTree<int> present(1, n);
+  vector<int> inQ(q + 1);
 
   for_inc_range(i, 1, n) {
     int v = a[i].first;
@@ -125,11 +125,10 @@ int main() {
     for_inc_range(j, 1, q) {
       int l = query[j].first, r = query[j].second;
       if (l <= pos && pos <= r) {
-        qResult[j] += (int64)v * (present.sum(l, r) + 1);
+        qResult[j] += (int64)v * (inQ[j] + 1);
+      inQ[j]++;
       }
     }
-
-    present.add(pos, 1);
   }
 
   for_inc_range(i, 1, q) { cout << qResult[i] << endl; }
