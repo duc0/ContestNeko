@@ -50,10 +50,138 @@ void testGen() {
   fclose(stdout);
 }
 
+template <class T> struct TreeNode {
+  int nextNode[26];
+  int length = 0;
+  int suffixLink = 0;
+  int count = 0;
+  
+  TreeNode() {
+    memset(nextNode, -1, sizeof(nextNode));
+  }
+  
+  bool hasNextNode(T c) const {
+    return nextNode[c] != -1;
+  }
+  
+  int getNextNode(T c) const {
+    return nextNode[c];
+  }
+  
+  void setNextNode(T c, int v) {
+    nextNode[c] = v;
+  }
+};
+
+
+template<class T> class PalindromicTree {
+  const int FAKE_ROOT_MINUS_1 = 0;
+  const int FAKE_ROOT_0 = 1;
+  
+  vector<T> s;
+  
+  vector<TreeNode<T>> node;
+  
+  int n;
+  
+  int maxSuffixPalindrome;
+  
+  int newNode(int length, int suffixLink) {
+    TreeNode<T> p;
+    p.length = length;
+    p.suffixLink = suffixLink;
+    node.push_back(p);
+    return (int)node.size() - 1;
+  }
+  
+  bool addLetter(int pos) {
+    int curNode = maxSuffixPalindrome, curLength = 0;
+    T letter = s[pos];
+    
+    while (true) {
+      curLength = node[curNode].length;
+      if (pos - 1 - curLength >= 0 && s[pos - 1 - curLength]  == s[pos]) {
+        break;
+      }
+      curNode = node[curNode].suffixLink;
+    }
+    
+    if (node[curNode].hasNextNode(letter)) {
+      maxSuffixPalindrome = node[curNode].getNextNode(letter);
+      return false;
+    }
+    
+    newNode(node[curNode].length + 2, FAKE_ROOT_MINUS_1);
+    maxSuffixPalindrome = (int) node.size() - 1;
+    node[curNode].setNextNode(letter, maxSuffixPalindrome);
+    
+    TreeNode<T> &mNode = node[maxSuffixPalindrome];
+    
+    if (mNode.length == 1) {
+      mNode.suffixLink = FAKE_ROOT_0;
+      mNode.count = 1;
+      return true;
+    }
+    
+    while (true) {
+      curNode = node[curNode].suffixLink;
+      curLength = node[curNode].length;
+      if (pos - 1 - curLength >= 0 && s[pos - 1 - curLength] == s[pos]) {
+        mNode.suffixLink = node[curNode].getNextNode(letter);
+        break;
+      }
+    }
+    
+    mNode.count = 1 + node[mNode.suffixLink].count;
+    
+    return true;
+  }
+public:
+  template <class Iterator> PalindromicTree(Iterator begin, Iterator end) {
+    for (auto it = begin; it != end; ++it) {
+      s.push_back(*it);
+    }
+    
+    n = (int) s.size();
+    
+    newNode(-1, FAKE_ROOT_MINUS_1);
+    newNode(0, FAKE_ROOT_MINUS_1);
+    
+    maxSuffixPalindrome = FAKE_ROOT_0;
+    
+    for_inc(i, n) {
+      addLetter(i);
+    }
+  }
+  
+  int getLongestPalindromicSubstringLength() {
+    int ans = 0;
+    for (auto &p: node) {
+      ans = max(ans, p.length);
+    }
+    return ans;
+  }
+};
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  string s;
+  cin >> s;
+  
+  vector<char> st(n);
+  for_inc(i, n) {
+    st[i] = s[i] - 'a';
+  }
+  
+  PalindromicTree<char> tree(st.begin(), st.end());
+  
+  cout << tree.getLongestPalindromicSubstringLength() << endl;
+  
   return 0;
 }
