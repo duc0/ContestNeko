@@ -106,7 +106,15 @@ public:
     x = y.x;
     return *this;
   }
-  
+  template<class Q> bool operator ==(const Q &y) const {
+    return x == get(y);
+  }
+  template<class Q> bool operator > (const Q &y) const {
+    return x > get(y);
+  }
+  template<class Q> bool operator < (const Q &y) const {
+    return x < get(y);
+  }
   friend std::ostream& operator<< (std::ostream& stream, const ModInt& y) {
     stream << get(y);
     return stream;

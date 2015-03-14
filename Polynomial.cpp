@@ -22,6 +22,7 @@
 #include <queue>
 #include <stack>
 #include <functional>
+#include <sstream>
 
 using namespace std;
 
@@ -90,15 +91,27 @@ public:
   template <class Q> ModInt operator-(const Q &y) const {
     return ModInt(x - get(y));
   }
+  template <class Q> ModInt& operator-=(const Q &y) {
+    x = NumberTheory<T>::modulo(x - get(y), M);
+    return *this;
+  }
   template <class Q> bool operator!=(const Q &y) const {
     return x != get(y);
   }
   template <class Q> ModInt operator*(const Q &y) const {
     return ModInt((int64)x * get(y));
   }
+  template <class Q> ModInt& operator*=(const Q &y) {
+    x = NumberTheory<T>::modulo((int64)x * get(y), M);
+    return *this;
+  }
   template <class Q> ModInt operator/(const Q &y) const {
     return ModInt(
                   (int64)x * NumberTheory<T>::modularInverse(get(y), MOD));
+  }
+  template <class Q> ModInt& operator/=(const Q &y) {
+    x = NumberTheory<T>::modulo((int64)x * NumberTheory<T>::modularInverse(get(y), MOD), M);
+    return *this;
   }
   ModInt &operator=(const T &y) {
     x = NumberTheory<T>::modulo(y, M);
@@ -108,7 +121,15 @@ public:
     x = y.x;
     return *this;
   }
-  
+  template<class Q> bool operator ==(const Q &y) const {
+    return x == get(y);
+  }
+  template<class Q> bool operator > (const Q &y) const {
+    return x > get(y);
+  }
+  template<class Q> bool operator < (const Q &y) const {
+    return x < get(y);
+  }
   friend std::ostream& operator<< (std::ostream& stream, const ModInt& y) {
     stream << get(y);
     return stream;
@@ -192,78 +213,167 @@ public:
   }
 };
 
+template <class T> class Polynomial {
+  vector<T> deg;
+  int n;
+  
+public:
+  Polynomial(int n) {
+    deg.resize(n + 1);
+    this->n = n;
+  }
+  
+  Polynomial(const vector<T> &deg) : deg(deg) {
+    this->n = (int)deg.size() - 1;
+  }
+  
+  void multiply(T a) {
+    for_inc_range(i, 0, n) {
+      deg[i] *= a;
+    }
+  }
+  
+  T getCoef(int k) const {
+    assert ( 0 <= k && k <= n);
+    return deg[k];
+  }
+  
+  void add(const Polynomial<T> &p) {
+    int newDeg = max(n, p.n);
+    
+    deg.resize(newDeg + 1);
+    this->n = newDeg;
+    
+    for_inc_range(i, 0, n) {
+      deg[i] += p.deg[i];
+    }
+  }
+  
+  void printDebug() const {
+    ostringstream s;
+    for_dec_range(i, n, 0) {
+      if (deg[i] == 1 && i > 0) {
+        if (i < n) s << " + ";
+      } else if (deg[i] == -1 && i > 0) {
+        s << " - ";
+      } else {
+        if (i < n && deg[i] > 0) {
+          s << " + ";
+        }
+        s << deg[i];
+      }
+      if (i >= 2) {
+        s << "x^" << i;
+      } else if (i == 1) {
+        s << "x";
+      }
+    }
+    LOG(1, s.str());
+  }
+  
+  // (ax + b)^n
+  static Polynomial<T> simplePower(T a, T b, int n, const ComboUtils<T> &comboUtils)  {
+    assert(a != 0);
+    assert(comboUtils.getMaxN() >= n);
+    vector<T> aPower(n + 1);
+    vector<T> bPower(n + 1);
+    aPower[0] = 1;
+    bPower[0] = 1;
+    for_inc_range(i, 1, n) {
+      aPower[i] = aPower[i - 1] * a;
+      bPower[i] = bPower[i - 1] * b;
+    }
+    
+    Polynomial<T> p(n);
+    for_inc_range(i, 0, n) {
+      p.deg[i] = bPower[n - i] * aPower[i] * comboUtils.C(n, i);
+    }
+    
+    return p;
+  }
+  
+  // h[k] = number of permutations with exactly k restricted positions.
+  static Polynomial<T> getHitPolynomial(int n, const Polynomial<T> &rook, const ComboUtils<T> &comboUtils) {
+    assert(comboUtils.getMaxN() >= n);
+    Polynomial<T> hit(0);
+    for_inc_range(k, 0, n) {
+      auto p = Polynomial<T>::simplePower(1, -1, k, comboUtils);
+      p.multiply(rook.getCoef(k) * comboUtils.P(n - k));
+      hit.add(p);
+    }
+    return hit;
+  }
+};
+
+
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
 
-// Sample CF295_C
+// k = 0
+int solveSlow(int n) {
+  vector<int> a(n + 1);
+  for_inc_range(i, 1, n) a[i] = i;
+  int ret = 0;
+  do {
+    bool good = true;
+    for_inc_range(i, 1, n) if (a[i] == i - 1 || a[i] == i + 1) {
+      good = false;
+      break;
+    }
+    if (good) ret++;
+  } while (next_permutation(a.begin() + 1, a.end()));
+  return ret;
+}
+
 int main() {
+  ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input5.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
   int n, k;
-  string s;
   cin >> n >> k;
-  cin >> s;
   
-  ComboUtils<ModInt<int, MOD>> combo(n);
+  vector<vector<ModInt<int, MOD>>> f(n + 1);
+  for_inc_range(i, 0, n) f[i].resize(n + 1);
+  vector<vector<ModInt<int, MOD>>> g(n + 1);
+  for_inc_range(i, 0, n) g[i].resize(n + 1);
   
-  vector<ModInt<int, MOD>> tenPower = ComboUtils<ModInt<int, MOD>>::getPower(n, 10);
-  
-  ModInt<int, MOD> begin, end, ret, sum, last, sum1;
-  
-  if (k == 0) {
-    begin = 0;
-    for_inc_range(l, 1, n) {
-      begin = begin * 10 + s[l - 1] - '0';
-    }
-    cout << begin << endl;
-    return 0;
-  }
-  for_inc_range(l, 1, n - 1) {
-    begin = begin * 10 + s[l - 1] - '0';
-    if (n - l - 1 < k - 1) {
-      break;
-    }
-    ret = ret + begin * combo.C(n - l - 1, k - 1);
-  }
-  LOG(1, "Begin val: " << ret);
-  
-  end = 0;
-  for_inc_range(l, 1, n - 1) {
-    end = end + tenPower[l - 1] * (s[n - l] - '0');
-    if (n - l - 1 < k - 1) {
-      break;
-    }
-    LOG(1, "End: " << end);
-    ret = ret + end * combo.C(n - l - 1, k -1);
-  }
-  LOG(1, "End val: " << ret);
-  
-  if (n >= 3 && k >= 2) {
-    sum = 0;
-    last = s[n - 1 - 1] - '0';
-    for_inc_range(i, 2, n - 1) {
-      sum = sum + s[i - 1] - '0';
-    }
-    sum1 = sum;
-    LOG(1, "Sum : " << sum);
-    LOG(1, "Last " << last);
-    ret = ret + sum * combo.C(n - 3, k - 2);
-    for_inc_range(l, 2, n - 2) {
-      sum = sum - last;
-      sum = sum * 10;
-      sum1 = sum1 - (s[l - 1] - '0');
-      sum = sum + sum1;
-      last = last + tenPower[l - 1] * (s[n - l - 1] - '0');
-      LOG(2, "Last " << last);
-      LOG(2, "Sum1 " << sum1);
-      ret = ret + sum * combo.C(n - l - 2, k - 2);
+  f[0][0] = 1;
+  for_inc_range(i, 1, n) {
+    f[i][0] = 1;
+    g[i][0] = 1;
+    for_inc_range(k, 1, i) {
+      f[i][k] = 0;
+      g[i][k] = 0;
+      
+      if (i >= 1) {
+        f[i][k] += f[i - 1][k];
+      }
+      if (k >= 2) {
+        f[i][k] += f[i - 2][k - 2];
+      }
+      if (k >= 1) {
+        f[i][k] += g[i - 1][k - 1] * 2;
+      }
+      
+      if (i >= 1) {
+        g[i][k] += f[i - 1][k];
+        if (k >= 1) {
+          g[i][k] += g[i - 1][k - 1];
+        }
+      }
     }
   }
   
-  cout << ret << endl;
+  Polynomial<ModInt<int, MOD>> rook(f[n]);
+  ComboUtils<ModInt<int, MOD>> comboUtils(n);
+  auto hit = Polynomial<ModInt<int, MOD>>::getHitPolynomial(n, rook, comboUtils);
+  cout << hit.getCoef(k);
   return 0;
+  
+  
 }
