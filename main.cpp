@@ -48,6 +48,12 @@ int MODP(int64 x) {
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
+  
+  int n = 100000;
+  for_inc(i, n) {
+    char c = rand() % 8 + 'a';
+    cout << c;
+  }
   fclose(stdout);
 }
 
@@ -239,7 +245,7 @@ public:
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("biginput1.txt", "r", stdin);
 #endif
   
   string s;
