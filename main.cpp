@@ -25,7 +25,9 @@
 
 using namespace std;
 
-#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+#define LOG(l, x)                                                              \
+  if (l <= LOGLEVEL)                                                           \
+  cout << x << endl
 
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
@@ -41,9 +43,45 @@ using namespace std;
 #define MOD 1000000007
 int MODP(int64 x) {
   int r = x % MOD;
-  if (r < 0) r += MOD;
+  if (r < 0)
+    r += MOD;
   return r;
 }
+
+template <class T> class BinaryIndexedTree {
+  vector<T> val;
+  int n, minIndex, maxIndex;
+
+public:
+  BinaryIndexedTree(int n) : BinaryIndexedTree(1, n) {}
+
+  BinaryIndexedTree(int minIndex, int maxIndex) {
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+    this->n = maxIndex - minIndex + 1;
+    val.resize(n + 1);
+  }
+
+  void add(int i, int v) {
+    i = i - minIndex + 1;
+    for (; i <= n; i += i & -i) {
+      val[i] += v;
+    }
+  }
+  T sum(int i) {
+    i = i - minIndex + 1;
+    if (i <= 0)
+      return 0;
+    if (i > n)
+      i = n;
+    T s = 0;
+    for (; i > 0; i -= i & -i)
+      s += val[i];
+    return s;
+  }
+
+  T sum(int i1, int i2) { return sum(i2) - sum(i1 - 1); }
+};
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
@@ -55,33 +93,46 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
-  
+
   int n, q;
   cin >> n >> q;
-  vector<int> a( n + 1);
-  
+  vector<pair<int, int>> a(n + 1);
+
   for_inc_range(i, 1, n) {
-    cin >> a[i];
+    int x;
+    cin >> x;
+    a[i] = make_pair(x, i);
   }
-  
-  vector<int> tmp(n + 1);
-  repeat(q) {
+
+  vector<pair<int, int>> query(q + 1);
+
+  for_inc_range(i, 1, q) {
     int l, r;
     cin >> l >> r;
-    
-    for_inc_range(i, l, r) {
-      tmp[i - l + 1] = a[i];
-    }
-    
-    sort(tmp.begin() + 1, tmp.begin() + r - l + 2);
-    
-    int64 ans = 0;
-    for_inc_range(i, 1, r - l + 1) {
-      ans += tmp[i] * i;
-    }
-    
-    cout << ans << endl;
+    query[i] = make_pair(l, r);
   }
-  
+
+  sort(a.begin() + 1, a.end());
+
+  vector<int64> qResult(q + 1);
+
+  BinaryIndexedTree<int> present(1, n);
+
+  for_inc_range(i, 1, n) {
+    int v = a[i].first;
+    int pos = a[i].second;
+
+    for_inc_range(j, 1, q) {
+      int l = query[j].first, r = query[j].second;
+      if (l <= pos && pos <= r) {
+        qResult[j] += (int64)v * (present.sum(l, r) + 1);
+      }
+    }
+
+    present.add(pos, 1);
+  }
+
+  for_inc_range(i, 1, q) { cout << qResult[i] << endl; }
+
   return 0;
 }
