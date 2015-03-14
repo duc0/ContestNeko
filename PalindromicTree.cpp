@@ -22,6 +22,7 @@
 #include <queue>
 #include <stack>
 #include <functional>
+#include <sstream>
 
 using namespace std;
 
@@ -46,7 +47,13 @@ int MODP(int64 x) {
 }
 
 void testGen() {
-  freopen("biginput1.txt", "w", stdout);
+  freopen("input5.txt", "w", stdout);
+  
+  int n = 100;
+  for_inc(i, n) {
+    char c = rand() % 4 + 'a';
+    cout << c;
+  }
   fclose(stdout);
 }
 
@@ -73,6 +80,16 @@ template <class T, int AlphabetSize> class FixedAlphabetTreeNode {
   
   void setNextNode(T c, int v) {
     nextNode[c] = v;
+  }
+  
+  vector<T> getNextNodes() const {
+    vector<T> ret;
+    for_inc(c, AlphabetSize) {
+      if (nextNode[c] != -1) {
+        ret.push_back(c);
+      }
+    }
+    return ret;
   }
   
 public:
@@ -122,6 +139,7 @@ template<class T, class TreeNode> class PalindromicTree {
     
     if (node[curNode].hasNextNode(letter)) {
       maxSuffixPalindrome = node[curNode].getNextNode(letter);
+      node[maxSuffixPalindrome].lazy ++;
       return false;
     }
     
@@ -202,23 +220,65 @@ public:
   const vector<TreeNode>& getNodes() const {
     return node;
   }
+  
+  void printAllDebug(int u, ostringstream &sb) const {
+    LOG(1, "Current palindrome: " << sb.str() << ", count " << node[u].count << ", length: " << node[u].length);
+    vector<T> next = node[u].getNextNodes();
+    for(auto &c: next) {
+      ostringstream sb2;
+      char ch = c + 'a';
+      if (u == FAKE_ROOT_MINUS_1) {
+        sb2 << ch;
+      } else {
+        sb2 << ch << sb.str() << ch;
+      }
+      printAllDebug(node[u].getNextNode(c), sb2);
+    }
+  }
+  
+  void printAllDebug() const {
+    ostringstream sb;
+    printAllDebug(FAKE_ROOT_MINUS_1, sb);
+  }
 };
 
-// SPOJ PLD
+bool isPalindrome(string s) {
+  int n = (int) s.length();
+  for_inc(i, n) {
+    if (s[i] != s[n - i - 1]) {
+      return false;
+    }
+  }
+  return true;
+}
 
+int solveSlow(string s) {
+  int n = (int) s.length();
+  int ret = 0;
+  for_inc_range(l, 1, n) {
+    for_inc(j, n - l + 1) {
+      for_inc(i, j) {
+        if (s.substr(i, l) == s.substr(j, l) && isPalindrome(s.substr(i, l))) {
+          ++ret;
+        }
+      }
+    }
+  }
+  return ret;
+}
+
+// Hackerrank w14 - Palindromic Border
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  //testGen();
+  freopen("input5.txt", "r", stdin);
 #endif
-  
-  int k;
-  cin >> k;
   
   string s;
   cin >> s;
+  int n = (int) s.length();
   
-  int n = (int) s.size();
   vector<char> st(n);
   for_inc(i, n) {
     st[i] = s[i] - 'a';
@@ -228,12 +288,14 @@ int main() {
   
   int64 ans = 0;
   for (auto &p: tree.getNodes()) {
-    if (p.getLength() == k) {
-      ans += p.getCount();
+    int64 c = p.getCount();
+    if (c > 1) {
+      ans = (ans + c * (c - 1) / 2) % MOD;
     }
   }
   
   cout << ans << endl;
+  //cout << solveSlow(s) << endl;
   
   return 0;
 }
