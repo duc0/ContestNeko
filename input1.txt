@@ -1,9 +1,1 @@
-8
-abcbaaab
-5
-cabba
-
-4
-abac
-5
-ababa
+abcacb
