@@ -257,11 +257,10 @@ int main() {
   for (auto &p: tree.getNodes()) {
     int64 c = p.getCount();
     if (c > 1) {
-      ans += c * (c - 1) / 2;
+      ans = (ans + c * (c - 1) / 2) % MOD;
     }
   }
   
-  tree.printAllDebug();
   cout << ans << endl;
   
   return 0;
