@@ -1,9 +1,4 @@
-8
-abcbaaab
-5
-cabba
+malayalam
 
-4
-abac
-5
-ababa
+aaaa
+malayalam

@@ -161,6 +161,18 @@ public:
     }
     return ans;
   }
+  
+  int getNumberOfDistinctPalindromicSubstrings() {
+    return (int) node.size() - 2;
+  }
+  
+  int64 getNumberOfPalindromicSubstrings() {
+    int64 ans = 0;
+    for (auto &p: node) {
+      ans += p.count;
+    }
+    return ans;
+  }
 };
 
 int main() {
@@ -169,11 +181,11 @@ int main() {
   freopen("input1.txt", "r", stdin);
 #endif
   
-  int n;
-  cin >> n;
+
   string s;
   cin >> s;
   
+  int n = (int) s.size();
   vector<char> st(n);
   for_inc(i, n) {
     st[i] = s[i] - 'a';
@@ -181,7 +193,7 @@ int main() {
   
   PalindromicTree<char> tree(st.begin(), st.end());
   
-  cout << tree.getLongestPalindromicSubstringLength() << endl;
+  cout << tree.getNumberOfPalindromicSubstrings() << endl;
   
   return 0;
 }
