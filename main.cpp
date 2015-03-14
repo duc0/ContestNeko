@@ -55,5 +55,59 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n, q;
+  cin >> n >> q;
+  
+  vector<int> a( n + 1);
+  int64 sum = 0;
+  
+  set<pair<int, int>> s;
+  
+  for_inc_range(i, 1, n) {
+    cin >> a[i];
+    
+    sum += a[i];
+    s.insert(make_pair(a[i], i));
+  }
+  
+  repeat(q) {
+    int t;
+    cin >> t;
+    if (t == 1) {
+      int i, x;
+      cin >> i >> x;
+      if (a[i] != x) {
+        sum -= a[i];
+        
+        s.erase(make_pair(a[i], i));
+        
+        a[i] = x;
+        
+        s.insert(make_pair(a[i], i));
+        
+        sum += x;
+      }
+      cout << sum << endl;
+    } else {
+      int p;
+      cin >> p;
+      
+      while (s.rbegin()->first >= p) {
+        auto e = *s.rbegin();
+        
+        sum -= a[e.second];
+        a[e.second] = a[e.second] % p;
+        sum += a[e.second];
+        
+        s.erase(e);
+        
+        s.insert(make_pair(a[e.second], e.second));
+      }
+      
+      cout << sum << endl;
+    }
+  }
+  
   return 0;
 }
