@@ -47,11 +47,11 @@ int MODP(int64 x) {
 }
 
 void testGen() {
-  freopen("input5.txt", "w", stdout);
+  freopen("biginput2.txt", "w", stdout);
   
-  int n = 100;
+  int n = 100000;
   for_inc(i, n) {
-    char c = rand() % 4 + 'a';
+    char c = rand() % 1 + 'a';
     cout << c;
   }
   fclose(stdout);
@@ -272,7 +272,7 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input5.txt", "r", stdin);
+  freopen("biginput2.txt", "r", stdin);
 #endif
   
   string s;
@@ -295,6 +295,13 @@ int main() {
   }
   
   cout << ans << endl;
+  
+  int64 ans2 = 0;
+  for_inc_range(i, 1, n) {
+    int64 c=  i;
+    ans2 = (ans2 + c * (c- 1) / 2) % MOD;
+  }
+  cout << ans2 << endl;
   //cout << solveSlow(s) << endl;
   
   return 0;
