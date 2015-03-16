@@ -266,10 +266,11 @@ public:
     int newDeg = n + p.n;
     Polynomial<T> r(newDeg);
     for_inc_range(i, 0, newDeg) {
-      for_inc_range(j, 0, min(i, n)) {
-        if (i - j <= p.n) {
-          r.deg[i] += deg[j] * p.deg[i - j];
-        }
+      r.deg[i] = 0;
+      int jmin = max(0, i - p.n);
+      int jmax = min(i, n);
+      for_inc_range(j, jmin, jmax) {
+        r.deg[i] += deg[j] * p.deg[i - j];
       }
     }
     return r;
