@@ -127,8 +127,14 @@ public:
   template<class Q> bool operator > (const Q &y) const {
     return x > get(y);
   }
+  template<class Q> bool operator >= (const Q &y) const {
+    return x >= get(y);
+  }
   template<class Q> bool operator < (const Q &y) const {
     return x < get(y);
+  }
+  template<class Q> bool operator <= (const Q &y) const {
+    return x <= get(y);
   }
   friend std::ostream& operator<< (std::ostream& stream, const ModInt& y) {
     stream << get(y);
@@ -218,6 +224,12 @@ template <class T> class Polynomial {
   int n;
   
 public:
+  Polynomial() {
+    n = 0;
+    deg.resize(1);
+    deg[0] = 0;
+  }
+  
   Polynomial(int n) {
     deg.resize(n + 1);
     this->n = n;
@@ -227,26 +239,40 @@ public:
     this->n = (int)deg.size() - 1;
   }
   
-  void multiply(T a) {
-    for_inc_range(i, 0, n) {
-      deg[i] *= a;
-    }
-  }
-  
   T getCoef(int k) const {
-    assert ( 0 <= k && k <= n);
+    assert ( 0 <= k);
+    if (k > n) return 0;
     return deg[k];
   }
   
-  void add(const Polynomial<T> &p) {
+  Polynomial<T> operator+(const Polynomial<T> &p) {
     int newDeg = max(n, p.n);
-    
-    deg.resize(newDeg + 1);
-    this->n = newDeg;
-    
-    for_inc_range(i, 0, n) {
-      deg[i] += p.deg[i];
+    Polynomial<T> r(newDeg);
+    for_inc_range(i, 0, newDeg) {
+      r.deg[i] = getCoef(i) + p.getCoef(i);
     }
+    return r;
+  }
+  
+  Polynomial<T> operator*(const T &a) {
+    Polynomial<T> r(n);
+    for_inc_range(i, 0, n) {
+      r.deg[i] = deg[i] * a;
+    }
+    return r;
+  }
+  
+  Polynomial<T> operator*(const Polynomial<T> &p) {
+    int newDeg = n + p.n;
+    Polynomial<T> r(newDeg);
+    for_inc_range(i, 0, newDeg) {
+      for_inc_range(j, 0, min(i, n)) {
+        if (i - j <= p.n) {
+          r.deg[i] += deg[j] * p.deg[i - j];
+        }
+      }
+    }
+    return r;
   }
   
   void printDebug() const {
@@ -257,7 +283,7 @@ public:
       } else if (deg[i] == -1 && i > 0) {
         s << " - ";
       } else {
-        if (i < n && deg[i] > 0) {
+        if (i < n && deg[i] >= 0) {
           s << " + ";
         }
         s << deg[i];
@@ -298,8 +324,7 @@ public:
     Polynomial<T> hit(0);
     for_inc_range(k, 0, n) {
       auto p = Polynomial<T>::simplePower(1, -1, k, comboUtils);
-      p.multiply(rook.getCoef(k) * comboUtils.P(n - k));
-      hit.add(p);
+      hit = hit + p * (rook.getCoef(k) * comboUtils.P(n - k));
     }
     return hit;
   }
@@ -337,41 +362,24 @@ int main() {
   int n, k;
   cin >> n >> k;
  
-  vector<vector<ModInt<int, MOD>>> f(n + 1);
-  for_inc_range(i, 0, n) f[i].resize(n + 1);
-  vector<vector<ModInt<int, MOD>>> g(n + 1);
-  for_inc_range(i, 0, n) g[i].resize(n + 1);
+  Polynomial<ModInt<int, MOD>> pxsquare({0,0,1});
+  Polynomial<ModInt<int, MOD>> px({0,1});
   
-  f[0][0] = 1;
+  vector<Polynomial<ModInt<int, MOD>>> f(n + 1);
+  vector<Polynomial<ModInt<int, MOD>>> g(n + 1);
+  
+  f[0] = Polynomial<ModInt<int, MOD>>(vector<ModInt<int, MOD>>{1});
+  g[0] = Polynomial<ModInt<int, MOD>>(vector<ModInt<int, MOD>>{0});
   for_inc_range(i, 1, n) {
-    f[i][0] = 1;
-    g[i][0] = 1;
-    for_inc_range(k, 1, i) {
-      f[i][k] = 0;
-      g[i][k] = 0;
-      
-      if (i >= 1) {
-        f[i][k] += f[i - 1][k];
-      }
-      if (k >= 2) {
-        f[i][k] += f[i - 2][k - 2];
-      }
-      if (k >= 1) {
-        f[i][k] += g[i - 1][k - 1] * 2;
-      }
-      
-      if (i >= 1) {
-        g[i][k] += f[i - 1][k];
-        if (k >= 1) {
-          g[i][k] += g[i - 1][k - 1];
-        }
-      }
+    f[i] = f[i] + f[i - 1] + g[i - 1] * px * ModInt<int, MOD>(2);
+    if (i >= 2) {
+      f[i] = f[i] + f[i - 2] * pxsquare;
     }
+    g[i] = g[i] + f[i - 1] + g[i - 1] * px;
   }
 
-  Polynomial<ModInt<int, MOD>> rook(f[n]);
   ComboUtils<ModInt<int, MOD>> comboUtils(n);
-  auto hit = Polynomial<ModInt<int, MOD>>::getHitPolynomial(n, rook, comboUtils);
+  auto hit = Polynomial<ModInt<int, MOD>>::getHitPolynomial(n, f[n], comboUtils);
   cout << hit.getCoef(k);
   return 0;
   
