@@ -245,6 +245,12 @@ public:
     return deg[k];
   }
   
+  static Polynomial<T> identity() {
+    Polynomial<T> p(0);
+    p.deg[0] = 1;
+    return p;
+  }
+  
   Polynomial<T> operator+(const Polynomial<T> &p) {
     int newDeg = max(n, p.n);
     Polynomial<T> r(newDeg);
@@ -323,9 +329,11 @@ public:
   static Polynomial<T> getHitPolynomial(int n, const Polynomial<T> &rook, const ComboUtils<T> &comboUtils) {
     assert(comboUtils.getMaxN() >= n);
     Polynomial<T> hit(0);
+    auto xminus1 = Polynomial<T>({-1, 1});
+    auto p = Polynomial<T>::identity();
     for_inc_range(k, 0, n) {
-      auto p = Polynomial<T>::simplePower(1, -1, k, comboUtils);
       hit = hit + p * (rook.getCoef(k) * comboUtils.P(n - k));
+      p = p * xminus1;
     }
     return hit;
   }
@@ -354,6 +362,7 @@ int solveSlow(int n) {
   return ret;
 }
 
+// CF 175 Div2 - E
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
