@@ -51,10 +51,70 @@ void testGen() {
   fclose(stdout);
 }
 
+#define MAXN 200200
+
+
+set<int> xcut, ycut;
+map<int, int> ycutsize, xcutsize;
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  
+  int w, h, n;
+  scanf("%d%d%d", &w, &h, &n);
+
+  ycutsize[h] = 1;
+  xcutsize[w] = 1;
+  
+  xcut.insert(0);
+  xcut.insert(w);
+  ycut.insert(0);
+  ycut.insert(h);
+  
+  char typ[5];
+  
+  for_inc(i, n) {
+    int v;
+    scanf("%s %d", typ, &v);
+    
+    if (typ[0] == 'H') {
+      auto it = ycut.lower_bound(v);
+      
+      int cR = *it;
+      int cL = *(--it);
+      
+      ycutsize[cR - cL]--;
+      if (ycutsize[cR - cL] == 0) {
+        ycutsize.erase(cR - cL);
+      }
+      ycutsize[v - cL]++;
+      ycutsize[cR - v]++;
+      
+      ycut.insert(v);
+    } else {
+      auto it = xcut.lower_bound(v);
+      
+      int cR = *it;
+      int cL = *(--it);
+      
+      xcutsize[cR - cL]--;
+      if (xcutsize[cR - cL] == 0) {
+        xcutsize.erase(cR - cL);
+      }
+      xcutsize[v - cL]++;
+      xcutsize[cR - v]++;
+      
+      xcut.insert(v);
+    }
+    
+    //LOG(1, ycutsize.rbegin()->first << " " << xcutsize.rbegin()->first);
+    int64 ret = ((int64)ycutsize.rbegin()->first) * (xcutsize.rbegin()->first);
+    cout << ret << endl;
+  }
+  
   return 0;
 }
