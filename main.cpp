@@ -22,6 +22,7 @@
 #include <queue>
 #include <stack>
 #include <functional>
+#include <sstream>
 
 using namespace std;
 
