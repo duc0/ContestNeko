@@ -53,6 +53,7 @@ void testGen() {
 
 // Compute LCS up ot length L of two sequences in O(L*(l1 + l2)) where l1, l2
 // are the length of the two sequences
+// Memory: O(L*l1)
 // Usage: construct with the two sequences, and L
 
 template<class T> class LongestCommonSubsequence {
@@ -60,30 +61,29 @@ template<class T> class LongestCommonSubsequence {
   int l1, l2, upper;
   
   vector<vector<int>> pos; // pos[l][i] = min{j, lcs(i, j) = l, or l2 if not exists}
-public:
-  LongestCommonSubsequence(const vector<T> &s1, const vector<T> &s2, int upper) {
-    // Discretize
-    unordered_map<T, int> valueMap;
+  
+  unordered_map<T, int> valueMap;
+  
+  void discretize() {
     int idx = 0;
-    for (auto &x: s1) {
+    for (auto &x: seq1) {
       if (!valueMap.count(x)) {
         valueMap[x] = idx;
         idx++;
       }
     }
-    for (auto &x: s2) {
+    for (auto &x: seq2) {
       if (!valueMap.count(x)) {
         valueMap[x] = idx;
         idx++;
       }
     }
-    seq1 = s1;
-    seq2 = s2;
+    
     l1 = (int) seq1.size();
     l2 = (int) seq2.size();
     upper=min(upper, l1);
     upper=min(upper, l2);
-    this->upper = upper;
+    
     
     for_inc(i, l1) {
       seq1[i] = valueMap[seq1[i]];
@@ -91,18 +91,21 @@ public:
     for_inc(i, l2) {
       seq2[i] = valueMap[seq2[i]];
     }
-    pos.resize(upper + 1);
-    for (auto &v: pos) {
-      v.resize(l1);
-    }
+  }
+public:
+  LongestCommonSubsequence(const vector<T> &s1, const vector<T> &s2, int upper) {
+    seq1 = s1;
+    seq2 = s2;
+    this->upper = upper;
     
-    vector<int> minPos;
+    discretize();
+    
+    pos.resize(upper + 1, vector<int>(l1));
+    
     int numValues = (int)valueMap.size();
-    minPos.resize(valueMap.size());
     
-    for_inc(x, numValues) {
-      minPos[x] = l2;
-    }
+    vector<int> minPos(numValues, l2);
+    
     for_dec(j, l2) {
       minPos[seq2[j]] = j;
     }
@@ -176,6 +179,10 @@ int main() {
   repeat(l2) {
     cin >> x;
     s2.push_back(x);
+  }
+  if (s1.size() > s2.size()) {
+    swap(s1, s2);
+    swap(l1, l2);
   }
   int maxCS = s / e;
   LongestCommonSubsequence<int> lcs(s1, s2, maxCS);
