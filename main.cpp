@@ -23,6 +23,7 @@
 #include <stack>
 #include <functional>
 #include <sstream>
+#include <bitset>
 
 using namespace std;
 
@@ -51,10 +52,76 @@ void testGen() {
   fclose(stdout);
 }
 
+#define MAXN 200200
+char validC[] = {'A', 'C', 'G', 'T'};
+
+bitset<MAXN> validPos[4], result;
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  int ls, lt, k;
+  cin >> ls >> lt >> k;
+  
+  string s, t;
+  cin >> s >> t;
+  
+  
+  vector<int> prev(ls), next(ls);
+  
+  for_inc(x, 4) {
+    char c = validC[x];
+    
+    for_inc(i, ls) {
+      prev[i] = -1;
+      if (i > 0) {
+        prev[i] = prev[i - 1];
+      }
+      if (s[i] == c) {
+        prev[i] = i;
+      }
+    }
+    
+    for_dec(i, ls) {
+      next[i] = ls;
+      if (i + 1 < ls) {
+        next[i] = next[i + 1];
+      }
+      if (s[i] == c) {
+        next[i] = i;
+      }
+    }
+    
+    for_inc(i, ls) {
+      if ((prev[i] != -1 && prev[i] >= i - k) || (next[i] != ls && next[i] <= i + k)) {
+        validPos[x].set(i);
+      }
+    }
+  }
+  
+  for_inc(i, ls) {
+    result.set(i);
+  }
+  
+  for_inc(i, lt) {
+    for_inc(x, 4) {
+      char c = validC[x];
+      if (t[i] != c) continue;
+      
+      result &= validPos[x] >> i;
+    }
+  }
+  
+  int ret = 0;
+  for_inc(i, ls) {
+    if (result.test(i)) {
+      ++ret;
+    }
+  }
+  
+  cout << ret << endl;
   return 0;
 }
