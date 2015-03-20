@@ -55,50 +55,48 @@ void testGen() {
 // are the length of the two sequences
 // Memory: O(L*l1)
 // Usage: construct with the two sequences, and L
-
 template<class T> class LongestCommonSubsequence {
   vector<int> seq1, seq2;
-  int l1, l2, upper;
+  int l1, l2, upper, longest;
   
   vector<vector<int>> pos; // pos[l][i] = min{j, lcs(i, j) = l, or l2 if not exists}
   
   unordered_map<T, int> valueMap;
   
-  void discretize() {
+  void discretize(const vector<T> &s1, const vector<T> &s2) {
     int idx = 0;
-    for (auto &x: seq1) {
+    for (auto &x: s1) {
       if (!valueMap.count(x)) {
         valueMap[x] = idx;
         idx++;
       }
     }
-    for (auto &x: seq2) {
+    for (auto &x: s2) {
       if (!valueMap.count(x)) {
         valueMap[x] = idx;
         idx++;
       }
     }
     
-    l1 = (int) seq1.size();
-    l2 = (int) seq2.size();
+    l1 = (int) s1.size();
+    l2 = (int) s2.size();
     upper=min(upper, l1);
     upper=min(upper, l2);
     
-    
+    seq1.resize(l1);
+    seq2.resize(l2);
     for_inc(i, l1) {
-      seq1[i] = valueMap[seq1[i]];
+      seq1[i] = valueMap[s1[i]];
     }
     for_inc(i, l2) {
-      seq2[i] = valueMap[seq2[i]];
+      seq2[i] = valueMap[s2[i]];
     }
   }
 public:
   LongestCommonSubsequence(const vector<T> &s1, const vector<T> &s2, int upper) {
-    seq1 = s1;
-    seq2 = s2;
     this->upper = upper;
     
-    discretize();
+    discretize(s1, s2);
     
     pos.resize(upper + 1, vector<int>(l1));
     
@@ -110,8 +108,11 @@ public:
       minPos[seq2[j]] = j;
     }
     
+    longest = 0;
+    
     if (minPos[seq1[0]] < l2) {
       pos[1][0] = minPos[seq1[0]];
+      longest = 1;
     } else {
       pos[1][0] = l2;
     }
@@ -141,26 +142,31 @@ public:
           if (minPos[seq1[i]] < l2) {
             pos[l][i] = min(pos[l][i], minPos[seq1[i]]);
           }
-          
+        }
+        if (pos[l][i] != l2) {
+          longest = l;
         }
       }
     }
     
   }
   
+  int getLongest() const {
+    return longest;
+  }
+  
   // Is there a j so that {lcs(i, j) = l}
-  bool hasLCS(int i, int l) {
+  bool hasLCS(int i, int l) const {
     if (l > upper) return false;
     return pos[l][i] != l2;
   }
   
   // Return min{j, lcs(i, j) = l}
-  int getMinPos(int i, int l) {
+  int getMinPos(int i, int l) const {
     assert(hasLCS(i, l));
     return pos[l][i];
   }
 };
-
 
 // Sample: CF243_C
 int l1, l2, s, e;
