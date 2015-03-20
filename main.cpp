@@ -47,93 +47,105 @@ int MODP(int64 x) {
   return r;
 }
 
-template<class T> class LongestCommonSubsequence {
-  vector<int> seq1, seq2;
-  int l1, l2, upper, longest;
-  
-  vector<vector<int>> pos; // pos[l][i] = min{j, lcs(i, j) = l, or l2 if not exists}
-  
-  unordered_map<T, int> valueMap;
-  
-  void discretize(const vector<T> &s1, const vector<T> &s2) {
-    int idx = 0;
-    for (auto &x: s1) {
-      if (!valueMap.count(x)) {
-        valueMap[x] = idx;
-        idx++;
-      }
-    }
-    for (auto &x: s2) {
-      if (!valueMap.count(x)) {
-        valueMap[x] = idx;
-        idx++;
-      }
-    }
-    
-    l1 = (int) s1.size();
-    l2 = (int) s2.size();
-    upper=min(upper, l1);
-    upper=min(upper, l2);
-    
-    seq1.resize(l1);
-    seq2.resize(l2);
-    for_inc(i, l1) {
-      seq1[i] = valueMap[s1[i]];
-    }
-    for_inc(i, l2) {
-      seq2[i] = valueMap[s2[i]];
-    }
-  }
+class BinarySearch {
 public:
-  LongestCommonSubsequence(const vector<T> &s1, const vector<T> &s2, int upper) {
+  template<class T> static T binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+    while (leftIndex <= rightIndex) {
+      midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+      if (predicate(midIndex)) {
+        ret = midIndex;
+        rightIndex = midIndex - 1;
+      } else {
+        leftIndex = midIndex + 1;
+      }
+    }
+    return ret;
+  }
+  
+  template<class T> static T binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+    while (leftIndex <= rightIndex) {
+      midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+      if (predicate(midIndex)) {
+        ret = midIndex;
+        leftIndex = midIndex + 1;
+      } else {
+        rightIndex = midIndex - 1;
+      }
+    }
+    return ret;
+  }
+  
+  static double binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+      m = l + (r - l) / 2;
+      if (predicate(m)) {
+        ret = m;
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+    return ret;
+  }
+  
+  static double binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+      m = l + (r - l) / 2;
+      if (predicate(m)) {
+        l = m;
+        ret = m;
+      } else {
+        r = m;
+      }
+    }
+    return ret;
+  }
+  
+};
+
+// seq2 must implement getNextPos(i, c) = min{j, j >= i && seq2[j] = c}
+// Memory: O(L * L1)
+// Time: O(L * L1 * Q) in which Q is the running time of seq2.getNextPos(i, c)
+template<class T, class S> class LongestCommonSubsequenceSmallAlphabet {
+  int l1, longest, upper;
+  int64 l2;
+  vector<vector<int64>> pos; // pos[l][i] = min{j, lcs(i, j) = l, or l2 if not exists}
+  
+  public:
+  LongestCommonSubsequenceSmallAlphabet(const vector<T> &seq1, const S &seq2, int upper) {
+    l1 = (int)seq1.size();
+    l2 = seq2.size();
+    upper = min(upper, l1);
+    upper = min(upper, (int)l2);
     this->upper = upper;
     
-    discretize(s1, s2);
-    
-    pos.resize(upper + 1, vector<int>(l1));
-    
-    int numValues = (int)valueMap.size();
-    
-    vector<int> minPos(numValues, l2);
-    
-    for_dec(j, l2) {
-      minPos[seq2[j]] = j;
-    }
+    pos.resize(upper + 1, vector<int64>(l1));
     
     longest = 0;
     
-    if (minPos[seq1[0]] < l2) {
-      pos[1][0] = minPos[seq1[0]];
-      longest = 1;
-    } else {
-      pos[1][0] = l2;
-    }
-    for_inc_range(i, 1, l1 - 1) {
-      pos[1][i] = pos[1][i - 1];
-      if (minPos[seq1[i]] < l2) {
-        pos[1][i] = min(pos[1][i], minPos[seq1[i]]);
+    for_inc(i, l1) {
+      pos[1][i] = l2;
+      if (i >= 1) {
+        pos[1][i] = pos[1][i - 1];
+      }
+      pos[1][i] = min(pos[1][i], seq2.getNextPos(0, seq1[i]));
+      if (pos[1][i] != l2) {
+        longest = 1;
       }
     }
     
     for_inc_range(l, 2, upper) {
-      pos[l][0] = l2;
-      
-      int leftIndex = l2;
-      for_inc(x, numValues) {
-        minPos[x] = l2;
-      }
-      
-      for_inc_range(i, 1, l1 - 1) {
-        pos[l][i] = pos[l][i - 1];
-        if (pos[l - 1][i - 1] != l2) {
-          int newLeftIndex = pos[l - 1][i - 1] + 1;
-          for_dec_range(j, leftIndex - 1, newLeftIndex) {
-            minPos[seq2[j]] = j;
-          }
-          leftIndex = newLeftIndex;
-          if (minPos[seq1[i]] < l2) {
-            pos[l][i] = min(pos[l][i], minPos[seq1[i]]);
-          }
+      for_inc(i, l1) {
+        pos[l][i] = l2;
+        if (i >= 1) {
+          pos[l][i] = pos[l][i - 1];
+        }
+        if (i >= 1 && pos[l - 1][i - 1] != l2) {
+          pos[l][i] = min(pos[l][i], seq2.getNextPos(pos[l - 1][i - 1] + 1, seq1[i]));
         }
         if (pos[l][i] != l2) {
           longest = l;
@@ -154,12 +166,118 @@ public:
   }
   
   // Return min{j, lcs(i, j) = l}
-  int getMinPos(int i, int l) const {
+  int64 getMinPos(int i, int l) const {
     assert(hasLCS(i, l));
     return pos[l][i];
   }
 };
 
+class SimpleHyperString {
+  string s;
+  int n;
+  vector<vector<int>> next;
+  
+public:
+  SimpleHyperString(string s) {
+    this->s = s;
+    n = (int) s.length();
+    next = vector<vector<int>>(26, vector<int>(n));
+    
+    for_dec(i, n) {
+      for_inc(c, 26) {
+        next[c][i] = n;
+        if (i + 1 < n) {
+          next[c][i] = next[c][i + 1];
+        }
+        if (s[i] - 'a' == c) {
+          next[c][i] = i;
+        }
+      }
+    }
+  }
+  
+  int64 getNextPos(int64 i, char c) const {
+    if (i >= n) return n;
+    return next[c - 'a'][i];
+  }
+  
+  int64 size() const {
+    return n;
+  }
+};
+
+class HyperString {
+  const vector<string> &base;
+  const vector<int> &indices;
+  
+  vector<SimpleHyperString> hp;
+  vector<int64> begin;
+  
+  vector<vector<int64>> next;
+  
+  int64 n;
+  int nSeq;
+  
+  int getSeqIndex(int64 i) const {
+    return BinarySearch::binarySearchMax<int>(0, nSeq - 1, [&](int s){return begin[s] <= i;});
+  }
+  
+public:
+  HyperString(const vector<string> &base, const vector<int> &indices): base(base), indices(indices) {
+    n = 0;
+    for (auto &i: indices) {
+      n += base[i].size();
+    }
+    
+    for (auto &s: base) {
+      hp.push_back(SimpleHyperString(s));
+    }
+    
+    nSeq = (int) indices.size();
+    begin.resize(nSeq);
+    begin[0] = 0;
+    for_inc_range(i, 1, nSeq - 1) {
+      begin[i] = begin[i - 1] + base[indices[i - 1]].size();
+    }
+    
+    next = vector<vector<int64>>(26, vector<int64>(nSeq));
+    
+    for_dec(i, nSeq) {
+      for_inc(c, 26) {
+        next[c][i] = hp[indices[i]].getNextPos(0, c + 'a');
+        int l = (int)base[indices[i]].size();
+        if (next[c][i] < l) {
+          next[c][i] += begin[i];
+        } else {
+          if (i + 1 < nSeq) {
+            next[c][i] = next[c][i + 1];
+          } else {
+            next[c][i] = n;
+          }
+        }
+      }
+    }
+  }
+  
+  int64 size() const {
+    return n;
+  }
+  
+  int64 getNextPos(int64 i, char c) const {
+    if (i >= n) return n;
+    int seq = getSeqIndex(i);
+    int64 iLocal = i - begin[seq];
+    int64 ans = hp[indices[seq]].getNextPos(iLocal, c);
+    if (ans < base[indices[seq]].size()) {
+      ans += begin[seq];
+    } else if (seq + 1 < nSeq) {
+      ans = next[c - 'a'][seq + 1];
+    } else {
+      ans = n;
+    }
+    return ans;
+  }
+};
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
@@ -168,10 +286,12 @@ void testGen() {
 
 vector<string> base;
 
+// CF Croc Champ 2012 - Round 2 - D
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input2.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
   int n;
@@ -183,27 +303,26 @@ int main() {
     base.push_back(s);
   }
   
-  ostringstream hyper;
-  
   int m;
   cin >> m;
+  vector<int> indices;
   repeat(m) {
     int i;
     cin >> i;
-    hyper << base[i - 1];
+    i--;
+    indices.push_back(i);
   }
   
   string s;
   cin >> s;
   
-  vector<char> s1, s2;
+  vector<char> s1;
   for (char c: s) {
     s1.push_back(c);
   }
-  for (char c: hyper.str()) {
-    s2.push_back(c);
-  }
-  LongestCommonSubsequence<char> lcs(s1, s2, (int)s1.size());
+  HyperString hs(base, indices);
+  
+  LongestCommonSubsequenceSmallAlphabet<char, HyperString> lcs(s1, hs, (int)s1.size());
   
   cout << lcs.getLongest() << endl;
   
