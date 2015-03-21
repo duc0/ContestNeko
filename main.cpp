@@ -54,7 +54,29 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  int n, k;
+  cin >> n >> k;
+  set<pair<int64, int>> avail;
+  
+  for_inc_range(i, 1, k) {
+    avail.insert(make_pair(0, i));
+  }
+  
+  repeat(n) {
+    int s, m;
+    cin >> s >> m;
+    
+    auto p = *avail.begin();
+    
+    avail.erase(p);
+    
+    int64 ans = max((int64)s, p.first) + m;
+    avail.insert(make_pair(ans, p.second));
+    cout << ans << endl;
+  }
+  
   return 0;
 }
