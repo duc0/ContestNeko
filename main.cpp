@@ -51,10 +51,59 @@ void testGen() {
   fclose(stdout);
 }
 
+string op(int a, int b, int c, char op) {
+  ostringstream ss;
+  ss << a << " " << op << " " << b << " = " << c;
+  return ss.str();
+}
+
+void solve4() {
+  cout << op(1, 2, 2 , '*') << endl;
+  cout << op(2, 3, 6 , '*') << endl;
+  cout << op(6, 4, 24 , '*') << endl;
+}
+
+void solve5() {
+  cout << op(3, 4, 7 , '+') << endl;
+  cout << op(7, 5, 12 , '+') << endl;
+  cout << op(12, 2, 24 , '*') << endl;
+  cout << op(24, 1, 24 , '*') << endl;
+}
+
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+
+  if (n < 4) {
+    cout << "NO";
+  } else {
+    cout << "YES" << endl;
+    if (n == 4) {
+      solve4();
+    } else if (n == 5) {
+      solve5();
+    } else {
+      if (n % 2 == 0) {
+        solve4();
+        for (int i = 5; i <= n; i += 2) {
+          cout << op(i + 1, i, 1, '-') << endl;
+          cout << op(24, 1, 24, '*') << endl;
+        }
+      } else {
+        solve5();
+        for (int i = 6; i <= n; i += 2) {
+          cout << op(i + 1, i, 1, '-') << endl;
+          cout << op(24, 1, 24, '*') << endl;
+        }
+      }
+    }
+  }
+  
   return 0;
 }
