@@ -54,7 +54,57 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  int n, k;
+  cin >> n >> k;
+  vector<int> a( n + 1);
+  set<int> s;
+  for_inc_range(i, 1, n) {
+    cin >> a[i];
+    s.insert(a[i]);
+  }
+  
+  int q;
+  cin >> q;
+  repeat(q) {
+    int x;
+    cin >> x;
+    
+    int best = k + 1;
+    for_inc_range(i, 1, n) {
+      bool found = false;
+      for_inc_range(need, 0, k) {
+        for_inc_range(t, 0, need) {
+          int64 total = a[i] * t;
+          int remain = need - t;
+          if (remain == 0) {
+            if (total == x) {
+              found = true;
+              break;
+            }
+          } else
+          if ((x - total) % remain == 0) {
+            int64 denom = (x - total) / remain;
+            if (s.count((int)denom)) {
+              found = true;
+              break;
+            }
+          }
+        }
+        if (found) {
+          best = min(best, need);
+          break;
+        }
+      }
+    }
+    if (best == k + 1) {
+      best = -1;
+    }
+    cout << best << endl;
+  }
+  
+  
   return 0;
 }
