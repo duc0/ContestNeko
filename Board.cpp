@@ -86,7 +86,35 @@ public:
     a = boardRotate;
   }
   
-  const string& operator[](int r) {
+  void flipHorizontally() {
+    vector<string> boardFlip;
+    boardFlip.resize(nRow);
+    for_inc(r, nRow) boardFlip[r].resize(nCol);
+    for_inc(r, nRow) {
+      for_inc(c, nCol) {
+        boardFlip[r][c] = a[r][nCol - c - 1];
+      }
+    }
+    a = boardFlip;
+  }
+  
+  void zoom(int scale) {
+    assert(scale > 0);
+    if (scale == 1) return;
+    vector<string> boardZoom;
+    boardZoom.resize(nRow * scale);
+    for_inc(r, nRow * scale) boardZoom[r].resize(nCol * scale);
+    for_inc(r, nRow * scale) {
+      for_inc(c, nCol * scale) {
+        boardZoom[r][c] = a[r / scale][c / scale];
+      }
+    }
+    a = boardZoom;
+    nRow *= scale;
+    nCol *= scale;
+  }
+  
+  const string& operator[](int r) const {
     return a[r];
   }
 };
