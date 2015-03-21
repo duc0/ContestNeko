@@ -56,5 +56,46 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  string s1, s2;
+  cin >> s1;
+  cin >> s2;
+  
+  int i1 = 0, i2 = 0;
+  int l1 = (int) s1.size();
+  int l2 = (int) s2.size();
+  while (i1 < l1) {
+    while (i2 < l2 && s2[i2] != s1[i1]) ++i2;
+    if (i2 >= l2) {
+      cout << 0 << endl;
+      exit(0);
+    }
+    i1++;
+    i2++;
+  }
+  
+  int minL = i2 - 1;
+  
+  i1 = l1 - 1;
+  i2 = l2 - 1;
+  while (i1 >= 0) {
+    while (i2 >= 0 && s2[i2] != s1[i1]) --i2;
+    if (i2 < 0) {
+      cout << 0 << endl;
+      exit(0);
+    }
+    i1--;
+    i2--;
+  }
+  
+  int minR = i2 + 1;
+  if (minL > minR) {
+    cout << 0 << endl;
+    exit(0);
+  }
+  
+  LOG(1, minL);
+  LOG(1, minR);
+  cout << minR - minL;
   return 0;
 }
