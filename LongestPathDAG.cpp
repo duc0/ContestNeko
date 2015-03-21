@@ -79,6 +79,10 @@ public:
     }
   }
   
+  int getSize() const {
+    return _maxNode - _minNode + 1;
+  }
+  
   void addEdge(int u, int v) {
     nodeFrom[u].push_back(v);
     degOut[u]++;
