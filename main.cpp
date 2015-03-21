@@ -46,6 +46,76 @@ int MODP(int64 x) {
   return r;
 }
 
+class Board {
+  int nRow, nCol;
+  vector<string> a;
+public:
+  void init(int nRow) {
+    this->nRow = nRow;
+    a.resize(nRow);
+  }
+  void setRow(int r, string s) {
+    a[r] = s;
+    nCol = (int)s.length();
+  }
+  
+  int numRow() const {return nRow;}
+  int numCol() const {return nCol;}
+  bool isCorner(int r, int c) const {
+    return (r == 0 && c == 0) || (r == 0 && c == lastCol()) || (r == lastRow() && c == 0) || (r == lastRow() && c == lastCol());
+  }
+  bool isOnSide(int r, int c) const {
+    return (r == 0 || c == 0 || r == lastRow() || c == lastCol());
+  }
+  int lastCol() const {return nCol - 1;}
+  int lastRow() const {return nRow - 1;}
+  
+  void rotateRight() {
+    vector<string> boardRotate;
+    boardRotate.resize(nCol);
+    for_inc(c, nCol) boardRotate[c].resize(nRow);
+    for_inc(r, nRow) {
+      for_inc(c, nCol) {
+        boardRotate[c][nRow - 1 - r] = a[r][c];
+      }
+    }
+    swap(nRow, nCol);
+    a = boardRotate;
+  }
+  
+  void flipHorizontally() {
+    vector<string> boardFlip;
+    boardFlip.resize(nRow);
+    for_inc(r, nRow) boardFlip[r].resize(nCol);
+    for_inc(r, nRow) {
+      for_inc(c, nCol) {
+        boardFlip[r][c] = a[r][nCol - c - 1];
+      }
+    }
+    a = boardFlip;
+  }
+  
+  void zoom(int scale) {
+    assert(scale > 0);
+    if (scale == 1) return;
+    vector<string> boardZoom;
+    boardZoom.resize(nRow * scale);
+    for_inc(r, nRow * scale) boardZoom[r].resize(nCol * scale);
+    for_inc(r, nRow * scale) {
+      for_inc(c, nCol * scale) {
+        boardZoom[r][c] = a[r / scale][c / scale];
+      }
+    }
+    a = boardZoom;
+    nRow *= scale;
+    nCol *= scale;
+  }
+  
+  const string& operator[](int r) const {
+    return a[r];
+  }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -54,7 +124,26 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  int nCol, nRow;
+  cin >> nCol >> nRow;
+  Board b;
+  b.init(nRow);
+  for_inc(r, nRow) {
+    string s;
+    cin >> s;
+    b.setRow(r, s);
+  }
+  
+  b.rotateRight();
+  b.flipHorizontally();
+  b.zoom(2);
+  
+  for_inc(r, b.numRow()) {
+    cout << b[r] << endl;
+  }
+  
   return 0;
 }
