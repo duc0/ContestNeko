@@ -54,7 +54,34 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  //freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n, m, k;
+  cin >> n >> m >> k;
+  
+  int i = 1;
+  
+  vector<int> div;
+  while (i * i <= n) {
+    if (n % i == 0) {
+      div.push_back(i);
+      div.push_back(n/i);
+    }
+    i++;
+  }
+  
+  
+  int64 best = -1;
+  for (int d: div) {
+    int x = n / d;
+    
+    if (k + 2 - x > 0 && k + 2 - x <= m) {
+      int64 ans = (int64)d * (m / (k + 2 - x));
+      best = max(best, ans);
+    }
+  }
+  
+  cout << best << endl;
   return 0;
 }
