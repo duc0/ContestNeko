@@ -46,6 +46,12 @@ int MODP(int64 x) {
   return r;
 }
 
+bool isPrime(int n) {
+  if (n<2) return false; // optional
+  for (int i=2; i*i<=n; ++i) if (n%i==0) return false;
+  return true;
+}
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -56,5 +62,18 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  
+  while (1) {
+    int x = rand() % n + 1;
+    int y = n - x;
+    if (x > 1 && y > 1 && x < n && y < n && !isPrime(x) && !isPrime(y)) {
+      cout << x << " " << y << endl;
+      exit(0);
+    }
+  }
+  
   return 0;
 }
