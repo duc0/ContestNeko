@@ -54,7 +54,32 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  
+  vector<string> first(n + 1), last(n + 1);
+  for_inc_range(i, 1, n) {
+    cin >> first[i] >> last[i];
+  }
+  vector<int> p( n + 1);
+  
+  string cur;
+  for_inc_range(i, 1, n) {
+    cin >> p[i];
+    if (i > 1 && first[p[i]] < cur && last[p[i]] < cur) {
+      cout << "NO";
+      exit(0);
+    }
+    if (min(first[p[i]], last[p[i]]) >= cur) {
+      cur = min(first[p[i]], last[p[i]]);
+    } else {
+      cur = max(first[p[i]], last[p[i]]);
+    }
+    LOG(1, cur);
+  }
+  cout << "YES";
   return 0;
 }
