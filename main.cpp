@@ -54,7 +54,26 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  
+  int n, k;
+  cin >> n >> k;
+  vector<int> a ( n + 1);
+  for_inc_range(i, 1, n) {
+    cin >> a[i];
+  }
+  sort(a.begin() + 1, a.end());
+  
+  int t = 0;
+  int i = n;
+  while (true) {
+    t += 2 * (a[i] - 1);
+    i -= k;
+    if (i <= 0) {
+      break;
+    }
+  }
+  cout << t << endl;
   return 0;
 }
