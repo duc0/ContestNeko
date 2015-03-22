@@ -56,5 +56,24 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int nTest;
+  cin >> nTest;
+  repeat(nTest) {
+    int n;
+    cin >> n;
+    string s;
+    cin >> s;
+    
+    string best = s;
+    for_inc(i, n) {
+      for_inc(j, n) {
+        string ans = s.substr(0, i) + s.substr(i + 1);
+        ans.insert(j, 1, s[i]);
+        best = min(best, ans);
+      }
+    }
+    cout << best << endl;
+  }
   return 0;
 }
