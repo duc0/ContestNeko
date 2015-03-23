@@ -51,7 +51,6 @@ int MODP(int64 x) {
 }
 
 template <class T> class FourierTransform {
-public:
   // (a^b) % p
   static int64 power(int64 a, int64 b, int64 p) {
     int64 r = 1;
@@ -141,6 +140,7 @@ public:
     return a;
   }
   
+public:
   vector<T> crossCorelation(const vector<T> &s1, const vector<T> &s2) {
     vector<T> a = s1;
     vector<T> b = s2;
@@ -187,8 +187,6 @@ int main() {
 
   vector<int> prev(ls), next(ls);
 
-  FourierTransform<int> ft;
-
   for_inc(x, 4) {
     validPos[x].resize(ls);
     char c = validC[x];
@@ -227,11 +225,11 @@ int main() {
       }
     }
 
-    conv[x] = ft.crossCorelation(validPos[x], posT);
+    conv[x] = FourierTransform<int>().crossCorelation(validPos[x], posT);
   }
 
   int ret = 0;
-  for_inc(i, ls + lt + 1) {
+  for_inc(i, ls) {
     int sum = 0;
     for_inc(x, 4) { sum += conv[x][i]; }
     if (sum == lt) {
