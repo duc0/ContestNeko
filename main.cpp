@@ -108,9 +108,11 @@ public:
         for_inc(j, s) {
           int64 u = x[i + j], v = (x[i + j + s] * e[j << k]) % P;
           x[i + j] = (u + v) % P;
-          if (x[i + j] < 0) x[i + j] += P;
+          if (x[i + j] < 0)
+            x[i + j] += P;
           x[i + j + s] = (u - v) % P;
-          if (x[i + j + s] < 0) x[i + j + s] += P;
+          if (x[i + j + s] < 0)
+            x[i + j + s] += P;
         }
     }
     if (d == -1) {
@@ -118,7 +120,7 @@ public:
     }
   }
 
-   vector<T> convolution(const vector<T> &s1, const vector<T> &s2) {
+  vector<T> convolution(const vector<T> &s1, const vector<T> &s2) {
     vector<T> a = s1;
     vector<T> b = s2;
     int n = 1;
@@ -130,8 +132,9 @@ public:
     b.resize(n);
     fft(a);
     fft(b);
+    int64 tmp = power(n, P - 2, P);
     for_inc(i, n) {
-      a[i] = ((((int64)a[i] * b[i]) % P) * power(n, P - 2, P)) % P;
+      a[i] = ((((int64)a[i] * b[i]) % P) * tmp) % P;
     }
     fft(a, -1);
     return a;
@@ -155,10 +158,9 @@ void testGen() {
     cout << validC[c];
   }
   cout << endl;
-  
+
   fclose(stdout);
 }
-
 
 vector<int> validPos[4], conv[4];
 
@@ -166,7 +168,7 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("biginput1.txt", "r", stdin);
-  //testGen();
+// testGen();
 #endif
 
   int ls, lt, k;
@@ -174,13 +176,13 @@ int main() {
 
   string s, t;
   cin >> s >> t;
-  
+
   reverse(t.begin(), t.end());
 
   vector<int> prev(ls), next(ls);
-  
+
   FourierTransform<int> ft;
-  
+
   for_inc(x, 4) {
     validPos[x].resize(ls);
     char c = validC[x];
@@ -211,29 +213,26 @@ int main() {
         validPos[x][i] = 1;
       }
     }
-    
+
     vector<int> posT(lt);
     for_inc(i, lt) {
       if (t[i] == c) {
         posT[i] = 1;
       }
     }
-    
+
     conv[x] = ft.convolution(validPos[x], posT);
   }
-  
 
   int ret = 0;
   for_inc(i, ls + lt + 1) {
     int sum = 0;
-    for_inc(x, 4) {
-      sum += conv[x][i];
-    }
+    for_inc(x, 4) { sum += conv[x][i]; }
     if (sum == lt) {
       ++ret;
     }
   }
-  
+
   cout << ret << endl;
   return 0;
 }
