@@ -106,7 +106,8 @@ public:
       k--;
       for (int i = 0; i < n; i += 2 * s)
         for_inc(j, s) {
-          int64 u = x[i + j], v = (x[i + j + s] * e[j << k]) % P;
+          int64 u = x[i + j];
+          int64 v = (x[i + j + s] * e[j << k]);
           x[i + j] = (u + v) % P;
           if (x[i + j] < 0)
             x[i + j] += P;
@@ -138,6 +139,13 @@ public:
     }
     fft(a, -1);
     return a;
+  }
+  
+  vector<T> crossCorelation(const vector<T> &s1, const vector<T> &s2) {
+    vector<T> a = s1;
+    vector<T> b = s2;
+    reverse(b.begin(), b.end());
+    return convolution(a, b);
   }
 };
 
@@ -176,8 +184,6 @@ int main() {
 
   string s, t;
   cin >> s >> t;
-
-  reverse(t.begin(), t.end());
 
   vector<int> prev(ls), next(ls);
 
@@ -221,7 +227,7 @@ int main() {
       }
     }
 
-    conv[x] = ft.convolution(validPos[x], posT);
+    conv[x] = ft.crossCorelation(validPos[x], posT);
   }
 
   int ret = 0;
