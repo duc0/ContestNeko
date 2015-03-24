@@ -54,7 +54,59 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  
+  int n, target;
+  cin >> n >> target;
+
+  string s;
+  cin >> s;
+  vector<int> a(n + 1);
+  for_inc_range(i, 1, n) {
+    a[i] = s[i - 1] - 'a';
+  }
+  
+  vector<vector<int>> f(n + 2, vector<int>(target + 1));
+  vector<vector<int>> g(n + 2, vector<int>(target + 1));
+  
+  f[n + 1][0] = 1;
+  g[n + 1][0] = 0;
+  
+  for_dec_range(i, n, 1) {
+    for_inc_range(k, 0, target) {
+      int ret = 0;
+      if (k == 0) {
+        // Everything is equal.
+        ret = 1;
+      }
+      int maxJ = i - 1;
+      for_inc_range(j, i, n) {
+        // b[x] = a[x] for i <= x < j
+        // and b[j] > a[j]
+        int contribute = (n - j + 1) * (j - i + 1); // Quadratic function...
+        if (k - contribute < 0) break;
+  
+        ret = MODP(ret + (int64)(25 - a[j]) * f[j + 1][k - contribute]);
+        maxJ = j;
+      }
+      
+      if (maxJ < n) {
+        for_dec_range(j, n, i) {
+          int contribute = (n - j + 1) * (j - i + 1);
+          if (k - contribute < 0) break;
+          
+          ret = MODP(ret + (int64)(25 - a[j]) * f[j + 1][k - contribute]);
+        }
+      }
+      
+      g[i][k] = MODP((int64)a[i] * f[i + 1][k] + g[i + 1][k]);
+      ret = MODP(ret + g[i][k]);
+      
+      f[i][k] = ret;
+    }
+  }
+  
+  cout << f[1][target] << endl;
   return 0;
 }
