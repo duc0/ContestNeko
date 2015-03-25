@@ -1,11 +1,9 @@
-//#define SUBMIT
-
-#ifdef SUBMIT
 #define LOGLEVEL 0
 #define NDEBUG
-#else
+
+$BEGINCUT$
 #define LOGLEVEL 1
-#endif
+$ENDCUT$
 
 #include <cstdio>
 #include <algorithm>
@@ -46,21 +44,16 @@ using namespace std;
 #define INT_INF ((int)2E9L)
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
-int MODP(int64 x) {
-  int r = x % MOD;
-  if (r < 0) r += MOD;
-  return r;
-}
 
-void testGen() {
-  freopen("biginput1.txt", "w", stdout);
-  fclose(stdout);
-}
+class $CLASSNAME$ {
+public:
+  $RC$ $METHODNAME$( $METHODPARMS$ ) {
+    
+  }
+};
 
-int main() {
-  ios::sync_with_stdio(false);
-#ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
-#endif
-  return 0;
-}
+$BEGINCUT$
+$TESTCODE$
+
+$DEFAULTMAIN$
+$ENDCUT$
