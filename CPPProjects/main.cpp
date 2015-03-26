@@ -1,12 +1,5 @@
-//#define SUBMIT
-
-#ifdef SUBMIT
 #define LOGLEVEL 0
 #define NDEBUG
-#else
-#define LOGLEVEL 1
-#endif
-
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
@@ -46,21 +39,59 @@ using namespace std;
 #define INT_INF ((int)2E9L)
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
-int MODP(int64 x) {
-  int r = x % MOD;
-  if (r < 0) r += MOD;
-  return r;
-}
 
-void testGen() {
-  freopen("biginput1.txt", "w", stdout);
-  fclose(stdout);
-}
-
-int main() {
-  ios::sync_with_stdio(false);
-#ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
-#endif
-  return 0;
-}
+class SuccessiveSubtraction2 {
+public:
+  vector <int> calc( vector <int> ar, vector <int> p, vector <int> v ) {
+    int n = (int) ar.size();
+    
+    int nChange = (int) p.size();
+    vector<int> ret;
+    
+    for (int t = 0; t < nChange; ++t) {
+      ar[p[t]] = v[t];
+      
+      vector<int> a(n);
+      a[0] = ar[0];
+      for (int i = 1; i < n; ++i) {
+        a[i] = -ar[i];
+      }
+      
+      int sum = 0;
+      for (int i = 0; i < n; ++i) {
+        sum = sum + a[i];
+      }
+      
+      if (n <= 2) {
+        ret.push_back(sum);
+        continue;
+      }
+      
+      //LOG(1, sum);
+      
+      vector<vector<int>> f(3, vector<int>(n));
+      vector<vector<int>> g(3, vector<int>(n));
+      
+      for (int k = 1; k <= 2; ++k) {
+        f[k][1] = 0;
+        g[k][1] = 0;
+        for (int i = 2; i < n; ++i) {
+          f[k][i] = a[i] + f[k][i - 1];
+          if (k == 2) {
+            f[k][i] = min(f[k][i], a[i] + g[k - 1][i - 1]);
+          }
+          g[k][i] = min(g[k][i - 1], f[k][i]);
+          //LOG(1, i << " " << k << " " << f[k][i]);
+        }
+      }
+      
+      int ans = 0;
+      ans = min(ans, g[1][n - 1]);
+      ans = min(ans, g[2][n - 1]);
+      
+      ret.push_back(sum - 2 * ans);
+    }
+              
+    return ret;
+  }
+};
