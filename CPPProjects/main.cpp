@@ -77,9 +77,7 @@ public:
         g[k][1] = 0;
         for (int i = 2; i < n; ++i) {
           f[k][i] = a[i] + f[k][i - 1];
-          if (k == 2) {
-            f[k][i] = min(f[k][i], a[i] + g[k - 1][i - 1]);
-          }
+          f[k][i] = min(f[k][i], a[i] + g[k - 1][i - 1]);
           g[k][i] = min(g[k][i - 1], f[k][i]);
           //LOG(1, i << " " << k << " " << f[k][i]);
         }
