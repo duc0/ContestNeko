@@ -52,6 +52,87 @@ int MODP(int64 x) {
   return r;
 }
 
+template <class T> class BinaryIndexedTree {
+  vector<T> val;
+  int n, minIndex, maxIndex;
+  
+public:
+  BinaryIndexedTree(int n): BinaryIndexedTree(1, n) {}
+  
+  BinaryIndexedTree(int minIndex, int maxIndex) {
+    init(minIndex, maxIndex);
+  }
+  
+  BinaryIndexedTree() {}
+  
+  void init(int minIndex, int maxIndex) {
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+    this->n = maxIndex - minIndex + 1;
+    val.resize(n + 1);
+  }
+  
+  void add(int i, int v) {
+    i = i - minIndex + 1;
+    for (; i <= n; i += i & -i) {
+      val[i] += v;
+    }
+  }
+  T sum(int i) {
+    i = i - minIndex + 1;
+    if (i <= 0) return 0;
+    if (i > n) i = n;
+    T s = 0;
+    for (; i > 0; i -= i & -i)
+      s += val[i];
+    return s;
+  }
+  
+  T sum(int i1, int i2) { return sum(i2) - sum(i1 - 1); }
+};
+
+template <class T> class RangeUpdateArray {
+  BinaryIndexedTree<T> tree;
+  int minIndex, maxIndex;
+  
+public:
+  RangeUpdateArray() {}
+  
+  RangeUpdateArray(int n) {
+    init(1, n);
+  }
+  
+  RangeUpdateArray(int minIndex, int maxIndex) {
+    init(minIndex, maxIndex);
+  }
+  
+  void init(int minIndex, int maxIndex) {
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+    tree.init(minIndex, maxIndex);
+  }
+  
+  // Do a[k] = a[k] + v for i <= k <= j
+  // O(logn)
+  void add(int i, int j, T v) {
+    assert(minIndex <= i && i <= j && j <= maxIndex);
+    if (j < maxIndex) {
+      tree.add(j + 1, -v);
+    }
+    tree.add(i, v);
+  }
+  
+  // Return a[i] in O(logn)
+  T get(int i) {
+    assert (minIndex <= i && i <= maxIndex);
+    return tree.sum(i);
+  }
+  
+  const T operator[](int i) {
+    return get(i);
+  }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -62,5 +143,33 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  
+  string s;
+  cin >> s;
+  int nOp;
+  
+  cin >> nOp;
+  
+  int n = (int) s.length();
+  RangeUpdateArray<int> pos(n);
+  
+  repeat(nOp) {
+    int a;
+    cin >> a;
+    
+    pos.add(a, n - a + 1, 1);
+  }
+  
+  string ans = s;
+  for_inc_range(i, 1, n) {
+    if (pos[i] % 2 == 1) {
+      ans[n - i + 1 - 1] = s[i - 1];
+    } else {
+      ans[i - 1] = s[i - 1];
+    }
+  }
+  
+  cout << ans << endl;
   return 0;
 }
