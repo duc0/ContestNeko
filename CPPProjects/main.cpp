@@ -45,25 +45,52 @@ using namespace std;
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
 
-class ChocolateDividingEasy {
-  int getSum(const vector<vector<int>> &sum, int r1, int c1, int r2, int c2) {
-    assert(r1 <= r2 && c1 <= c2);
+template <class T> class RectangleSum {
+  vector<vector<T>> sum;
+  vector<vector<T>> a;
+  bool built;
+  int nRow, nCol;
+public:
+  RectangleSum(int nRow, int nCol) {
+    this->nRow = nRow;
+    this->nCol = nCol;
     
+    sum.resize(nRow + 1);
+    for_inc_range(i, 0, nRow) sum[i].resize(nCol + 1);
+    
+    a.resize(nRow + 1);
+    for_inc_range(i, 0, nRow) a[i].resize(nCol + 1);
+    
+    built = false;
+  }
+  
+  void set(int r, int c, T v) {
+    a[r][c] = v;
+    built = false;
+  }
+  
+  void build() {
+    for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) {
+      sum[r][c] = sum[r][c - 1] + sum[r - 1][c] - sum[r - 1][c - 1] + a[r][c];
+    }
+    built = true;
+  }
+  
+  T getSum(int r1, int c1, int r2, int c2) const {
+    assert(built);
     return sum[r2][c2] - sum[r1 -1][c2] - sum[r2][c1 - 1] + sum[r1 - 1][c1 - 1];
   }
+};
+
+class ChocolateDividingEasy {
 public:
   int findBest( vector <string> a ) {
     int nRow = (int) a.size();
     int nCol = (int) a[0].size();
     
-    vector<vector<int>> sum (nRow + 1, vector<int>(nCol + 1));
-    
-    for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) {
-      sum[r][c] = sum[r][c - 1] + sum[r - 1][c] - sum[r - 1][c - 1] + a[r - 1][c - 1] - '0';
-    }
-    LOG(1, sum[2][2]);
-    LOG(1, getSum(sum, 1, 1, 2, 2));
-    LOG(1, getSum(sum, 2, 2, 3, 4));
+    RectangleSum<int> sum(nRow, nCol);
+    for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) sum.set(r, c, a[r - 1][c - 1] - '0');
+    sum.build();
     
     int best = 0;
     for_inc_range(cutR1, 1, nRow - 1) {
@@ -78,7 +105,7 @@ public:
             int ans = INT_INF;
             for_inc(id1, 3) {
               for_inc(id2, 3) {
-                int cur = getSum(sum, r1s[id1], c1s[id2], r2s[id1], c2s[id2]);
+                int cur = sum.getSum(r1s[id1], c1s[id2], r2s[id1], c2s[id2]);
                 ans = min(ans, cur);
               }
             }
