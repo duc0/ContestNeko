@@ -62,5 +62,57 @@ int main() {
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  vector<string> s(n);
+  for_inc(i, n) {
+    cin >> s[i];
+  }
+  
+  vector<int> cRow(n), cCol(n);
+  for_inc(i, n) for_inc(j, n) if (s[i][j] == '.') {
+    cRow[i]++;
+    cCol[j]++;
+  }
+  
+  bool bad = false;
+  for_inc(i, n) {
+    if (cRow[i] == 0) {
+      bad = true;;
+      break;
+    }
+  }
+  if (!bad) {
+    for_inc(i, n) {
+      for_inc(j, n) {
+        if (s[i][j] == '.') {
+          cout << i + 1 << " " << j + 1 << endl;
+          break;
+        }
+      }
+    }
+    return 0;
+  }
+  
+  bad = false;
+  for_inc(j, n) {
+    if (cCol[j] == 0) {
+      bad = true;
+      break;
+    }
+  }
+  if (!bad) {
+    for_inc(j, n) {
+      for_inc(i, n) {
+        if (s[i][j] == '.') {
+          cout << i + 1 << " " << j + 1 << endl;
+          break;
+        }
+      }
+    }
+    return 0;
+  }
+  cout << -1;
   return 0;
 }
