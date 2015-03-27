@@ -57,10 +57,61 @@ void testGen() {
   fclose(stdout);
 }
 
+#define next _next
+
+map<pair<int, int>, int> cur, next;
+int n;
+
+
+const  int dx[] = {0, 0, -1 ,1};
+const int dy[] = {1, -1, 0, 0};
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  cin >> n;
+  cur[make_pair(0, 0)] = n;
+  
+  while (true) {
+    next = map<pair<int, int>, int>();
+    
+    bool found = false;
+    for (auto it = cur.rbegin(); it != cur.rend(); it++) {
+      if (it->second < 4) {
+        next[it->first] += it->second;
+        continue;
+      }
+      found = true;
+      int each = it->second / 4;
+      for (int d = 0; d < 4; ++d) {
+        pair<int ,int> p2 = make_pair(it->first.first + dx[d], it->first.second + dy[d]);
+        next[p2] += each;
+      }
+      next[it->first] += it->second % 4;
+      
+    }
+    if (!found) {
+      break;
+    }
+    cur = next;
+  }
+  
+/*  for (auto u: cur) {
+      int x = u.first.first;
+      int y = u.first.second;
+      LOG(1, u.first.first << "," << u.first.second << ":" << u.second);
+  }*/
+  
+  int q;
+  cin >> q;
+  repeat(q) {
+    int x, y;
+    cin >> x >> y;
+    cout << cur[make_pair(x, y)] << endl;
+  }
+  
   return 0;
 }
