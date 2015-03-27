@@ -57,10 +57,74 @@ void testGen() {
   fclose(stdout);
 }
 
+#define MAXN 5010
+
+bool e[MAXN][MAXN];
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int m, n;
+  cin >> n >> m;
+  
+  int64 maxEdge = (int64) n * (n - 1) / 2;
+  
+  if (m + m > maxEdge) {
+    cout << -1 << endl;
+    return 0;
+  }
+  
+  if (n <= 5000) {
+    fill0(e);
+    repeat(m) {
+      int u, v;
+      cin >> u >> v;
+      e[u][v] = e[v][u] = true;
+    }
+    
+    int cnt = 0;
+    for_inc_range(u, 1, n) {
+      for_inc_range(v, u + 1, n) {
+        if (!e[u][v]) {
+          cout << u << " " << v << endl;
+          cnt++;
+          if (cnt == m) {
+            return 0;
+          }
+        }
+      }
+    }
+  } else {
+    unordered_set<int64> exist;
+    
+    repeat(m) {
+      int u, v;
+      cin >> u >> v;
+      if (u > v) {
+        swap(u, v);
+      }
+      int64 code = (int64) u * n + v;
+      exist.insert(code);
+    }
+    
+    repeat(m) {
+      while (1) {
+        int u = rand() % n +1 , v = rand()% n + 1;
+        if (u == v) continue;
+        if (u > v) swap(u, v);
+        int64 code = (int64) u * n + v;
+        if (exist.count(code)) continue;
+        exist.insert(code);
+        cout << u << " " << v << endl;
+        break;
+      }
+    }
+  }
+  
+  
+  
   return 0;
 }
