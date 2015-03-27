@@ -64,7 +64,6 @@ template <class T> class WeightedTree {
   int n;
   int root;
   
-  
   void dfs(int u) {
     stack<int> node;
     node.push(u);
@@ -129,124 +128,66 @@ public:
   }
 };
 
-template<class T> class SubtreeSize {
+template <class T> class CentroidDecomposition {
   const WeightedTree<T> &tree;
+  vector<int> label;
+  int centroid;
+  vector<bool> erased;
+  int n;
   vector<int> subtreeSize;
-  vector<bool> visit;
   
-  void dfs(int u) {
-    stack<int> node;
-    node.push(u);
-    while (!node.empty()) {
-      u = node.top();
-      if (visit[u]) {
-        node.pop();
-        subtreeSize[u] = 1;
+  void dfs(int parent, int u) {
+    subtreeSize[u] = 1;
+    for (auto &v: tree.getAdjacent(u)) {
+      if (!erased[v.first] && v.first != parent) {
+        dfs(u, v.first);
+        subtreeSize[u] += subtreeSize[v.first];
       }
-      for (auto &v: tree.getAdjacent(u)) {
-        if (v.first != tree.getParent(u)) {
-          if (!visit[u]) {
-            node.push(v.first);
-          } else {
-            subtreeSize[u] += subtreeSize[v.first];
-          }
-        }
-      }
-      visit[u] = true;
     }
   }
   
-public:
-  SubtreeSize(const WeightedTree<T> &tree): tree(tree) {
-    subtreeSize.resize(tree.getSize() + 1);
-    visit.resize(tree.getSize() + 1);
-    dfs(tree.getRoot());
-  }
-  
-  const int operator[](int u) const {
-    assert(1 <= u && u <= tree.getSize());
-    return subtreeSize[u];
-  }
-};
-
-template <class T> class CentroidDecomposition {
-  WeightedTree<T> &tree;
-  vector<int> label;
-  int centroid;
-  
-public:
-  // This class can modify the tree's root.
-  CentroidDecomposition(WeightedTree<T> &tree): tree(tree) {
-    SubtreeSize<T> subtreeSize(tree);
+  int findCentroid(int x) {
+    dfs(-1, x);
     
-    int n = (int) tree.getSize();
-    int u = tree.getRoot();
-    
-    label.resize(n + 1);
-    
-    centroid = u;
+    int u = x;
+    int parent = -1;
     
     while (1) {
       int maxSubtreeSize = 0;
       int maxSubtreeRoot = -1;
       for (auto &v: tree.getAdjacent(u)) {
-        if (v.first != tree.getParent(u) && subtreeSize[v.first] > maxSubtreeSize) {
+        if (!erased[v.first] && v.first != parent && subtreeSize[v.first] > maxSubtreeSize) {
           maxSubtreeSize = subtreeSize[v.first];
           maxSubtreeRoot = v.first;
         }
       }
-      if (maxSubtreeSize <= n/2) {
-        centroid = u;
-        break;
+      if (maxSubtreeSize <= subtreeSize[x]/2) {
+        return u;
       }
+      parent = u;
       u = maxSubtreeRoot;
     }
+  }
+  
+  int decompose(int x, int currentLayer) {
+    int centroid = findCentroid(x);
     
-    label[centroid] = 1;
-    
-    WeightedTree<T> subtree;
-    vector<int> pi(n + 1);
+    label[centroid] = currentLayer;
+    erased[centroid] = true;
     for (auto &v: tree.getAdjacent(centroid)) {
-      int subSize;
-      if (tree.getParent(v.first) == centroid) {
-        subSize = subtreeSize[v.first];
-      } else {
-        subSize = n - subtreeSize[centroid];
-      }
-      
-      subtree.reset(subSize);
-      vector<int> mapNode(n + 1);
-      vector<int> inverseMapNode(subSize + 1);
-      
-      stack<int> node;
-      node.push(v.first);
-      
-      int nodeCount = 1;
-      mapNode[v.first] = 1;
-      inverseMapNode[1] = v.first;
-      pi[v.first] = centroid;
-      
-      while (!node.empty()) {
-        int u = node.top();
-        node.pop();
-        for (auto &w : tree.getAdjacent(u)) if (w.first != pi[u]) {
-          nodeCount++;
-          mapNode[w.first] = nodeCount;
-          inverseMapNode[nodeCount] = w.first;
-          node.push(w.first);
-          pi[w.first] = u;
-          
-          subtree.addEdge(mapNode[u], mapNode[w.first], w.second);
-        }
-      }
-      subtree.setRoot(1);
-      
-      CentroidDecomposition<T> subCD(subtree);
-      
-      for_inc_range(u, 1, subSize) {
-        label[inverseMapNode[u]] = subCD.getLabel(u) + 1;
+      if (!erased[v.first]) {
+        decompose(v.first, currentLayer + 1);
       }
     }
+    return centroid;
+  }
+public:
+  CentroidDecomposition(const WeightedTree<T> &tree): tree(tree) {
+    n = (int)tree.getSize();
+    erased.resize(n + 1);
+    subtreeSize.resize(n + 1);
+    label.resize(n + 1);
+    centroid = decompose(1, 1);
   }
   
   int getCentroid() const {
