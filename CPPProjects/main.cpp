@@ -7,6 +7,8 @@
 #define LOGLEVEL 1
 #endif
 
+#include <unordered_set>
+#include <unordered_map>
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
@@ -23,8 +25,6 @@
 #include <stack>
 #include <functional>
 #include <sstream>
-#include <unordered_set>
-#include <unordered_map>
 #include <deque>
 #include <climits>
 #include <cfloat>
@@ -59,9 +59,26 @@ void testGen() {
 
 #define next _next
 
-map<pair<int, int>, int> cur, next;
-int n;
+template <class T>
+inline void hash_combine(std::size_t & seed, const T & v)
+{
+  std::hash<T> hasher;
+  seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
 
+namespace std {
+  template <typename T, typename U> struct hash<pair<T,U>> {
+    size_t operator()(const std::pair<T, U> &v) const {
+      size_t seed = 0;
+      ::hash_combine(seed, v.first);
+      ::hash_combine(seed, v.second);
+      return seed;
+    }
+  };
+}
+
+unordered_map<pair<int, int>, int> cur;
+int n;
 
 const  int dx[] = {0, 0, -1 ,1};
 const int dy[] = {1, -1, 0, 0};
@@ -75,36 +92,24 @@ int main() {
   cin >> n;
   cur[make_pair(0, 0)] = n;
   
-  while (true) {
-    next = map<pair<int, int>, int>();
-    
+  while (true) { 
     bool found = false;
-    for (auto it = cur.rbegin(); it != cur.rend(); it++) {
-      if (it->second < 4) {
-        next[it->first] += it->second;
+    for (auto it : cur) {
+      if (it.second < 4) {
         continue;
       }
       found = true;
-      int each = it->second / 4;
+      int each = it.second / 4;
       for (int d = 0; d < 4; ++d) {
-        pair<int ,int> p2 = make_pair(it->first.first + dx[d], it->first.second + dy[d]);
-        next[p2] += each;
+        pair<int ,int> p2 = make_pair(it.first.first + dx[d], it.first.second + dy[d]);
+        cur[p2] += each;
       }
-      next[it->first] += it->second % 4;
-      
+      cur[it.first] -= 4 * each;
     }
     if (!found) {
       break;
     }
-    cur = next;
   }
-  
-/*  for (auto u: cur) {
-      int x = u.first.first;
-      int y = u.first.second;
-      LOG(1, u.first.first << "," << u.first.second << ":" << u.second);
-  }*/
-  
   int q;
   cin >> q;
   repeat(q) {
