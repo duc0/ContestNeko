@@ -57,25 +57,6 @@ template <class T> class WeightedTree {
   int n;
   int root;
   
-public:
-  const vector<pair<int, T>> &getAdjacent(int u) const { return adj[u]; }
-  
-  void reset(int size) {
-    this->n = size;
-    adj.resize(n + 1);
-    for_inc_range(i, 1, n) adj[i].clear();
-    p.resize(n + 1);
-    depth.resize(n + 1);
-    for_inc_range(i, 1, n) {
-      p[i] = make_pair(-1, -1);
-      depth[i] = 0;
-    }
-  }
-  
-  WeightedTree() {}
-  
-  WeightedTree(int n) { reset(n); }
-  
   void dfs(int u) {
     stack<int> node;
     node.push(u);
@@ -93,18 +74,37 @@ public:
       }
     }
   }
+public:
+  const vector<pair<int, T>> &getAdjacent(int u) const { return adj[u]; }
   
-  int getParent(int u) const { return p[u].first; }
+  void reset(int size) {
+    this->n = size;
+    adj.resize(n + 1);
+    for_inc_range(i, 1, n) adj[i].clear();
+    p.resize(n + 1);
+    depth.resize(n + 1);
+    root = -1;
+    for_inc_range(i, 1, n) {
+      p[i] = make_pair(-1, -1);
+      depth[i] = 0;
+    }
+  }
   
-  T getWeight(int u) const { return p[u].second; }
+  WeightedTree() {}
   
-  void setWeight(int u, T w) { p[u].second = w; }
+  WeightedTree(int n) { reset(n); }
   
-  int getDepth(int u) const { return depth[u]; }
+  int getParent(int u) const { assert(root != -1); return p[u].first; }
+  
+  T getWeight(int u) const { assert(root != -1); return p[u].second; }
+  
+  void setWeight(int u, T w) { assert(root != -1); p[u].second = w; }
+  
+  int getDepth(int u) const { assert(root != -1); return depth[u]; }
   
   size_t getSize() const { return n; }
   
-  int getRoot() const { return root; }
+  int getRoot() const { assert(root != -1); return root; }
   
   void setRoot(int u) {
     for_inc_range(v, 1, n) {
@@ -115,9 +115,9 @@ public:
     dfs(root);
   }
   
-  void addEdge(int u, int v, int c) {
-    adj[u].push_back(make_pair(v, c));
-    adj[v].push_back(make_pair(u, c));
+  void addEdge(int u, int v, T c) {
+    adj[u].emplace_back(v, c);
+    adj[v].emplace_back(u, c);
   }
 };
 

@@ -60,6 +60,7 @@
 		226CA9AC1A9AFDFB00A89905 /* ModInt.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ModInt.cpp; sourceTree = "<group>"; };
 		226CA9AD1A9D854900A89905 /* Board.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Board.cpp; sourceTree = "<group>"; };
 		226CA9AE1A9DA22700A89905 /* Matrix.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Matrix.cpp; sourceTree = "<group>"; };
+		228786461AC54066009EA002 /* CentroidDecomposition.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CentroidDecomposition.cpp; sourceTree = "<group>"; };
 		228DDB311A8674EF008340D0 /* input1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input1.txt; sourceTree = "<group>"; };
 		228DDB331A867693008340D0 /* input2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input2.txt; sourceTree = "<group>"; };
 		228DDB341A867699008340D0 /* input3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input3.txt; sourceTree = "<group>"; };
@@ -168,6 +169,7 @@
 		2267A11B1ABFD42C0035031F /* graph */ = {
 			isa = PBXGroup;
 			children = (
+				228786461AC54066009EA002 /* CentroidDecomposition.cpp */,
 				2267A1151ABD26FB0035031F /* EulerTour.cpp */,
 				2267A10F1AB17C210035031F /* HeavyLightDecomposition.cpp */,
 				22161D2D1AA6E0CE006BA7D5 /* LongestPathDAG.cpp */,
