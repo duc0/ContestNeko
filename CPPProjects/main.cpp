@@ -60,7 +60,52 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input5.txt", "r", stdin);
 #endif
+  
+  vector<pair<int, int>> p;
+  
+  int a, b;
+  cin >> a >> b;
+  
+  string s;
+  cin >> s;
+  
+  int64 x = 0, y = 0;
+  for (char c: s) {
+    p.push_back(make_pair(x, y));
+    switch (c) {
+      case 'U': y++; break;
+      case 'D': y--; break;
+      case 'L': x--; break;
+      case 'R': x++; break;
+    }
+  }
+  
+  for (auto u : p) {
+    int64 dx = a - u.first;
+    int64 dy = b - u.second;
+    if (dx == 0 && dy == 0) {
+      cout << "Yes" << endl;
+      exit(0);
+    }
+    if (x != 0 && dx % x == 0) {
+      int64 d = dx / x;
+      if (d >= 0 && d * y == dy) {
+        cout << "Yes" << endl;
+        exit(0);
+      }
+    }
+    if (y != 0 && dy % y == 0) {
+      int64 d = dy / y;
+      if (d >= 0 && d * x == dx) {
+        cout << "Yes" << endl;
+        exit(0);
+      }
+    }
+  }
+  
+  cout << "No";
+  
   return 0;
 }
