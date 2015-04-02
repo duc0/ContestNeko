@@ -27,6 +27,7 @@ $ENDCUT$
 #include <climits>
 #include <cfloat>
 #include <random>
+#include <bitset>
 
 using namespace std;
 
