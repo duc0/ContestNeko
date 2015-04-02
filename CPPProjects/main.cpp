@@ -127,8 +127,11 @@ int main() {
   freopen("input1.txt", "r", stdin);
 #endif
   
-  int n;
-  cin >> n;
+  int nTest;
+  cin >> nTest;
+  while (nTest --) {
+  int n, k;
+  cin >> n >> k;
   GF2Matrix<64> a;
   a.init(n);
   for_inc(r, n) {
@@ -140,7 +143,7 @@ int main() {
   a.lock();
   a.gaussianElimination();
   
-  int64 ret = 0;
+  int64 ret = k;
   for_inc(r, n) {
     int64 val = a.getRow(r).to_ullong();
     if ((val ^ ret) > ret) {
@@ -148,5 +151,6 @@ int main() {
     }
   }
   cout << ret << endl;
+  }
   return 0;
 }
