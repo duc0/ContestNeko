@@ -62,6 +62,7 @@
 		226CA9AE1A9DA22700A89905 /* Matrix.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Matrix.cpp; sourceTree = "<group>"; };
 		228786461AC54066009EA002 /* CentroidDecomposition.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CentroidDecomposition.cpp; sourceTree = "<group>"; };
 		228786471AC5AE7B009EA002 /* RectangleSum.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RectangleSum.cpp; sourceTree = "<group>"; };
+		228786481ACD0640009EA002 /* GF2Matrix.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GF2Matrix.cpp; sourceTree = "<group>"; };
 		228DDB311A8674EF008340D0 /* input1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input1.txt; sourceTree = "<group>"; };
 		228DDB331A867693008340D0 /* input2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input2.txt; sourceTree = "<group>"; };
 		228DDB341A867699008340D0 /* input3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input3.txt; sourceTree = "<group>"; };
@@ -115,6 +116,7 @@
 			children = (
 				226CA9A81A9907FE00A89905 /* BigInteger.cpp */,
 				226CA9AD1A9D854900A89905 /* Board.cpp */,
+				228786481ACD0640009EA002 /* GF2Matrix.cpp */,
 				226CA9AE1A9DA22700A89905 /* Matrix.cpp */,
 				226CA9AC1A9AFDFB00A89905 /* ModInt.cpp */,
 				22161D241AA4016C006BA7D5 /* Point2D.cpp */,
