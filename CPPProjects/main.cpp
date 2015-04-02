@@ -89,10 +89,9 @@ public:
     }
   }
   
-  // O(NROW log NROW + NROW * NCOL)
+  // O(NROW * NCOL)
   void gaussianElimination() {
     assert(isLock);
-    sort(order.begin(), order.end(), [&](int r1, int r2) {return length[r1] > length[r2];});
     for (int c = NCOL - 1, r = 0; c >=0; c--) {
       int i = r;
       while (i < nRow && !getRow(i).test(c)) {
