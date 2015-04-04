@@ -53,15 +53,115 @@ int MODP(int64 x) {
   return r;
 }
 
+template <class T> class RangeUpdateArrayOffline {
+  vector<T> diff;
+  int n;
+  
+public:
+  RangeUpdateArrayOffline() {}
+  
+  RangeUpdateArrayOffline(int n) {
+    init(n);
+  }
+  
+  void init(int n) {
+    this->n = n;
+    diff.resize(n + 1);
+  }
+  
+  // Do a[k] = a[k] + v for i <= k <= j
+  // O(1)
+  void add(int i, int j, T v) {
+    assert(1 <= i && i <= j && j <= n);
+    diff[i] += v;
+    if (j + 1 <= n) {
+      diff[j + 1] -= v;
+    }
+  }
+  
+  vector<T> getArray() {
+    vector<T> ret(n + 1);
+    ret[0] = 0;
+    for_inc_range(i, 1, n) {
+      ret[i] = ret[i - 1] + diff[i];
+    }
+    return ret;
+  }
+  
+};
+
+// Note: 0-base index
+template<class T> class ZFunction {
+  vector<T> s;
+  int n;
+  
+  vector<int> z; // z[i] = max{l, s[i..i + l - 1] is a prefix of s, or 0 if s[i] != s[0]}
+public:
+  template<class Iterator> ZFunction(Iterator begin, Iterator end) {
+    for (auto it = begin; it != end; it++) {
+      s.push_back(*it);
+    }
+    n = (int) s.size();
+    z.resize(n + 1);
+    for (int i = 1, l = 0, r = 0; i < n; ++i) {
+      if (i <= r) {
+        z[i] = min(r - i + 1, z[i - l]);
+      }
+      while (i + z[i] < n && s[z[i]] == s[i + z[i]]) {
+        ++z[i];
+      }
+      if (i + z[i] - 1 > r) {
+        l = i;
+        r = i + z[i] - 1;
+      }
+    }
+  }
+  
+  int get(int i) const {
+    assert(0 <= i && i < n);
+    return z[i];
+  }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
 
+// Zepto 2015 - D
+
+int n, k;
+string s;
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+
+  cin >> n >> k;
+  cin >> s;
+  ZFunction<char> z(s.begin(), s.end());
+  
+  RangeUpdateArrayOffline<int> good(n);
+  
+  for (int ablen = 1; ablen * k <= n; ++ablen) {
+    if (z.get(ablen) >= ablen * (k - 1)) {
+      int l = ablen * k - 1;
+      int r = l+ min(ablen, z.get(ablen * k));
+      good.add(l + 1, r + 1, 1);
+    }
+  }
+  
+  vector<int> ret = good.getArray();
+  string ans = s;
+  for_inc_range(i, 1, n) {
+    if (ret[i] > 0) {
+      ans[i - 1] = '1';
+    } else {
+      ans[i - 1] = '0';
+    }
+  }
+  cout << ans << endl;
   return 0;
 }
