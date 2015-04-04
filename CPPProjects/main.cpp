@@ -61,7 +61,33 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  n = (1 << (n + 1)) - 1;
+  
+  vector<int> down(n + 1);
+  vector<int> edge(n + 1);
+  
+  for_inc_range(i, 2, n) {
+    cin >> edge[i];
+  }
+  
+  int ans = 0;
+  for (int i = n; i > 1; i -= 2) {
+    int c1 = down[i] + edge[i];
+    int c2 = down[i - 1] + edge[i - 1];
+    int extra = 0;
+    if (c1 != c2) {
+      extra = abs(c2 - c1);
+    }
+    ans += extra;
+    int parent = i / 2;
+    down[parent] += max(c1, c2);
+  }
+  
+  cout << ans << endl;
   return 0;
 }
