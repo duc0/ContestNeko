@@ -69,6 +69,9 @@
 		228DDB351A8676A2008340D0 /* input4.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input4.txt; sourceTree = "<group>"; };
 		228DDB361A8676A9008340D0 /* input5.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input5.txt; sourceTree = "<group>"; };
 		228DDB371A8676E7008340D0 /* biginput1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = biginput1.txt; sourceTree = "<group>"; };
+		22D334E11AD09D4800507631 /* ZFunction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ZFunction.cpp; sourceTree = "<group>"; };
+		22D334E31AD09D7500507631 /* RangeUpdateArrayOffline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RangeUpdateArrayOffline.cpp; sourceTree = "<group>"; };
+		22D334E41AD09D8900507631 /* PrefixFunction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PrefixFunction.cpp; sourceTree = "<group>"; };
 		22FF7C951AB007F100C01FCB /* WeightedTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WeightedTree.cpp; sourceTree = "<group>"; };
 		22FF7C961AB00E5A00C01FCB /* RangeUpdateTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RangeUpdateTree.cpp; sourceTree = "<group>"; };
 		22FF7C971AB00E6C00C01FCB /* TreeToArray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TreeToArray.cpp; sourceTree = "<group>"; };
@@ -101,6 +104,7 @@
 				2267A1121AB4095C0035031F /* PalindromicTree.cpp */,
 				592559941A98329600A3BBB8 /* RangeQuery.cpp */,
 				22161D2E1AA9A47F006BA7D5 /* RangeUpdateArray.cpp */,
+				22D334E31AD09D7500507631 /* RangeUpdateArrayOffline.cpp */,
 				22FF7C961AB00E5A00C01FCB /* RangeUpdateTree.cpp */,
 				228786471AC5AE7B009EA002 /* RectangleSum.cpp */,
 				226CA9AA1A9A6B3D00A89905 /* SegmentTree.cpp */,
@@ -164,8 +168,10 @@
 		2267A11A1ABFD4230035031F /* string */ = {
 			isa = PBXGroup;
 			children = (
+				22D334E41AD09D8900507631 /* PrefixFunction.cpp */,
 				592559991A983EEB00A3BBB8 /* SuffixArrayLCP.cpp */,
 				2267A1191ABFD3FF0035031F /* SuffixAutomata.cpp */,
+				22D334E11AD09D4800507631 /* ZFunction.cpp */,
 			);
 			name = string;
 			sourceTree = "<group>";
