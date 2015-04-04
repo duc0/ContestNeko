@@ -58,10 +58,41 @@ void testGen() {
   fclose(stdout);
 }
 
+int64 c, hr, hb, wr, wb;
+
+int64 score(int64 x) {
+  int64 remain = c - wr * x;
+  int64 nb = remain / wb;
+  return x * hr + nb * hb;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  cin >> c >> hr >> hb >> wr >> wb;
+  
+  int64 maxr = c / wr;
+  
+  int64 l = 0, r = maxr, ans = max(score(l), score(r));
+  while (r >= l) {
+    int64 m1 = (2 * l + r) / 3;
+    int64 m2 = (l + 2 * r) / 3;
+    int64 s1 = score(m1);
+    int64 s2 = score(m2);
+    if (s1 < s2) {
+      l = m1 + 1;
+    } else if (s1 > s2) {
+      r = m2 - 1;
+    } else {
+      ans = s1;
+      r = m2 -1;
+    }
+  }
+  
+  cout << ans << endl;
+  
   return 0;
 }
