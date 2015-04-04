@@ -66,18 +66,12 @@ int64 score(int64 x) {
   return x * hr + nb * hb;
 }
 
-int main() {
-  ios::sync_with_stdio(false);
-#ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
-#endif
-  
-  cin >> c >> hr >> hb >> wr >> wb;
-  
-  int64 maxr = c / wr;
-  
-  int64 ans = score(0);
+
 #define MAX 10000000
+
+int64 solve() {
+  int64 ans = score(0);
+  int64 maxr = c / wr;
   for_inc_range(xr, 1, MAX) {
     if (xr > maxr) break;
     ans = max(ans, score(xr));
@@ -86,9 +80,22 @@ int main() {
     if (xr < 0) break;
     ans = max(ans, score(xr));
   }
+  return ans;
+}
+
+int main() {
+  ios::sync_with_stdio(false);
+#ifndef SUBMIT
+  freopen("input1.txt", "r", stdin);
+#endif
   
+  cin >> c >> hr >> hb >> wr >> wb;
+  
+  int64 ans = solve();
+  swap(hr, hb);
+  swap(wr, wb);
+  ans = max(ans, solve());
   cout << ans << endl;
-  
   
   return 0;
 }
