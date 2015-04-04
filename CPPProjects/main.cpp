@@ -53,15 +53,69 @@ int MODP(int64 x) {
   return r;
 }
 
+class AbstractGF2MatrixRecorder
+{
+public:
+  // record row[r1] = row[r1] ^ row[r2]
+  virtual void record(int r1, int r2) {}
+  
+  // record swap(row[r1], row[r2])
+  virtual void recordSwap(int r1, int r2) {}
+};
+
+class GF2MatrixRecorder : public AbstractGF2MatrixRecorder
+{
+  vector<pair<int, int>> op;
+public:
+  void record(int r1, int r2) {
+    op.emplace_back(r1, r2);
+  }
+  
+  void recordSwap(int r1, int r2) {
+    if (r1 == r2) return;
+    op.emplace_back(r1, r2);
+    op.emplace_back(r2, r1);
+    op.emplace_back(r1, r2);
+  }
+  
+  const vector<pair<int, int>>& getOperations() {
+    return op;
+  }
+};
+
+
+
 // 0-based
-template<size_t NCOL> class GF2Matrix {
+// Note that columns are numbered from (NCOL - 1) to 0, left ro right
+template<int NCOL> class GF2Matrix {
   vector<bitset<NCOL>> row;
   int nRow;
   vector<int> order;
   vector<size_t> length;
   bool isLock;
+  int rank;
+  bool gaussianEliminationCalled;
+  vector<int> first1;
+  AbstractGF2MatrixRecorder noRecorder;
+  AbstractGF2MatrixRecorder &recorder;
   
 public:
+  GF2Matrix(int nRow): recorder(noRecorder) {
+    init(nRow);
+  }
+  
+  GF2Matrix(int nRow, AbstractGF2MatrixRecorder &recorder): recorder(recorder) {
+    init(nRow);
+  }
+  
+  int numRow() const {
+    return nRow;
+  }
+  
+  int numCol() const {
+    return NCOL;
+  }
+  
   void init(int nRow) {
     this->nRow = nRow;
     row.resize(nRow);
@@ -71,6 +125,7 @@ public:
     }
     length.resize(nRow);
     isLock = false;
+    gaussianEliminationCalled = false;
   }
   
   void setRow(int r, const bitset<NCOL> &rV) {
@@ -92,6 +147,8 @@ public:
   // O(NROW * NCOL)
   void gaussianElimination() {
     assert(isLock);
+    first1.resize(nRow);
+    rank = 0;
     for (int c = NCOL - 1, r = 0; c >=0; c--) {
       int i = r;
       while (i < nRow && !getRow(i).test(c)) {
@@ -100,19 +157,75 @@ public:
       if (i >= nRow) {
         continue;
       }
+      first1[r] = c;
       swap(order[r], order[i]);
-      for_inc_range(j, r + 1, nRow - 1) {
-        if (getRow(j).test(c)) {
+      recorder.recordSwap(r, i);
+      for_inc(j, nRow){
+        if (j != r && getRow(j).test(c)) {
+          recorder.record(j, r);
           row[order[j]] ^= getRow(r);
         }
       }
       r++;
+      rank++;
     }
+    gaussianEliminationCalled = true;
+  }
+  
+  // Return the first 1 on the row (after gaussian elimination).
+  int getFirst1(int row) const {
+    assert(gaussianEliminationCalled);
+    assert(row < rank);
+    return first1[row];
+  }
+  
+  // Transform to another matrix in row echelon form
+  void transform(const GF2Matrix<NCOL> &t) {
+    assert(t.isGaussianEliminationCalled());
+    for_inc(r, rank) {
+      int c = getFirst1(r);
+      for_inc(r2, rank) {
+        if (getRow(r2).test(c) != t.getRow(r2).test(c)) {
+          row[order[r2]] ^= getRow(r);
+          recorder.record(r2, r);
+        }
+      }
+    }
+  }
+  
+  bool isGaussianEliminationCalled() const {
+    return gaussianEliminationCalled;
+  }
+  
+  int getRank() const {
+    assert(gaussianEliminationCalled);
+    return rank;
   }
   
   inline const bitset<NCOL> & getRow(int r) const {
     return row[order[r]];
   }
+  
+  bool operator ==(const GF2Matrix<NCOL> &y) const {
+    if (y.numRow() != numRow()) return false;
+    for_inc(r, nRow) {
+      if (getRow(r) != y.getRow(r)) return false;
+    }
+    return true;
+  }
+  
+  friend std::ostream& operator<< (std::ostream& stream, const GF2Matrix<NCOL>& matrix) {
+    stream << "[matrix: row = " << matrix.nRow << ", col = " << NCOL << endl;
+    for_inc(r, matrix.nRow) {
+      for_dec(c, NCOL) {
+        stream << matrix.getRow(r).test(c) << " ";
+      }
+      stream << endl;
+    }
+    stream << "]" << endl;
+    return stream;
+  }
+  
 };
 
 void testGen() {
@@ -131,8 +244,7 @@ int main() {
   while (nTest --) {
   int n, k;
   cin >> n >> k;
-  GF2Matrix<64> a;
-  a.init(n);
+  GF2Matrix<64> a(n);
   for_inc(r, n) {
     int64 x;
     cin >> x;
