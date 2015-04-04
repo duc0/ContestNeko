@@ -62,6 +62,14 @@ template<size_t NCOL> class GF2Matrix {
   bool isLock;
   
 public:
+  int numRow() const {
+    return nRow;
+  }
+  
+  int numCol() const {
+    return NCOL;
+  }
+  
   void init(int nRow) {
     this->nRow = nRow;
     row.resize(nRow);
@@ -112,6 +120,14 @@ public:
   
   inline const bitset<NCOL> & getRow(int r) const {
     return row[order[r]];
+  }
+  
+  bool operator ==(const GF2Matrix<NCOL> &y) const {
+    if (y.numRow() != numRow()) return false;
+    for_inc(r, nRow) {
+      if (getRow(r) != y.getRow(r)) return false;
+    }
+    return true;
   }
 };
 
