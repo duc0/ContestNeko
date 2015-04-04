@@ -58,10 +58,39 @@ void testGen() {
   fclose(stdout);
 }
 
+int n;
+string s;
+
+bool good(int i) {
+  if (i < 0 || i >= n) return false;
+  if (s[i] != '*') return false;
+  return true;
+}
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  cin >> n;
+  cin >> s;
+  for_inc(start, n) {
+    for_inc(len, n) {
+      if (len == 0) continue;
+      
+      bool bad = false;
+      for_inc(k, 5) {
+        if (!good(start + k * len)) {
+          bad = true;
+          break;
+        }
+      }
+      if (!bad) {
+        cout << "yes" << endl;
+        return 0;
+      }
+    }
+  }
+  cout << "no" << endl;
   return 0;
 }
