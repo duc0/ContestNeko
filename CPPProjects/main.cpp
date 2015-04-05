@@ -56,30 +56,11 @@ int MODP(int64 x) {
 template <class T> class RangeQuery {
   size_t n, k;
   vector<vector<T>> a;
-  function<T(T, T)> combine;
-  
 public:
-  RangeQuery() {}
+  virtual inline const T& combine(const T &a, const T &b) const = 0;
   
-  template <class Iterator>
-  RangeQuery(Iterator begin, Iterator end) {
-    init(begin, end);
-  }
-  
-  template <class Iterator>
-  RangeQuery(Iterator begin, Iterator end, const function<T(T, T)> &combine) {
-    init(begin, end, combine);
-  }
-  
-  // The default combine function is min (Range Minimum Query).
   template <class Iterator>
   void init(Iterator begin, Iterator end) {
-    init(begin, end, [](const T &a, const T &b) { return min(a, b); });
-  }
-  
-  template <class Iterator>
-  void init(Iterator begin, Iterator end, const function<T(T, T)> &combine) {
-    this->combine = combine;
     n = end - begin;
     k = -1;
     size_t s = n;
@@ -106,7 +87,14 @@ public:
   T query(int i, int j) {
     int t = 31 - __builtin_clz(j - i + 1);
     int m = j + 1 - (1 << t);
-    return min(a[t][i], a[t][m]);
+    return combine(a[t][i], a[t][m]);
+  }
+};
+
+template <class T> class RangeMinimumQuery: public RangeQuery<T> {
+public:
+  virtual inline const T& combine(const T &a, const T &b) const {
+    return min(a, b);
   }
 };
 
@@ -140,7 +128,8 @@ int main() {
     a[i] = -a[i];
   }
   
-  RangeQuery<int> rmq(a.begin(), a.end());
+  RangeMinimumQuery<int> rmq;
+  rmq.init(a.begin(), a.end());
   
   int64 ret = 0;
   int x, y;
