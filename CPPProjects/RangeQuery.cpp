@@ -57,7 +57,7 @@ public:
   // The default combine function is min (Range Minimum Query).
   template <class Iterator>
   void init(Iterator begin, Iterator end) {
-    init(begin, end, [](T a, T b) { return min(a, b); });
+    init(begin, end, [](const T &a, const T &b) { return min(a, b); });
   }
   
   template <class Iterator>
@@ -87,11 +87,7 @@ public:
   }
   
   T query(int i, int j) {
-    int l = j - i + 1, t = -1;
-    while (l > 0) {
-      l >>= 1;
-      ++t;
-    }
+    int t = 31 - __builtin_clz(j - i + 1);
     int m = j + 1 - (1 << t);
     return combine(a[t][i], a[t][m]);
   }
