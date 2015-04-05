@@ -53,42 +53,6 @@ int MODP(int64 x) {
   return r;
 }
 
-template <class T> class RangeUpdateArrayOffline {
-  vector<T> diff;
-  int n;
-  
-public:
-  RangeUpdateArrayOffline() {}
-  
-  RangeUpdateArrayOffline(int n) {
-    init(n);
-  }
-  
-  void init(int n) {
-    this->n = n;
-    diff.resize(n + 1);
-  }
-  
-  // Do a[k] = a[k] + v for i <= k <= j
-  // O(1)
-  void add(int i, int j, T v) {
-    assert(1 <= i && i <= j && j <= n);
-    diff[i] += v;
-    if (j + 1 <= n) {
-      diff[j + 1] -= v;
-    }
-  }
-  
-  vector<T> getArray() {
-    vector<T> ret(n + 1);
-    ret[0] = 0;
-    for_inc_range(i, 1, n) {
-      ret[i] = ret[i - 1] + diff[i];
-    }
-    return ret;
-  }
-  
-};
 
 // Note: 0-base index
 template<class T> class ZFunction {
@@ -120,45 +84,65 @@ public:
   }
 };
 
+// 0 based index
+template<class T> class StringPeriod {
+  int n;
+  vector<int> period; // period[i] = min{l, s[0..(l - 1)] is a base string of s[0..i]}
+public:
+  // O(nlogn)
+  template<class Iterator> StringPeriod(Iterator begin, Iterator end) {
+    n = (int) (end - begin);
+    period.resize(n);
+    ZFunction<char> z(begin, end);
+    
+    for_dec_range(len, n, 1) {
+      for (int end = len - 1; end < n; end += len) {
+        int start = end - len + 1;
+        if (z.get(start) < len) break;
+        period[end] = len;
+      }
+    }
+  }
+  
+  int get(int i) const {
+    assert(0 <= i && i < n);
+    return period[i];
+  }
+};
+
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
 
-// Zepto 2015 - D
-
-int n, k;
+int nTest;
+int n;
 string s;
+
+void solve() {
+  StringPeriod<char> p(s.begin(), s.end());
+  
+  for_inc(i, n) {
+    if (p.get(i) != (i + 1)) {
+      cout << i + 1 << " " << (i + 1) / p.get(i) << endl;
+    }
+  }
+}
 
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
-  freopen("input2.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
-  cin >> n >> k;
-  cin >> s;
-  ZFunction<char> z(s.begin(), s.end());
-  
-  RangeUpdateArrayOffline<int> good(n);
-  
-  for (int ablen = 1; ablen * k <= n; ++ablen) {
-    if (z.get(ablen) >= ablen * (k - 1)) {
-      int l = ablen * k - 1;
-      int r = l+ min(ablen, z.get(ablen * k));
-      good.add(l + 1, r + 1, 1);
-    }
+  cin >> nTest;
+  for_inc_range(test, 1, nTest) {
+    cin >> n;
+    cin >> s;
+    cout << "Test case #" << test << endl;
+    solve();
+    cout << endl;
   }
-  
-  vector<int> ret = good.getArray();
-  string ans = s;
-  for_inc_range(i, 1, n) {
-    if (ret[i] > 0) {
-      ans[i - 1] = '1';
-    } else {
-      ans[i - 1] = '0';
-    }
-  }
-  cout << ans << endl;
   return 0;
 }

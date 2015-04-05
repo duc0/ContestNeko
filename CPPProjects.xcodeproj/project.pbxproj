@@ -72,6 +72,7 @@
 		22D334E11AD09D4800507631 /* ZFunction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ZFunction.cpp; sourceTree = "<group>"; };
 		22D334E31AD09D7500507631 /* RangeUpdateArrayOffline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RangeUpdateArrayOffline.cpp; sourceTree = "<group>"; };
 		22D334E41AD09D8900507631 /* PrefixFunction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PrefixFunction.cpp; sourceTree = "<group>"; };
+		22D334E51AD0C9D300507631 /* StringPeriod.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = StringPeriod.cpp; sourceTree = "<group>"; };
 		22FF7C951AB007F100C01FCB /* WeightedTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WeightedTree.cpp; sourceTree = "<group>"; };
 		22FF7C961AB00E5A00C01FCB /* RangeUpdateTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RangeUpdateTree.cpp; sourceTree = "<group>"; };
 		22FF7C971AB00E6C00C01FCB /* TreeToArray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TreeToArray.cpp; sourceTree = "<group>"; };
@@ -169,6 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				22D334E41AD09D8900507631 /* PrefixFunction.cpp */,
+				22D334E51AD0C9D300507631 /* StringPeriod.cpp */,
 				592559991A983EEB00A3BBB8 /* SuffixArrayLCP.cpp */,
 				2267A1191ABFD3FF0035031F /* SuffixAutomata.cpp */,
 				22D334E11AD09D4800507631 /* ZFunction.cpp */,
