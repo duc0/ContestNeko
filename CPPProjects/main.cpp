@@ -1,6 +1,6 @@
-//#define SUBMIT
+#define SUBMIT
 
-#define C11
+//#define C11
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
@@ -69,5 +69,60 @@ int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n, m, nQuery;
+  cin >> n >> m >> nQuery;
+  
+  vector< vector<int> > adj(n + 1);
+  for (int i = 0; i < m; ++i) {
+    int u, v;
+    cin >> u >> v;
+    adj[u].push_back(v);
+    adj[v].push_back(u);
+  }
+  
+  vector< vector< vector<short> > > ans(2);
+  ans[0].resize(n + 1);
+  ans[1].resize(n + 1);
+  for (int u = 1; u <= n; ++u) {
+    ans[0][u].resize(n + 1);
+    ans[1][u].resize(n + 1);
+  }
+  
+  for (int start = 1; start <= n; ++start) {
+    if (adj[start].empty()) continue;
+    queue< pair<int, int> > q;
+    q.push(make_pair(start, 0));
+    vector< vector<bool> > visit(2);
+    visit[0].resize(n + 1);
+    visit[1].resize(n + 1);
+    visit[0][start] = true;
+    ans[0][start][start] = 1;
+    
+    while (!q.empty()) {
+      pair<int, int> cur = q.front();
+      q.pop();
+      int u = cur.first;
+      for (int i = 0; i < (int) adj[u].size(); ++i) {
+        int v = adj[u][i];
+        if (!visit[1 - cur.second][v]) {
+          q.push(make_pair(v, 1 - cur.second));
+          ans[1 - cur.second][start][v] = ans[cur.second][start][u] + 1;
+          visit[1 - cur.second][v] = true;
+        }
+      }
+    }
+  }
+  
+  while (nQuery--) {
+    int s, t, d;
+    cin >> s >> t >> d;
+    int a = ans[d % 2][s][t];
+    if (a != 0 && a - 1 <= d) {
+      cout << "TAK" << endl;
+    } else {
+      cout << "NIE" << endl;
+    }
+  }
   return 0;
 }
