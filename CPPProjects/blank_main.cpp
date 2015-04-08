@@ -1,5 +1,7 @@
 //#define SUBMIT
 
+#define C11
+
 #ifdef SUBMIT
 #define LOGLEVEL 0
 #define NDEBUG
@@ -17,19 +19,22 @@
 #include <set>
 #include <cmath>
 #include <cstdlib>
-#include <array>
-#include <type_traits>
 #include <queue>
 #include <stack>
 #include <functional>
 #include <sstream>
-#include <unordered_set>
-#include <unordered_map>
 #include <deque>
 #include <climits>
 #include <cfloat>
-#include <random>
 #include <bitset>
+
+#ifdef C11
+#include <array>
+#include <type_traits>
+#include <random>
+#include <unordered_set>
+#include <unordered_map>
+#endif
 
 using namespace std;
 
@@ -61,6 +66,7 @@ void testGen() {
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
+  //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
   return 0;
