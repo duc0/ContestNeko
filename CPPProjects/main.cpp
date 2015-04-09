@@ -69,5 +69,22 @@ int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  int nTest;
+  cin >> nTest;
+  while (nTest--) {
+    int64 minL, maxL;
+    cin >> minL >> maxL;
+    
+    int64 cnt = 0;
+    for_inc_range(l, minL, maxL) {
+      cnt += pow(10, l);
+    }
+    
+    if (cnt > 1000000) {
+      cout << "YES" << endl;
+    } else {
+      cout << "NO" << endl;
+    }
+  }
   return 0;
 }
