@@ -63,11 +63,73 @@ void testGen() {
   fclose(stdout);
 }
 
+int intersect_cnt(const set<int> &a, const set<int> &b) {
+  int cnt = 0;
+  for (int s: b) {
+    if (a.count(s)) ++cnt;
+  }
+  return cnt;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int nFile;
+  cin >> nFile;
+  
+  vector<set<int>> file(nFile);
+  
+  for_inc(i, nFile) {
+    int c;
+    cin >> c;
+    repeat(c) {
+      int x;
+      cin >> x;
+      file[i].insert(x);
+    }
+  }
+  
+  int nQuery;
+  cin >> nQuery;
+  repeat(nQuery) {
+    int qType;
+    cin >> qType;
+    int c;
+    cin >> c;
+    set<int> a;
+    repeat(c) {
+      int x;
+      cin >> x;
+      a.insert(x);
+    }
+
+    int ans = 0;
+    if (qType == 1) {
+      for_inc(i, nFile) {
+        if (intersect_cnt(file[i], a) == a.size()) {
+          ans++;
+        }
+      }
+    } else if (qType == 2) {
+      for_inc(i, nFile) {
+        if (intersect_cnt(file[i], a) > 0) {
+          ans++;
+        }
+      }
+    } else if (qType == 3) {
+      for_inc(i, nFile) {
+        int sz = intersect_cnt(file[i], a);
+        if (sz > 0 && sz < a.size()) {
+          ans++;
+        }
+      }
+    }
+    
+    cout << ans << endl;
+  }
   return 0;
 }
