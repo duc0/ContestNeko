@@ -38,7 +38,9 @@
 
 using namespace std;
 
-#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+#define LOG(l, x)                                                              \
+  if (l <= LOGLEVEL)                                                           \
+  cout << x << endl
 
 #define int64 long long
 #define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
@@ -54,29 +56,37 @@ using namespace std;
 #define MOD 1000000007
 int MODP(int64 x) {
   int r = x % MOD;
-  if (r < 0) r += MOD;
+  if (r < 0)
+    r += MOD;
   return r;
 }
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
+  int n = 1000;
+  cout << n << endl;
+  repeat(n) {
+    repeat(1000) {
+      cout << (char)(rand() % 1 + 'a');
+    }
+    cout << endl;
+  }
   fclose(stdout);
 }
 
-template<int BASE, int64 MODULO> class StringHash {
-  template<int B, int64 M> friend class StringHasher;
+template <int BASE, int64 MODULO> class StringHash {
+  template <int B, int64 M> friend class StringHasher;
   vector<int64> hash;
+
 public:
-  size_t getSize() const {
-    return hash.size();
-  }
+  size_t getSize() const { return hash.size(); }
 };
 
-template<int BASE, int64 MODULO> class StringHasher {
+template <int BASE, int64 MODULO> class StringHasher {
   static int64 getBasePower(int n) {
     static vector<int64> power; // cache
     if (n > (int)power.size() - 1) {
-      int cur = (int) power.size() - 1;
+      int cur = (int)power.size() - 1;
       power.resize(n + 1);
       for_inc_range(i, cur + 1, n) {
         if (i == 0) {
@@ -88,9 +98,10 @@ template<int BASE, int64 MODULO> class StringHasher {
     }
     return power[n];
   }
-  
+
 public:
-  template<class Iterator> static StringHash<BASE, MODULO> getHash(Iterator begin, Iterator end) {
+  template <class Iterator>
+  static StringHash<BASE, MODULO> getHash(Iterator begin, Iterator end) {
     StringHash<BASE, MODULO> h;
     int n = (int)(end - begin);
     h.hash.resize(n);
@@ -103,190 +114,170 @@ public:
     }
     return h;
   }
-  
+
   static int64 getHashValue(const StringHash<BASE, MODULO> &sh) {
     return sh.hash[sh.getSize() - 1];
   }
-  
-  static int64 getHashValue(const StringHash<BASE, MODULO> &sh, int first, int len) {
+
+  static int64 getHashValue(const StringHash<BASE, MODULO> &sh, int first,
+                            int len) {
     assert(0 <= first && first < sh.getSize());
     assert(len >= 1);
     assert(first + len - 1 < sh.getSize());
-    
+
     int last = first + len - 1;
-    
-    if (first == 0) return sh.hash[last];
-    
-    int64 ret = (sh.hash[last] - sh.hash[first - 1] * getBasePower(len)) % MODULO;
-    if (ret < MODULO) ret += MODULO;
+
+    if (first == 0)
+      return sh.hash[last];
+
+    int64 ret =
+        (sh.hash[last] - sh.hash[first - 1] * getBasePower(len)) % MODULO;
+    if (ret < MODULO)
+      ret += MODULO;
     return ret;
   }
-  
-  static int64 getHashValueConcat(const StringHash<BASE, MODULO> &sh1, const StringHash<BASE, MODULO> &sh2) {
-    
-    return (getHashValue(sh1) * getBasePower((int)sh2.getSize()) + getHashValue(sh2)) % MODULO;
+
+  static int64 getHashValueConcat(const StringHash<BASE, MODULO> &sh1,
+                                  const StringHash<BASE, MODULO> &sh2) {
+
+    return (getHashValue(sh1) * getBasePower((int)sh2.getSize()) +
+            getHashValue(sh2)) %
+           MODULO;
   }
-  
 };
 
-template <class T> class Network {
-  struct Edge {
-    int u, v;
-    T f, c;
-  };
-  vector<Edge> edgeList;
+class BipartiteGraph {
+  friend class BipartiteMatching;
+
   vector<vector<int>> adj;
-  
+  int nLeft, nRight;
+
+  void reset(int nLeft, int nRight) {
+    this->nLeft = nLeft;
+    this->nRight = nRight;
+    adj.resize(nLeft + 1);
+    for_inc_range(u, 1, nLeft) adj[u].clear();
+  }
+
 public:
-  vector<int> &getAdjacent(int u) { return adj[u]; }
-  
-  Edge &getEdge(int i) { return edgeList[i]; }
-  
-  void addEdge(int u, int v, T c) {
-    Edge e = {u, v, 0, c};
-    adj[u].push_back((int)edgeList.size());
-    adj[v].push_back((int)edgeList.size());
-    edgeList.push_back(e);
+  BipartiteGraph(int nLeft, int nRight) {
+    reset(nLeft, nRight);
   }
-  size_t getSize() { return adj.size(); }
-  void resetFlow() {
-    for (auto &pe : edgeList)
-      pe.f = 0;
+
+  void addEdge(int x, int y) {
+    assert(1 <= x && x <= nLeft);
+    assert(1 <= y && y <= nRight);
+    adj[x].push_back(y);
   }
-  void init(int n) {
-    edgeList.clear();
-    adj.resize(n);
-    for (auto &au : adj)
-      au.clear();
-  }
-  Network(int n) { init(n); }
 };
 
-template <class T> class Dinic {
-  Network<T> &g;
-  int s, t;
-  vector<T> dist;
-  vector<bool> block;
-  const T INF = numeric_limits<T>::max() / 2;
-  
-  bool computeDist() {
-    queue<int> q;
-    q.push(t);
-    fill(dist.begin(), dist.end(), -1);
-    dist[t] = 0;
-    while (!q.empty()) {
-      int u = q.front();
-      q.pop();
-      for (auto pi : g.getAdjacent(u)) {
-        auto &e = g.getEdge(pi);
-        int v = -1;
-        if (e.v == u && e.f < e.c)
-          v = e.u;
-        else if (e.u == u && e.f > 0)
-          v = e.v;
-        if (v != -1 && dist[v] == -1) {
-          dist[v] = dist[u] + 1;
-          q.push(v);
-          if (v == s)
-            return true;
+// O(V^3)
+struct BipartiteMatching {
+  vector<int> pre;
+  vector<int> mx, my;
+  int nMatch;
+  const BipartiteGraph &g;
+
+  bool match(int x) {
+    if (x == -1)
+      return true;
+    for (int y : g.adj[x]) {
+      if (pre[y] != -1)
+        continue;
+      pre[y] = x;
+      if (match(my[y])) {
+        my[y] = x;
+        mx[x] = y;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void greedyMatch() {
+    for_inc_range(x, 1, g.nLeft) {
+      if (mx[x] == -1) {
+        for (int y : g.adj[x]) {
+          if (my[y] == -1) {
+            mx[x] = y;
+            my[y] = x;
+            ++nMatch;
+            break;
+          }
         }
       }
     }
-    return dist[s] != -1;
   }
-  T findAugmentingPath(int u, T delta) {
-    if (u == t)
-      return delta;
-    T inc;
-    for (auto pi : g.getAdjacent(u)) {
-      auto &e = g.getEdge(pi);
-      int v = -1, i = 0, d = 0;
-      if (e.u == u && e.f < e.c) {
-        v = e.v;
-        i = 1;
-        d = e.c - e.f;
-      } else if (e.v == u && e.f > 0) {
-        v = e.u;
-        i = -1;
-        d = e.f;
-      }
-      if (v != -1 && !block[v] && dist[u] == dist[v] + 1 &&
-          (inc = findAugmentingPath(v, min(delta, d)))) {
-        e.f += i * inc;
-        return inc;
-      }
-    }
-    block[u] = true;
-    return 0;
-  }
-  
+
 public:
-  T totalFlow;
-  Dinic(Network<T> &g, int s, int t) : g(g), s(s), t(t) {
-    g.resetFlow();
-    totalFlow = 0;
-    dist.resize(g.getSize());
-    block.resize(g.getSize());
-  }
-  T run() {
-    while (computeDist()) {
-      fill(block.begin(), block.end(), false);
-      while (T inc = findAugmentingPath(s, INF))
-        totalFlow += inc;
+  BipartiteMatching(const BipartiteGraph &g) : g(g) {
+    nMatch = 0;
+    
+    mx.resize(g.nLeft + 1);
+    for_inc_range(x, 1, g.nLeft) mx[x] = -1;
+    my.resize(g.nRight + 1);
+    for_inc_range(y, 1, g.nRight) my[y] = -1;
+    pre.resize(g.nRight + 1);
+
+    greedyMatch();
+    for_inc_range(x, 1, g.nLeft) if (mx[x] == -1) {
+      for_inc_range(y, 1, g.nRight) pre[y] = -1;
+      if (match(x)) {
+        ++nMatch;
+      }
     }
-    return totalFlow;
   }
+
+  int getMaximumMatchingSize() const { return nMatch; }
 };
 
 #define BASE 300
 #define HMOD 100000000000000007LL
 
+char s[1010];
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("biginput1.txt", "r", stdin);
 #endif
-  
+
   while (1) {
     int n;
-    if (!(cin >> n)) break;
+    if (scanf("%d", &n) != 1) {
+      break;
+    }
     vector<StringHash<BASE, HMOD>> sh;
     vector<StringHash<BASE, HMOD>> rsh;
     for_inc(i, n) {
-      string s;
-      cin >> s;
-      sh.push_back(StringHasher<BASE, HMOD>::getHash(s.begin(), s.end()));
-      rsh.push_back(StringHasher<BASE, HMOD>::getHash(s.rbegin(), s.rend()));
+      scanf("%s", s);
+      string ss(s);
+      sh.push_back(StringHasher<BASE, HMOD>::getHash(ss.begin(), ss.end()));
+      rsh.push_back(StringHasher<BASE, HMOD>::getHash(ss.rbegin(), ss.rend()));
     }
-    
-    Network<int> g(2 * n + 2);
-    int s = n + 1;
-    int t = n + 2;
-    for_inc_range(i, 1, n) {
-      g.addEdge(s, i, 1);
-      g.addEdge(n + i, t, 1);
-      
-    }
+
+    BipartiteGraph g(n, n);
     for_inc(i, n) for_inc(j, i) {
       bool good = false;
-      if (StringHasher<BASE, HMOD>::getHashValueConcat(rsh[j], rsh[i]) == StringHasher<BASE, HMOD>::getHashValueConcat(sh[i], sh[j])) {
+      if (StringHasher<BASE, HMOD>::getHashValueConcat(rsh[j], rsh[i]) ==
+          StringHasher<BASE, HMOD>::getHashValueConcat(sh[i], sh[j])) {
         good = true;
       }
-      
+
       if (!good) {
-        good = StringHasher<BASE, HMOD>::getHashValueConcat(rsh[i], rsh[j]) == StringHasher<BASE, HMOD>::getHashValueConcat(sh[j], sh[i]);
+        good = StringHasher<BASE, HMOD>::getHashValueConcat(rsh[i], rsh[j]) ==
+               StringHasher<BASE, HMOD>::getHashValueConcat(sh[j], sh[i]);
       }
-      
+
       if (good) {
-        //LOG(1, i + 1 << " " << j + 1);
-        g.addEdge(j + 1, n + i + 1, 1);
-        g.addEdge(i + 1, n + j + 1, 1);
+        // LOG(1, i + 1 << " " << j + 1);
+        g.addEdge(i + 1, j + 1);
+        g.addEdge(j + 1, i + 1);
       }
     }
-    Dinic<int> dinic(g, s, t);
-    int maxFlow = dinic.run();
-    cout << n - maxFlow / 2 << endl;
+    BipartiteMatching matching(g);
+    cout << matching.getMaximumMatchingSize() / 2 << endl;
   }
   return 0;
 }
