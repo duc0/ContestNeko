@@ -1,11 +1,41 @@
-5 5
-1 2 1 1 2
-1 2
-1 3
-2 4
-2 5
-1 2 3
-1 1 2
-2 1
-2 2
-2 4
+4
+appa
+
+10
+zaabaazabc
+
+10
+aaaaazaaaa
+5
+zzzzz
+
+5
+abcba
+
+
+5
+aaaaa
+
+5
+cabac
+
+4
+caba
+
+4
+aabb
+
+4
+adfg
+
+8
+abadfffd
+
+7
+cabdbaf
+
+4
+abba
+
+5
+ababa
