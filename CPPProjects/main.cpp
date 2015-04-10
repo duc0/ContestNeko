@@ -77,7 +77,7 @@ void testGen() {
 template <int BASE, int64 MODULO> class StringHash {
   template <int B, int64 M> friend class StringHasher;
   vector<int64> hash;
-
+  
 public:
   size_t getSize() const { return hash.size(); }
 };
@@ -98,7 +98,7 @@ template <int BASE, int64 MODULO> class StringHasher {
     }
     return power[n];
   }
-
+  
 public:
   template <class Iterator>
   static StringHash<BASE, MODULO> getHash(Iterator begin, Iterator end) {
@@ -114,35 +114,36 @@ public:
     }
     return h;
   }
-
+  
   static int64 getHashValue(const StringHash<BASE, MODULO> &sh) {
     return sh.hash[sh.getSize() - 1];
   }
-
+  
   static int64 getHashValue(const StringHash<BASE, MODULO> &sh, int first,
                             int len) {
+    if (len == 0) return 0;
     assert(0 <= first && first < sh.getSize());
     assert(len >= 1);
     assert(first + len - 1 < sh.getSize());
-
+    
     int last = first + len - 1;
-
+    
     if (first == 0)
       return sh.hash[last];
-
+    
     int64 ret =
-        (sh.hash[last] - sh.hash[first - 1] * getBasePower(len)) % MODULO;
-    if (ret < MODULO)
+    (sh.hash[last] - sh.hash[first - 1] * getBasePower(len)) % MODULO;
+    if (ret < 0)
       ret += MODULO;
     return ret;
   }
-
+  
   static int64 getHashValueConcat(const StringHash<BASE, MODULO> &sh1,
                                   const StringHash<BASE, MODULO> &sh2) {
-
+    
     return (getHashValue(sh1) * getBasePower((int)sh2.getSize()) +
             getHashValue(sh2)) %
-           MODULO;
+    MODULO;
   }
 };
 
@@ -249,6 +250,7 @@ public:
   }
 };
 
+// Edmonds O(V(V+E))
 class MaximumMatching {
   const UndirectedGraph &g;
   vector<int> match;
@@ -360,6 +362,7 @@ public:
 
 char s[1010];
 
+// Hackerrank cisco 2015, joining byte blocks
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
@@ -376,7 +379,11 @@ int main() {
     vector<StringHash<BASE, HMOD>> rsh;
     for_inc(i, n) {
       scanf("%s", s);
-      string ss(s);
+      string cs(s);
+      vector<int> ss(cs.size());
+      for_inc(k, cs.size()) {
+        ss[k] = cs[k] - 'a';
+      }
       sh.push_back(StringHasher<BASE, HMOD>::getHash(ss.begin(), ss.end()));
       rsh.push_back(StringHasher<BASE, HMOD>::getHash(ss.rbegin(), ss.rend()));
     }
