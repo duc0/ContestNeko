@@ -1,5 +1,10 @@
-4 2
-..
-..
-..
-..
+9
+aabbaabb
+bbaabbaa
+aa
+bb
+a
+bbaa
+bba
+bab
+ab

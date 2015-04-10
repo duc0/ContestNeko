@@ -1,11 +1,35 @@
-5 5
-1 2 1 1 2
-1 2
-1 3
-2 4
-2 5
-1 2 3
-1 1 2
-2 1
-2 2
-2 4
+6
+aabb
+bbaa
+bb
+ccdd
+ddcc
+dd
+5
+a
+b
+c
+db
+ae
+4
+ac
+b
+ba
+a
+6
+aaababa
+aa
+ababaaa
+baaa
+a
+b
+9
+aabbaabb
+bbaabbaa
+aa
+bb
+a
+bbaa
+bba
+bab
+ab
