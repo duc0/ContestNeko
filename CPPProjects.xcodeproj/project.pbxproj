@@ -75,6 +75,7 @@
 		22D334E51AD0C9D300507631 /* StringPeriod.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = StringPeriod.cpp; sourceTree = "<group>"; };
 		22D334E61AD77E6A00507631 /* BipartiteMatching.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BipartiteMatching.cpp; sourceTree = "<group>"; };
 		22D334E71AD77E9400507631 /* BipartiteGraph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BipartiteGraph.cpp; sourceTree = "<group>"; };
+		22D334E81AD78E9C00507631 /* StringHasher.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = StringHasher.cpp; sourceTree = "<group>"; };
 		22FF7C951AB007F100C01FCB /* WeightedTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WeightedTree.cpp; sourceTree = "<group>"; };
 		22FF7C961AB00E5A00C01FCB /* RangeUpdateTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RangeUpdateTree.cpp; sourceTree = "<group>"; };
 		22FF7C971AB00E6C00C01FCB /* TreeToArray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TreeToArray.cpp; sourceTree = "<group>"; };
@@ -173,6 +174,7 @@
 			isa = PBXGroup;
 			children = (
 				22D334E41AD09D8900507631 /* PrefixFunction.cpp */,
+				22D334E81AD78E9C00507631 /* StringHasher.cpp */,
 				22D334E51AD0C9D300507631 /* StringPeriod.cpp */,
 				592559991A983EEB00A3BBB8 /* SuffixArrayLCP.cpp */,
 				2267A1191ABFD3FF0035031F /* SuffixAutomata.cpp */,
