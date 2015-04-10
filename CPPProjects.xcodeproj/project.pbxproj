@@ -77,6 +77,9 @@
 		22D334E71AD77E9400507631 /* BipartiteGraph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BipartiteGraph.cpp; sourceTree = "<group>"; };
 		22D334E81AD78E9C00507631 /* StringHasher.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = StringHasher.cpp; sourceTree = "<group>"; };
 		22D334E91AD7910700507631 /* GeneralMatching.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GeneralMatching.cpp; sourceTree = "<group>"; };
+		22D334EA1AD83B0400507631 /* MaximumCliqueInterval.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaximumCliqueInterval.cpp; sourceTree = "<group>"; };
+		22D334EB1AD83B1900507631 /* Interval.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Interval.cpp; sourceTree = "<group>"; };
+		22D334EC1AD83B2600507631 /* IntervalList.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = IntervalList.cpp; sourceTree = "<group>"; };
 		22FF7C951AB007F100C01FCB /* WeightedTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WeightedTree.cpp; sourceTree = "<group>"; };
 		22FF7C961AB00E5A00C01FCB /* RangeUpdateTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RangeUpdateTree.cpp; sourceTree = "<group>"; };
 		22FF7C971AB00E6C00C01FCB /* TreeToArray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TreeToArray.cpp; sourceTree = "<group>"; };
@@ -127,6 +130,8 @@
 				226CA9A81A9907FE00A89905 /* BigInteger.cpp */,
 				226CA9AD1A9D854900A89905 /* Board.cpp */,
 				228786481ACD0640009EA002 /* GF2Matrix.cpp */,
+				22D334EB1AD83B1900507631 /* Interval.cpp */,
+				22D334EC1AD83B2600507631 /* IntervalList.cpp */,
 				226CA9AE1A9DA22700A89905 /* Matrix.cpp */,
 				226CA9AC1A9AFDFB00A89905 /* ModInt.cpp */,
 				22161D241AA4016C006BA7D5 /* Point2D.cpp */,
@@ -199,6 +204,7 @@
 				2267A1101AB17C460035031F /* SubtreeSize.cpp */,
 				22161D2C1AA6E0B4006BA7D5 /* TopologicalSort.cpp */,
 				22FF7C971AB00E6C00C01FCB /* TreeToArray.cpp */,
+				22D334EA1AD83B0400507631 /* MaximumCliqueInterval.cpp */,
 			);
 			name = graph;
 			sourceTree = "<group>";
