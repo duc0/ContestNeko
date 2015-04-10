@@ -62,8 +62,8 @@ void testGen() {
   freopen("input3.txt", "w", stdout);
   cout << 100 << endl;
   repeat(100) {
-    cout << 5 << endl;
-    repeat(5) {
+    cout << 7 << endl;
+    repeat(7) {
       int l = rand() % 10 + 1;
       int len = rand() % 10 + 1;
       int r = l + len;
@@ -231,45 +231,87 @@ public:
   int getSize() const {
     return n;
   }
+  
+  // Create a new interval list with right endpoints < x.
+  IntervalList<T> filterRightBefore(T x) const {
+    IntervalList<T> ret;
+    vector<int> mapId(n);
+    for_inc(i, n) {
+      if (a[i].getRight() < x) {
+        ret.a.push_back(a[i]);
+        mapId[i] = (int) ret.a.size() - 1;
+      }
+    }
+    for_inc(i,n) {
+      if (a[sortLeft[i]].getRight() < x) {
+        ret.sortLeft.push_back(mapId[sortLeft[i]]);
+      }
+      if (a[sortRight[i]].getRight() < x) {
+        ret.sortRight.push_back(mapId[sortRight[i]]);
+      }
+    }
+    ret._lock = true;
+    ret.n = (int) ret.a.size();
+    return ret;
+  }
 };
 
 template <class T> class MaximumCliqueInterval {
-  vector<int> maxClique;
-  vector<int> culmMaxClique;
+  vector<int> maxLeft;
+  vector<int> maxRight;
+  vector<int> culmMaxRight;
   int n;
   const IntervalList<T> &a;
 public:
   MaximumCliqueInterval(const IntervalList<T> &a): a(a) {
     this->n = a.getSize();
+    maxLeft.resize(n + 1);
+    maxRight.resize(n + 1);
+    culmMaxRight.resize(n + 1);
     
-    maxClique.resize(n + 1);
-    culmMaxClique.resize(n + 1);
-    
-    for_inc_range(i, 1, n) {
-      const Interval<T> &cur = a.getSortedRightInterval(i);
-      int j = BinarySearch::binarySearchMin<int>(1, i, [&](int i){return a.getSortedRightInterval(i).getRight() >= cur.getLeft();});
-      maxClique[i] = i - j + 1;
-      culmMaxClique[i] = max(culmMaxClique[i - 1], maxClique[i]);
+    // Sweeping line
+    int il = 1, ir = 1;
+    int cur = 0;
+    while (il <= n || ir <= n) {
+      bool chooseL;
+      if (il > n) {
+        chooseL = false;
+      } else if (ir > n) {
+        chooseL = true;
+      } else {
+        // Note the tie breaker
+        chooseL = a.getSortedLeftInterval(il).getLeft() <= a.getSortedRightInterval(ir).getRight();
+      }
+      if (chooseL) {
+        cur++;
+        maxLeft[il] = cur;
+        il++;
+      } else {
+        maxRight[ir] = cur;
+        culmMaxRight[ir] = max(culmMaxRight[ir - 1], cur);
+        cur--;
+        ir++;
+      }
     }
+
   }
   
-  // idx is the interval index when sorted by right endpoints.
-  
+  // idx is the interval index when sorted by left endpoints.
   // Get max clique size that has the interval i when considering intervals 1..i.
   int getMaxCliqueSizeAtIdx(int idx) const {
     assert(1 <= idx && idx <= n);
-    return maxClique[idx];
+    return maxLeft[idx];
   }
   
-  int getMaxCliqueSizeUntilIdx(int idx) const {
-    assert(0 <= idx && idx <= n);
-    return culmMaxClique[idx];
-  }
-  
+  // Get max clique size when all the intervals have the right endpoint <= x
   int getMaxCliqueSizeUntil(T x) const {
     int maxIdx = BinarySearch::binarySearchMax<int>(1, n, [&](int i){return a.getSortedRightInterval(i).getRight() <= x;});
     if (maxIdx == 0) return 0;
-    return getMaxCliqueSizeUntilIdx(maxIdx);
+    return culmMaxRight[maxIdx];
+  }
+  
+  int getMaxCliqueSize() const {
+    return culmMaxRight[n];
   }
   
 };
@@ -294,6 +336,34 @@ int bruteForce(IntervalList<int> &a) {
   return ans;
 }
 
+int solve(IntervalList<int> &a) {
+  int n = a.getSize();
+  MaximumCliqueInterval<int> mci(a);
+  
+  int ans = 0;
+  for_inc_range(i, 1, n) {
+    int m = mci.getMaxCliqueSizeAtIdx(i);
+    
+    const Interval<int> &cur = a.getSortedLeftInterval(i);
+    int x = cur.getLeft();
+    
+    IntervalList<int> before = a.filterRightBefore(x);
+    int mBefore = 0;
+    if (before.getSize() > 0) {
+      MaximumCliqueInterval<int> mci2(before);
+      mBefore = mci2.getMaxCliqueSize();
+    }
+    ans = max(ans, m + mBefore);
+    /*LOG(1, a.getSortedLeftInterval(i) << " " << m << " " << mBefore);
+    for_inc_range(j, 1, before.getSize()) {
+      LOG(1, "Before #" << j << " " << before.getSortedLeftInterval(j));
+    }*/
+  }
+  
+  return ans;
+}
+
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
@@ -314,24 +384,11 @@ int main() {
     }
   
     a.lock();
-    
-    MaximumCliqueInterval<int> mci(a);
-    int ans = 0;
-    for_inc_range(i, 1, n) {
-      LOG(1, a.getSortedRightInterval(i));
-      LOG(1, mci.getMaxCliqueSizeAtIdx(i) << " " << mci.getMaxCliqueSizeUntil(a.getSortedRightInterval(i).getLeft() - 1));
-      
-      int cur = mci.getMaxCliqueSizeAtIdx(i) + mci.getMaxCliqueSizeUntil(a.getSortedRightInterval(i).getLeft() - 1);
-      ans = max(ans, cur);
-    }
-    
-    for_inc_range(i, 1, n) {
-      LOG(1, a.getInterval(i));
-    }
-
-    LOG(1, "Bruteforce: " << bruteForce(a));
-    assert(ans == bruteForce(a));
+ 
+    int ans = solve(a);
+    //LOG(1, "Bruteforce: " << bruteForce(a));
     cout << "Case " << test << ": " << ans << endl;
+    //assert(ans == bruteForce(a));
   }
   return 0;
 }
