@@ -73,6 +73,8 @@
 		22D334E31AD09D7500507631 /* RangeUpdateArrayOffline.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RangeUpdateArrayOffline.cpp; sourceTree = "<group>"; };
 		22D334E41AD09D8900507631 /* PrefixFunction.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PrefixFunction.cpp; sourceTree = "<group>"; };
 		22D334E51AD0C9D300507631 /* StringPeriod.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = StringPeriod.cpp; sourceTree = "<group>"; };
+		22D334E61AD77E6A00507631 /* BipartiteMatching.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BipartiteMatching.cpp; sourceTree = "<group>"; };
+		22D334E71AD77E9400507631 /* BipartiteGraph.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BipartiteGraph.cpp; sourceTree = "<group>"; };
 		22FF7C951AB007F100C01FCB /* WeightedTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = WeightedTree.cpp; sourceTree = "<group>"; };
 		22FF7C961AB00E5A00C01FCB /* RangeUpdateTree.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RangeUpdateTree.cpp; sourceTree = "<group>"; };
 		22FF7C971AB00E6C00C01FCB /* TreeToArray.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TreeToArray.cpp; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 				22161D2A1AA5A40E006BA7D5 /* Trie.cpp */,
 				226CA9AB1A9AE72200A89905 /* UndirectedGraph.cpp */,
 				22FF7C951AB007F100C01FCB /* WeightedTree.cpp */,
+				22D334E71AD77E9400507631 /* BipartiteGraph.cpp */,
 			);
 			name = data_structures;
 			sourceTree = "<group>";
@@ -191,6 +194,7 @@
 				2267A1101AB17C460035031F /* SubtreeSize.cpp */,
 				22161D2C1AA6E0B4006BA7D5 /* TopologicalSort.cpp */,
 				22FF7C971AB00E6C00C01FCB /* TreeToArray.cpp */,
+				22D334E61AD77E6A00507631 /* BipartiteMatching.cpp */,
 			);
 			name = graph;
 			sourceTree = "<group>";
