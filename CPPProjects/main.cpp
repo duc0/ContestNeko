@@ -232,6 +232,24 @@ public:
     return n;
   }
   
+  // Compress coordinates to range 0 .. n - 1
+  void compressCoordinates() {
+    set<T> c;
+    for_inc(i, n) {
+      c.insert(a[i].getLeft());
+      c.insert(a[i].getRight());
+    }
+    vector<T> v(c.begin(), c.end());
+    map<T, int> m;
+    for_inc(i, v.size()) {
+      m[v[i]] = i;
+    }
+    for_inc(i, n) {
+      a[i].first = m[a[i].first];
+      a[i].second = m[a[i].second];
+    }
+  }
+  
   // Create a new interval list with right endpoints < x.
   IntervalList<T> filterRightBefore(T x) const {
     IntervalList<T> ret;
@@ -316,6 +334,153 @@ public:
   
 };
 
+template <class T, class Q>
+using TreeMergeFunction = function<Q(const Q &, const Q &)>;
+template <class T, class Q>
+using TreeUpdateLeafFunction = function<Q(const Q &, const T &, const T &, int, int)>;
+template <class T, class Q>
+using TreeSplitFunction = function<void(Q &, Q &, Q &, T, int, int, int)>;
+template <class T, class Q>
+using TreeInitFunction = function<Q(const T&, int, int)>;
+
+template <class T, class Q> struct SegmentTree {
+  struct TreeNode {
+    bool leaf = true; // All elements in the leaf node's segment are the same
+    T value;
+    Q query;
+    int leftChild = -1,
+    rightChild =
+    -1; // index of the left and right children, -1 for no child
+  };
+  
+protected:
+  vector<TreeNode> node;
+  TreeMergeFunction<T, Q> merge;
+  TreeUpdateLeafFunction<T, Q> updateLeaf;
+  TreeSplitFunction<T, Q> split;
+  TreeInitFunction<T, Q> init;
+  const T defaultValue;
+  
+  int addNode(int l, int r) {
+    TreeNode newNode;
+    newNode.value = defaultValue;
+    node.push_back(newNode);
+    return (int)node.size() - 1;
+  }
+  
+  void splitNode(int p, int l, int r) {
+    assert(node[p].leaf);
+    int m = (l + r) / 2;
+    node[p].leaf = false;
+    if (node[p].leftChild == -1) {
+      int c = addNode(l, m);
+      node[p].leftChild = c;
+      c = addNode(m + 1, r);
+      node[p].rightChild = c;
+    }
+    int lc = node[p].leftChild;
+    int rc = node[p].rightChild;
+    node[lc].leaf = true;
+    node[rc].leaf = true;
+    node[lc].value = node[p].value;
+    node[rc].value = node[p].value;
+    split(node[p].query, node[lc].query, node[rc].query, node[p].value, l, m, r);
+  }
+  
+  void update(int p, int l, int r, int i, int j, const T &v) {
+    if (j < l || i > r)
+      return;
+    int m = (l + r) / 2;
+    if (i <= l && r <= j) { // [i,j] covers [l,r]
+      if (node[p].leaf) {
+        node[p].query = updateLeaf(node[p].query, node[p].value, v, l, r);
+        node[p].value = v;
+        return;
+      } else {
+        node[p].leaf = true;
+        node[p].value = v;
+      }
+    } else if (node[p].leaf) { // [i,j] intersects [l, r]
+      splitNode(p, l, r);
+    }
+    update(node[p].leftChild, l, m, i, j, v);
+    update(node[p].rightChild, m + 1, r, i, j, v);
+    node[p].query = merge(node[node[p].leftChild].query,
+                          node[node[p].rightChild].query);
+  }
+  
+  Q query(int p, int l, int r, int i, int j) {
+    if (i <= l && r <= j) { // [i,j] contains [l,r]
+      return node[p].query;
+    }
+    if (node[p].leaf) { // [i,j] intersects [l, r]
+      splitNode(p, l, r);
+    }
+    int m = (l + r) / 2;
+    Q ret;
+    if (j <= m) {
+      ret = query(node[p].leftChild, l, m, i, j);
+    } else if (i >= m + 1) {
+      ret = query(node[p].rightChild, m + 1, r, i, j);
+    } else {
+      ret = merge(query(node[p].leftChild, l, m, i, j), query(node[p].rightChild, m + 1, r, i, j));
+    }
+    node[p].query = merge(node[node[p].leftChild].query,
+                          node[node[p].rightChild].query);
+    return ret;
+  }
+  
+  int minIndex, maxIndex;
+  int root;
+  
+public:
+  // First way to specify a segment tree, usually use when lazy propagation is needed.
+  // Q merge(Q, Q) that merges the query from left and right children
+  // Q updateLeaf(Q cur, T oldV, T curV, int l, int r) return the updated
+  //   query in a leaf node if its old value is oldV and new value is curV
+  // split(Q& cur, Q &lChild, Q &rChild, int curV, int l, int m, int r)
+  //   modify the query in the current node and it's left and right children when
+  // a split action happens.
+  explicit SegmentTree(int minIndex, int maxIndex, T defaultValue,
+                       const TreeMergeFunction<T, Q> &merge,
+                       const TreeUpdateLeafFunction<T, Q> &updateLeaf,
+                       const TreeSplitFunction<T, Q> &split)
+  : merge(merge), updateLeaf(updateLeaf), split(split),
+  defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
+    root = addNode(minIndex, maxIndex);
+  }
+  
+  // The second way to specify a segment tree:
+  // a merge function
+  // an init function (v, l, r) that initilize the query based on
+  // the value of the node and the node interval
+  SegmentTree(int minIndex, int maxIndex, T defaultValue,
+              const TreeMergeFunction<T, Q> &merge,
+              const function<Q(T, int, int)> &init)
+  : merge(merge),
+  defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex), init(init) {
+    updateLeaf = [&] (const Q &cur, T oldV, T curV, int l, int r) {
+      return this->init(curV, l, r);
+    };
+    split = [&](Q &cur, Q &lQ, Q &rQ, T v, int l, int m, int r) {
+      lQ = this->init(v, l, m);
+      rQ = this->init(v, m + 1, r);
+    };
+    root = addNode(minIndex, maxIndex);
+  }
+  
+  
+  // Set all elements in [i, j] to be v
+  void update(int i, int j, T v) { update(root, minIndex, maxIndex, i, j, v); }
+  
+  // Query augmented data in [i, j]
+  Q query(int i, int j) { return query(root, minIndex, maxIndex, i, j); }
+  
+  // Query augmented data in the whole range
+  Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
+};
+
+
 int bruteForce(IntervalList<int> &a) {
   int n = a.getSize();
   
@@ -336,34 +501,92 @@ int bruteForce(IntervalList<int> &a) {
   return ans;
 }
 
-int solve(IntervalList<int> &a) {
+// A segment tree with two queries:
+// add(i, j, v): add all elements in range [i, j] by V
+// queryMax(i, j)
+// all 0 initially.
+template<class T> struct MaxTreeQ ;
+template<class T> class MaxTree : public SegmentTree<T, MaxTreeQ<T>> {
+public:
+  MaxTree(int minIndex, int maxIndex) :
+    SegmentTree<T, MaxTreeQ<T>>(minIndex, maxIndex, 0,
+                [](const MaxTreeQ<T> &l, const MaxTreeQ<T> &r) {return MaxTreeQ<T>(max(l.queryMax, r.queryMax), 0);},
+                [](const MaxTreeQ<T> &cur, T oldV, T newV, int l, int r) {
+                  return MaxTreeQ<T>(cur.queryMax + newV, cur.lazy + newV);
+                },
+                [](MaxTreeQ<T> &cur, MaxTreeQ<T> &lChild, MaxTreeQ<T> &rChild, T curV, int l, int m, int r) {
+                  lChild.lazy += cur.lazy;
+                  rChild.lazy += cur.lazy;
+                  lChild.queryMax += cur.lazy;
+                  rChild.queryMax += cur.lazy;
+                  cur.lazy = 0;
+                }
+                )
+  {
+  }
+  
+  T queryMax(int l, int r) {
+    return SegmentTree<T, MaxTreeQ<T>>::query(l, r).queryMax;
+  }
+  
+  T queryMax() {
+    return SegmentTree<T, MaxTreeQ<T>>::query().queryMax;
+  }
+  
+  void add (int l, int r, T v) {
+    SegmentTree<T, MaxTreeQ<T>>::update(l, r, v);
+  }
+};
+
+template<class T> struct MaxTreeQ {
+  T queryMax = 0;
+  T lazy = 0;
+  MaxTreeQ() {};
+  MaxTreeQ(T queryMax, T lazy) {
+    this->queryMax = queryMax;
+    this->lazy = lazy;
+  }
+};
+
+
+
+int solve(const IntervalList<int> &aa) {
+  IntervalList<int> a = aa;
   int n = a.getSize();
+  
+  a.compressCoordinates();
+  
   MaximumCliqueInterval<int> mci(a);
   
+  int minCoord = a.getSortedLeftInterval(1).getLeft();
+  int maxCoord = a.getSortedRightInterval(n).getRight();
+  
+  MaxTree<int> tree(minCoord, maxCoord);
+  
   int ans = 0;
+  int j = 1;
   for_inc_range(i, 1, n) {
     int m = mci.getMaxCliqueSizeAtIdx(i);
     
     const Interval<int> &cur = a.getSortedLeftInterval(i);
     int x = cur.getLeft();
     
-    IntervalList<int> before = a.filterRightBefore(x);
-    int mBefore = 0;
-    if (before.getSize() > 0) {
-      MaximumCliqueInterval<int> mci2(before);
-      mBefore = mci2.getMaxCliqueSize();
+    while (j <= n && a.getSortedRightInterval(j).getRight() < x) {
+      const Interval<int> &add = a.getSortedRightInterval(j);
+      tree.add(add.getLeft(), add.getRight(), 1);
+      j++;
+      //LOG(1, "Add " << add);
     }
-    ans = max(ans, m + mBefore);
-    /*LOG(1, a.getSortedLeftInterval(i) << " " << m << " " << mBefore);
-    for_inc_range(j, 1, before.getSize()) {
-      LOG(1, "Before #" << j << " " << before.getSortedLeftInterval(j));
-    }*/
+    
+    //LOG(1, "Query " << tree.query().queryMax);
+    ans = max(ans, m + tree.queryMax());
   }
   
   return ans;
 }
 
 
+// Cisco 2015 - Touching segments
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
@@ -372,14 +595,14 @@ int main() {
 #endif
   
   int nTest;
-  cin >> nTest;
+  scanf("%d", &nTest);
   for_inc_range(test, 1, nTest) {
     int n;
-    cin >> n;
+    scanf("%d", &n);
     IntervalList<int> a;
     for_inc_range(i, 1, n) {
       int l, r;
-      cin >> l >> r;
+      scanf("%d%d", &l, &r);
       a.addInterval(l, r);
     }
   
@@ -388,7 +611,7 @@ int main() {
     int ans = solve(a);
     //LOG(1, "Bruteforce: " << bruteForce(a));
     cout << "Case " << test << ": " << ans << endl;
-    //assert(ans == bruteForce(a));
+    assert(ans == bruteForce(a));
   }
   return 0;
 }
