@@ -15,14 +15,3 @@ bbaa
 bba
 bab
 ab
-10
-ab
-ba
-aaab
-cbaaa
-aaabc
-xxxcbaaa
-aaabcxxx
-aaa
-a
-b
