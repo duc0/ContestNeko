@@ -67,8 +67,8 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
-  //freopen("output1.txt", "w", stdout);
+  freopen("input2.txt", "r", stdin);
+  freopen("output2.txt", "w", stdout);
 #endif
   
   int nTest;
@@ -76,35 +76,25 @@ int main() {
   for_inc_range(test, 1, nTest) {
     int n;
     cin >> n;
-    int ans = 0;
     
-    map<int, int> cnt;
+    int ans = 0;
+    vector<int> a;
     repeat(n) {
       int x;
       cin >> x;
-      LOG(1, "Plate " << x);
-      cnt[x]++;
+      a.push_back(x);
+      //LOG(1, "Plate " << x);
+      ans = max(ans, x);
     }
     
-    ans = cnt.rbegin()->first;
-    
-    int totalMin = 0;
-    while (!cnt.empty()) {
-      int most = cnt.rbegin()->first;
-      int mostCount = cnt.rbegin()->second;
-      
-      if (most == 1) {
-        break;
+    for_inc_range(final, 1, ans) {
+      int totalMin = 0;
+      for (int x : a) {
+        int need = x / final;
+        if (x % final == 0) need--;
+        totalMin += need;
       }
-      
-      totalMin += mostCount;
-      int a = most/2;
-      int b = (most % 2 == 1) ? (a + 1) : a;
-      cnt.erase(most);
-      cnt[a] += mostCount;
-      cnt[b] += mostCount;
-      
-      ans = min(ans, totalMin + cnt.rbegin()->first);
+      ans = min(ans, totalMin + final);
     }
     
     cout << "Case #" << test << ": " << ans << endl;
