@@ -67,7 +67,32 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
+  freopen("output2.txt", "w", stdout);
 #endif
+  
+  int nTest;
+  cin >> nTest;
+  for_inc_range(test, 1, nTest) {
+    int n;
+    cin >> n;
+    
+    string s;
+    cin >> s;
+    
+    int total = 0;
+    int need = 0;
+    for_inc_range(i, 0, n) {
+      int cnt = s[i] - '0';
+      if (total < i) {
+        need += i - total;
+        total = i;
+      }
+      
+      total += cnt;
+    }
+    
+    cout << "Case #" << test << ": " << need << endl;
+  }
   return 0;
 }
