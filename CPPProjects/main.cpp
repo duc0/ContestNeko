@@ -68,6 +68,46 @@ int main() {
 #ifndef SUBMIT
   //testGen();
   freopen("input1.txt", "r", stdin);
+  //freopen("output1.txt", "w", stdout);
 #endif
+  
+  int nTest;
+  cin >> nTest;
+  for_inc_range(test, 1, nTest) {
+    int n;
+    cin >> n;
+    int ans = 0;
+    
+    map<int, int> cnt;
+    repeat(n) {
+      int x;
+      cin >> x;
+      LOG(1, "Plate " << x);
+      cnt[x]++;
+    }
+    
+    ans = cnt.rbegin()->first;
+    
+    int totalMin = 0;
+    while (!cnt.empty()) {
+      int most = cnt.rbegin()->first;
+      int mostCount = cnt.rbegin()->second;
+      
+      if (most == 1) {
+        break;
+      }
+      
+      totalMin += mostCount;
+      int a = most/2;
+      int b = (most % 2 == 1) ? (a + 1) : a;
+      cnt.erase(most);
+      cnt[a] += mostCount;
+      cnt[b] += mostCount;
+      
+      ans = min(ans, totalMin + cnt.rbegin()->first);
+    }
+    
+    cout << "Case #" << test << ": " << ans << endl;
+  }
   return 0;
 }
