@@ -58,9 +58,197 @@ int MODP(int64 x) {
   return r;
 }
 
+class DirectedGraph {
+  vector<vector<int>> nodeFrom;
+  vector<vector<int>> nodeTo;
+  vector<int> degIn, degOut;
+  vector<bool> erase;
+  int _minNode, _maxNode;
+public:
+  void init(bool zeroBased, int n) {
+    if (zeroBased) {
+      _minNode = 0;
+      _maxNode = n - 1;
+    } else {
+      _minNode = 1;
+      _maxNode = n;
+    }
+    nodeFrom.resize(_maxNode + 1);
+    nodeTo.resize(_maxNode + 1);
+    degIn.resize(_maxNode + 1);
+    degOut.resize(_maxNode + 1);
+    erase.resize(_maxNode + 1);
+    for_inc_range(u, _minNode, _maxNode) {
+      degIn[u] = 0;
+      degOut[u] = 0;
+      nodeFrom[u].clear();
+      nodeTo[u].clear();
+      erase[u] = false;
+    }
+  }
+  
+  int getSize() const {
+    return _maxNode - _minNode + 1;
+  }
+  
+  void addEdge(int u, int v) {
+    nodeFrom[u].push_back(v);
+    degOut[u]++;
+    
+    nodeTo[v].push_back(u);
+    degIn[v]++;
+  }
+  
+  const vector<int> getNodeFrom(int u) const {
+    vector<int> r;
+    for (auto &v: nodeFrom[u]) {
+      if (!erase[v]) {
+        r.push_back(v);
+      }
+    }
+    return r;
+  }
+  
+  const vector<int> getNodeTo(int u) const {
+    vector<int> r;
+    for (auto &v: nodeTo[u]) {
+      if (!erase[v]) {
+        r.push_back(v);
+      }
+    }
+    return r;
+    
+  }
+  
+  int getDegIn(int u) const {
+    assert(!erase[u]);
+    return degIn[u];
+  }
+  
+  int getDegOut(int u) const {
+    assert(!erase[u]);
+    return degOut[u];
+  }
+  
+  void removeNode(int u) {
+    assert(!erase[u]);
+    for (auto &v: getNodeFrom(u)) {
+      degIn[v]--;
+    }
+    for (auto &v: getNodeTo(u)) {
+      degOut[v]--;
+    }
+    erase[u] = true;
+  }
+};
+
+// Convert a regex to NFA of epsilon transitions
+// Each node corresponds to an index in the regex
+// If regex[i] is a character, there's an implicit edge
+// from i to i + 1 that is not added to the graph
+class RegExToNFA {
+  DirectedGraph g;
+  
+public:
+  RegExToNFA(const string &iregex) {
+    string regex = "(" + iregex + ")";
+    int n = (int) regex.length();
+    g.init(true, n + 1);
+    stack<int> s;
+    for_inc(i, n) {
+      int t = i;
+      if (regex[i] == '(' || regex[i] == '|') {
+        s.push(i);
+      } else if (regex[i] == ')') {
+        int k = s.top();
+        s.pop();
+        
+        if (regex[k] == '|') {
+          t = s.top();
+          s.pop();
+          g.addEdge(t, k + 1);
+          g.addEdge(k, i);
+        } else if (regex[k] == '(') {
+          t = k;
+        }
+      }
+      if (i < n - 1 && regex[i + 1] == '*') {
+        g.addEdge(t, i + 1);
+        g.addEdge(i + 1, t);
+      }
+      if (regex[i] == '(' || regex[i] == '*' || regex[i] == ')') {
+        g.addEdge(i, i + 1);
+      }
+    }
+  }
+  
+  const DirectedGraph &getNFA() const {
+    return g;
+  }
+};
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
+}
+
+void testNFA(const string& regex) {
+  RegExToNFA converter(regex);
+  const DirectedGraph &g = converter.getNFA();
+  int n = g.getSize();
+  LOG(1, "** NFA for " << "(" << regex << ") :");
+  LOG(1, "Number of nodes " << n);
+  for_inc(u, n) {
+    for (auto &v: g.getNodeFrom(u)) {
+      LOG(1, "Edge: " << u << " " << v );
+    }
+  }
+}
+
+bool visit[130][2050];
+
+int solve(const string &regex, int minLen) {
+  fill0(visit);
+  
+  //testNFA(regex);
+  RegExToNFA converter(regex);
+  const DirectedGraph &g = converter.getNFA();
+  
+  string s = "(" + regex + ")";
+  
+  deque<pair<int, int>> q;
+  q.push_back(make_pair(0, 0));
+  visit[0][0] = true;
+  int targetNode = (int)s.length() - 1;
+  while (!q.empty()) {
+    pair<int, int> cur = q.front();
+    int curNode = cur.first;
+    int curDist = cur.second;
+    LOG(2, "Cur " << curNode << " " << curDist);
+    if (cur.first == targetNode && curDist >= minLen) {
+      if (curDist > 500) {
+        return -1;
+      }
+      return curDist;
+    }
+    q.pop_front();
+    for (auto &nextNode: g.getNodeFrom(curNode)) {
+      int nextDist = cur.second;
+      if (!visit[nextNode][nextDist]) {
+        q.push_front(make_pair(nextNode, nextDist));
+        visit[nextNode][nextDist] = true;
+      }
+    }
+  
+    if (curNode < targetNode && s[curNode] != '(' && s[curNode] != ')' && s[curNode] != '|' && s[curNode] != '*') {
+      int nextNode = curNode + 1;
+      int nextDist = cur.second + 1;
+      if (!visit[nextNode][nextDist]) {
+        q.push_back(make_pair(nextNode, nextDist));
+        visit[nextNode][nextDist] = true;
+      }
+    }
+  }
+  return -1;
 }
 
 int main() {
@@ -69,5 +257,21 @@ int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  /*testNFA("");
+  testNFA("a");
+  testNFA("ab");
+  testNFA("a|b");
+  testNFA("c(a|b*)");
+  testNFA("(a|b)*");*/
+  
+  int nTest;
+  cin >> nTest;
+  repeat(nTest) {
+    int minLen;
+    cin >> minLen;
+    string regex;
+    cin >> regex;
+    cout << solve(regex, minLen) << endl;
+  }
   return 0;
 }
