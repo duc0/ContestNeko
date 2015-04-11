@@ -45,33 +45,29 @@ using namespace std;
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
 
-int sim(int a, int b) {
-  bool ahas[10], bhas[10];
-  fill0(ahas);
-  fill0(bhas);
-  while (a > 0) {
-    ahas[a % 10] = true;
-    a /= 10;
-  }
-  while (b > 0) {
-    bhas[b % 10] = true;
-    b /= 10;
-  }
-  int ans = 0;
-  for_inc(d, 10) {
-    if (ahas[d] && bhas[d]) ++ans;
-  }
-  return ans;
-}
+#define countBit __builtin_popcount
+
+int cnt[1030];
 
 class Similars {
 public:
   int maxsim( int l, int r ) {
-    int ans = 0;
-    for_inc_range(i, l, r - 1) {
-      for_inc_range(j, i + 1, r) {
-        ans = max(ans, sim(i, j));
+    fill0(cnt);
+    for_inc_range(x, l, r) {
+      int y = x;
+      int mask = 0;
+      while (y > 0) {
+        mask |= 1 << (y % 10);
+        y /= 10;
       }
+      cnt[mask]++;
+    }
+    
+    int ans = 0;
+    for_inc(s1, 1024) for_inc(s2, 1024) {
+      if (s1 == s2 && cnt[s1] <= 1) continue;
+      if (cnt[s1] == 0 || cnt[s2] == 0) continue;
+      ans = max(ans, countBit(s1 & s2));
     }
     return ans;
   }
@@ -202,42 +198,33 @@ namespace moj_harness {
 
 		// custom cases
 
-      case 5: {
-			int L                     = 53;
-			int R                     = 128;
-			int expected__            = 3;
+/*      case 5: {
+			int L                     = ;
+			int R                     = ;
+			int expected__            = ;
 
 			std::clock_t start__      = std::clock();
 			int received__            = Similars().maxsim(L, R);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}
-      case 6: {
-			int L                     = 19;
-			int R                     = 10009;
-			int expected__            = 4;
+		}*/
+/*      case 6: {
+			int L                     = ;
+			int R                     = ;
+			int expected__            = ;
 
 			std::clock_t start__      = std::clock();
 			int received__            = Similars().maxsim(L, R);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}
-      case 7: {
-			int L                     = 53;
-			int R                     = 101;
-			int expected__            = 2;
+		}*/
+/*      case 7: {
+			int L                     = ;
+			int R                     = ;
+			int expected__            = ;
 
 			std::clock_t start__      = std::clock();
 			int received__            = Similars().maxsim(L, R);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}
-      case 8: {
-        int L                     = 19990;
-        int R                     = 20005;
-        int expected__            = 2;
-        
-        std::clock_t start__      = std::clock();
-        int received__            = Similars().maxsim(L, R);
-        return verify_case(casenum__, expected__, received__, clock()-start__);
-      }
+		}*/
 		default:
 			return -1;
 		}
