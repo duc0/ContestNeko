@@ -202,33 +202,42 @@ namespace moj_harness {
 
 		// custom cases
 
-/*      case 5: {
-			int L                     = ;
-			int R                     = ;
-			int expected__            = ;
+      case 5: {
+			int L                     = 53;
+			int R                     = 128;
+			int expected__            = 3;
 
 			std::clock_t start__      = std::clock();
 			int received__            = Similars().maxsim(L, R);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
-/*      case 6: {
-			int L                     = ;
-			int R                     = ;
-			int expected__            = ;
+		}
+      case 6: {
+			int L                     = 19;
+			int R                     = 10009;
+			int expected__            = 4;
 
 			std::clock_t start__      = std::clock();
 			int received__            = Similars().maxsim(L, R);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
-/*      case 7: {
-			int L                     = ;
-			int R                     = ;
-			int expected__            = ;
+		}
+      case 7: {
+			int L                     = 53;
+			int R                     = 101;
+			int expected__            = 2;
 
 			std::clock_t start__      = std::clock();
 			int received__            = Similars().maxsim(L, R);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
+		}
+      case 8: {
+        int L                     = 19990;
+        int R                     = 20005;
+        int expected__            = 2;
+        
+        std::clock_t start__      = std::clock();
+        int received__            = Similars().maxsim(L, R);
+        return verify_case(casenum__, expected__, received__, clock()-start__);
+      }
 		default:
 			return -1;
 		}
