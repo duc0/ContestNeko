@@ -66,11 +66,30 @@ void testGen() {
   fclose(stdout);
 }
 
+bool solve(int x, int r, int c) {
+  if (x > max(r, c)) return false; // 1 x max(r, c)
+  if (x >= 7) return false; // hole
+  if ((r * c) % x != 0) return false;
+  if ((x + 1) / 2 > min(r, c)) return false;  
+  if (x == 4) return min(r, c) >= 3;
+  return true;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
   freopen("input1.txt", "r", stdin);
+  freopen("output1.txt", "w", stdout);
 #endif
+  
+  int nTest;
+  cin >> nTest;
+  
+  for_inc_range(test, 1, nTest) {
+    int x, r, c;
+    cin >> x >> r >> c;
+    cout << "Case #" << test << ": " <<  (solve(x, r, c) ? "GABRIEL" : "RICHARD") << endl;
+  }
   return 0;
 }
