@@ -169,17 +169,20 @@ public:
       if (regex[i] == '(' || regex[i] == '|') {
         s.push(i);
       } else if (regex[i] == ')') {
-        int k = s.top();
-        s.pop();
-        
-        if (regex[k] == '|') {
-          t = s.top();
+        vector<int> orIdx;
+        while (regex[s.top()] == '|') {
+          orIdx.push_back(s.top());
           s.pop();
-          g.addEdge(t, k + 1);
-          g.addEdge(k, i);
-        } else if (regex[k] == '(') {
-          t = k;
         }
+        int start = s.top();
+        s.pop();
+        assert(regex[start] == '(');
+        
+        for (int k : orIdx) {
+          g.addEdge(start, k + 1);
+          g.addEdge(k, i);
+        }
+        t = start;
       }
       if (i < n - 1 && regex[i + 1] == '*') {
         g.addEdge(t, i + 1);
@@ -268,6 +271,7 @@ int solve(const string &regex, int minLen) {
   return -1;
 }
 
+// CISCO 2015 Smallest Regex Match String
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT

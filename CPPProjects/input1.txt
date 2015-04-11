@@ -1,6 +1,6 @@
 1
-1
-ab|bcd|cdef
+4
+bcd|cdef|ab
 
 (ab|b)g(h)h(de|f))
 1
