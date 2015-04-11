@@ -4,7 +4,7 @@
 
 #ifdef SUBMIT
 #define LOGLEVEL 0
-#define NDEBUG
+//#define NDEBUG
 #else
 #define LOGLEVEL 1
 #endif
@@ -148,10 +148,19 @@ public:
 // from i to i + 1 that is not added to the graph
 class RegExToNFA {
   DirectedGraph g;
+  string regex;
+  
+  static string preprocess(const string &s) {
+    ostringstream ss;
+    ss << "(";
+    ss << s;
+    ss << ")";
+    return ss.str();
+  }
   
 public:
   RegExToNFA(const string &iregex) {
-    string regex = "(" + iregex + ")";
+    regex = preprocess(iregex);
     int n = (int) regex.length();
     g.init(true, n + 1);
     stack<int> s;
@@ -180,6 +189,10 @@ public:
         g.addEdge(i, i + 1);
       }
     }
+  }
+  
+  const string &getPreprocessedRegex() const {
+    return regex;
   }
   
   const DirectedGraph &getNFA() const {
@@ -213,17 +226,21 @@ int solve(const string &regex, int minLen) {
   RegExToNFA converter(regex);
   const DirectedGraph &g = converter.getNFA();
   
-  string s = "(" + regex + ")";
-  
+  string s = converter.getPreprocessedRegex();
   deque<pair<int, int>> q;
   q.push_back(make_pair(0, 0));
   visit[0][0] = true;
   int targetNode = (int)s.length() - 1;
+  int lastDist = 0;
   while (!q.empty()) {
     pair<int, int> cur = q.front();
     int curNode = cur.first;
     int curDist = cur.second;
     LOG(2, "Cur " << curNode << " " << curDist);
+    if (curDist < lastDist) {
+//      exit(0);
+    }
+    lastDist = curDist;
     if (cur.first == targetNode && curDist >= minLen) {
       if (curDist > 500) {
         return -1;
@@ -257,12 +274,12 @@ int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
-  /*testNFA("");
+  testNFA("");
   testNFA("a");
   testNFA("ab");
-  testNFA("a|b");
   testNFA("c(a|b*)");
-  testNFA("(a|b)*");*/
+  testNFA("(a|b)*");
+  testNFA("a|b|c");
   
   int nTest;
   cin >> nTest;
@@ -271,7 +288,9 @@ int main() {
     cin >> minLen;
     string regex;
     cin >> regex;
-    cout << solve(regex, minLen) << endl;
+    int ans = solve(regex, minLen);
+    assert(ans <= 500);
+    cout << ans << endl;
   }
   return 0;
 }
