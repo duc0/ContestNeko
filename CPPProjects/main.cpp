@@ -61,6 +61,67 @@ int MODP(int64 x) {
   return r;
 }
 
+class BinarySearch {
+public:
+  template<class T> static T binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+    while (leftIndex <= rightIndex) {
+      midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+      if (predicate(midIndex)) {
+        ret = midIndex;
+        rightIndex = midIndex - 1;
+      } else {
+        leftIndex = midIndex + 1;
+      }
+    }
+    return ret;
+  }
+  
+  template<class T> static T binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+    while (leftIndex <= rightIndex) {
+      midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+      if (predicate(midIndex)) {
+        ret = midIndex;
+        leftIndex = midIndex + 1;
+      } else {
+        rightIndex = midIndex - 1;
+      }
+    }
+    return ret;
+  }
+  
+  static double binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+      m = l + (r - l) / 2;
+      if (predicate(m)) {
+        ret = m;
+        l = m;
+      } else {
+        r = m;
+      }
+    }
+    return ret;
+  }
+  
+  static double binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+      m = l + (r - l) / 2;
+      if (predicate(m)) {
+        l = m;
+        ret = m;
+      } else {
+        r = m;
+      }
+    }
+    return ret;
+  }
+  
+};
+
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -72,5 +133,31 @@ int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int64 a, b, n;
+  cin >> a >> b >> n;
+  
+  repeat(n) {
+    int64 l, t, m;
+    cin >> l >> t >> m;
+    
+    int64 ans = BinarySearch::binarySearchMax<int64>(l, (int64)1E10, [&](int64 r){
+      int64 maxNum = a + (r - 1) * b;
+      if (t < maxNum) {
+        return false;
+      }
+      int64 sum = (r - l + 1) * a + b * (r + l - 2) * (r - l + 1) / 2;
+      if (t * m < sum) {
+        return false;
+      }
+      return true;
+    });
+    
+    if (ans == l - 1) {
+      ans = -1;
+    }
+    
+    cout << ans << endl;
+  }
   return 0;
 }
