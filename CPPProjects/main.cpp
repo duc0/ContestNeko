@@ -61,6 +61,74 @@ int MODP(int64 x) {
   return r;
 }
 
+
+template <class T> class RangeUpdateArrayOffline {
+  vector<T> diff;
+  int n;
+  
+public:
+  RangeUpdateArrayOffline() {}
+  
+  RangeUpdateArrayOffline(int n) {
+    init(n);
+  }
+  
+  void init(int n) {
+    this->n = n;
+    diff.resize(n + 1);
+  }
+  
+  // Do a[k] = a[k] + v for i <= k <= j
+  // O(1)
+  void add(int i, int j, T v) {
+    assert(1 <= i && i <= j && j <= n);
+    diff[i] += v;
+    if (j + 1 <= n) {
+      diff[j + 1] -= v;
+    }
+  }
+  
+  vector<T> getArray() {
+    vector<T> ret(n + 1);
+    ret[0] = 0;
+    for_inc_range(i, 1, n) {
+      ret[i] = ret[i - 1] + diff[i];
+    }
+    return ret;
+  }
+  
+};
+
+// Note: 0-base index
+template<class T> class ZFunction {
+  int n;
+  vector<int> z; // z[i] = max{l, s[i..i + l - 1] is a prefix of s, or 0 if s[i] != s[0]}
+public:
+  // O(n)
+  template<class Iterator> ZFunction(Iterator begin, Iterator end) {
+    n = (int) (end - begin);
+    z.resize(n);
+    z[0] = n;
+    for (int i = 1, l = 0, r = 0; i < n; ++i) {
+      if (i <= r) {
+        z[i] = min(r - i + 1, z[i - l]);
+      }
+      while (i + z[i] < n && *(begin + z[i]) == *(begin + i + z[i])) {
+        ++z[i];
+      }
+      if (i + z[i] - 1 > r) {
+        l = i;
+        r = i + z[i] - 1;
+      }
+    }
+  }
+  
+  int get(int i) const {
+    assert(0 <= i && i < n);
+    return z[i];
+  }
+};
+
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
@@ -70,7 +138,57 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  int n, m;
+  cin >> n >> m;
+  
+  string p;
+  cin >> p;
+  int l = (int) p.length();
+  
+  ZFunction<char> z(p.begin(), p.end());
+  
+  RangeUpdateArrayOffline<int> a(n);
+  
+  int last = -1;
+  
+  repeat(m) {
+    int y;
+    cin >> y;
+    
+    a.add(y, y + l - 1, 1);
+    
+    if (last != -1) {
+      int diff = y - last;
+      if (diff <= l - 1 && z.get(diff) < l - diff) {
+        cout << 0 << endl;
+        exit(0);
+      }
+    }
+    
+    last = y;
+  }
+  
+  for_inc_range(d, 0, n - l) {
+
+  }
+  
+  
+  
+  vector<int> final = a.getArray();
+  
+  int cnt = 0;
+  int64 ans = 1;
+  for_inc_range(i, 1, n) {
+    if (final[i] == 0) {
+      cnt++;
+      ans = (ans * 26) % MOD;
+    }
+  }
+  
+  cout << ans << endl;
+  
   return 0;
 }
