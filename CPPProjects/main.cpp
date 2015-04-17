@@ -159,19 +159,22 @@ template<int BASE, int64 M> int64 getHash(int i, int c, int n, const StringHash<
 #define HMOD1 1000001927
 #define HMOD2 1000001963
 
-set<pair<int64, int64>> getAll(const vector<int> &s, int n) {
+
+vector<int64> getAll(const vector<int> &s, int n) {
   StringHash<B1, HMOD1> h1 = StringHasher<B1, HMOD1>::getHash(s.begin(), s.end());
   StringHash<B2, HMOD2> h2 = StringHasher<B2, HMOD2>::getHash(s.begin(), s.end());
 
   
-  set<pair<int64, int64>> ans;
+  vector<int64> ans;
   for_inc_range(i, 0, n) {
     for_inc(c, 26) {
       int64 v1 = getHash<B1, HMOD1>(i, c, n, h1);
       int64 v2 = getHash<B2, HMOD2>(i, c, n, h2);
-      ans.insert(make_pair(v1, v2));
+      int64 v = v1 * HMOD1 + v2;
+      ans.push_back(v);
     }
   }
+  sort(ans.begin(), ans.end());
   return ans;
 }
 
@@ -192,17 +195,15 @@ int main() {
   vector<int> s2(n);
   for_inc(i, n) s2[i] = ss2[i] - 'a' + 3;
   
-  set<pair<int64, int64>> all1 = getAll(s1, n);
-  set<pair<int64, int64>> all2 = getAll(s2, n);
+  vector<int64> all1 = getAll(s1, n);
+  vector<int64> all2 = getAll(s2, n);
   
-  int64 ans = 0;
-  for (auto &hVal : all2) {
-    if (all1.count(hVal)) {
-      ans++;
-    }
-  }
+  unique(all1.begin(), all1.end());
+  unique(all2.begin(), all2.end());
   
-  cout << ans << endl;
+  vector<int64> inter(max(all1.size(), all2.size()));
+  auto it=set_intersection (all1.begin(), all1.end(), all2.begin(), all2.end(), inter.begin());
+  cout << (it - inter.begin());
   
   return 0;
 }
