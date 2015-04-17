@@ -54,16 +54,104 @@ using namespace std;
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF ((int)2E9L)
 #define INT64_INF ((int64)1E18L)
-#define MOD 1000000007
-int MODP(int64 x) {
-  int r = x % MOD;
-  if (r < 0) r += MOD;
-  return r;
-}
+
+template <int BASE, int64 MODULO> class StringHash {
+  template <int B, int64 M> friend class StringHasher;
+  vector<int64> hash;
+  
+public:
+  size_t getSize() const { return hash.size(); }
+};
+
+template <int BASE, int64 MODULO> class StringHasher {
+  
+public:
+  static int64 getBasePower(int n) {
+    static vector<int64> power; // cache
+    if (n > (int)power.size() - 1) {
+      int cur = (int)power.size() - 1;
+      power.resize(n + 1);
+      for_inc_range(i, cur + 1, n) {
+        if (i == 0) {
+          power[i] = 1;
+        } else {
+          power[i] = (power[i - 1] * BASE) % MODULO;
+        }
+      }
+    }
+    return power[n];
+  }
+
+  template <class Iterator>
+  static StringHash<BASE, MODULO> getHash(Iterator begin, Iterator end) {
+    StringHash<BASE, MODULO> h;
+    int n = (int)(end - begin);
+    h.hash.resize(n);
+    int idx = 0;
+    int64 last = 0;
+    for (auto it = begin; it != end; ++it) {
+      h.hash[idx] = (last * BASE + *it) % MODULO;
+      last = h.hash[idx];
+      idx++;
+    }
+    return h;
+  }
+  
+  static int64 getHashValue(const StringHash<BASE, MODULO> &sh) {
+    return sh.hash[sh.getSize() - 1];
+  }
+  
+  static int64 getHashValue(const StringHash<BASE, MODULO> &sh, int first,
+                            int len) {
+    if (len == 0) return 0;
+    assert(0 <= first && first < sh.getSize());
+    assert(len >= 1);
+    assert(first + len - 1 < sh.getSize());
+    
+    int last = first + len - 1;
+    
+    if (first == 0)
+      return sh.hash[last];
+    
+    int64 ret =
+    (sh.hash[last] - sh.hash[first - 1] * getBasePower(len)) % MODULO;
+    if (ret < 0)
+      ret += MODULO;
+    return ret;
+  }
+  
+  static int64 getHashValueConcat(const StringHash<BASE, MODULO> &sh1,
+                                  const StringHash<BASE, MODULO> &sh2) {
+    
+    return (getHashValue(sh1) * getBasePower((int)sh2.getSize()) +
+            getHashValue(sh2)) %
+    MODULO;
+  }
+};
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
+}
+
+#define BASE 31
+#define HMOD 1000001927
+
+set<int64> getAll(const vector<int> &s, int n) {
+  StringHash<BASE, HMOD> h = StringHasher<BASE, HMOD>::getHash(s.begin(), s.end());
+  
+  set<int64> ans;
+  for_inc_range(i, 0, n) {
+    for_inc(c, 26) {
+      int64 hL = StringHasher<BASE, HMOD>::getHashValue(h, 0, i);
+      int64 hR = StringHasher<BASE, HMOD>::getHashValue(h, i, n - i);
+      
+      int64 hAll = (hL * BASE + c + 3) % HMOD;
+      hAll = (hAll * StringHasher<BASE, HMOD>::getBasePower(n - i) + hR) % HMOD;
+      ans.insert(hAll);
+    }
+  }
+  return ans;
 }
 
 int main() {
@@ -72,5 +160,28 @@ int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n;
+  cin >> n;
+  string ss1, ss2;
+  cin >> ss1 >> ss2;
+  
+  vector<int> s1(n);
+  for_inc(i, n) s1[i] = ss1[i] - 'a' + 3;
+  vector<int> s2(n);
+  for_inc(i, n) s2[i] = ss2[i] - 'a' + 3;
+  
+  set<int64> all1 = getAll(s1, n);
+  set<int64> all2 = getAll(s2, n);
+  
+  int64 ans = 0;
+  for (int64 hVal : all2) {
+    if (all1.count(hVal)) {
+      ans++;
+    }
+  }
+  
+  cout << ans << endl;
+  
   return 0;
 }
