@@ -131,6 +131,17 @@ public:
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
+  int n=  100000;
+  cout << n << endl;
+  for_inc(i, n) {
+    cout << (char)(rand()%26 + 'a');
+  }
+  cout << endl;
+  for_inc(i, n) {
+    cout << (char)(rand()%26 + 'a');
+  }
+  cout << endl;
+
   fclose(stdout);
 }
 
@@ -168,7 +179,7 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("biginput1.txt", "r", stdin);
 #endif
   
   int n;
