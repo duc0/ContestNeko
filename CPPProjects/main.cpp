@@ -53,7 +53,7 @@ using namespace std;
 
 #define fill0(x) memset(x, 0, sizeof(x))
 #define INT_INF ((int)2E9L)
-#define INT64_INF ((int64)1E18L)
+#define INT64_INF ((int64)10000000000000000LL)
 #define MOD 1000000007
 int MODP(int64 x) {
   int r = x % MOD;
@@ -70,7 +70,56 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("biginput1.txt", "r", stdin);
+  freopen("biginput1.out", "w", stdout);
 #endif
+  
+  int nTest;
+  cin >> nTest;
+  
+  for_inc_range(test, 1, nTest) {
+    int nBarber, place;
+    cin >> nBarber >> place;
+    vector<int> duration(nBarber + 1);
+    for_inc_range(i, 1, nBarber) {
+      cin >> duration[i];
+    }
+    
+    
+    int64 l = 0, r = INT64_INF, mid, minTime = -1;
+    while (l <= r) {
+      mid = (l + r) / 2;
+     
+      int64 cap = 0;
+      for_inc_range(i, 1, nBarber) {
+        cap += mid / duration[i] + 1;
+      }
+      if (cap >= place) {
+        minTime = mid;
+        r = mid - 1;
+      } else {
+        l = mid + 1;
+      }
+    }
+    
+    cout << "Case #" << test << ": ";
+    int total = 0;
+    for_inc_range(i, 1, nBarber) {
+      total += minTime / duration[i];
+      if (minTime % duration[i] != 0) {
+        total++;
+      }
+    }
+    for_inc_range(i, 1, nBarber) {
+      if (minTime % duration[i] == 0) {
+        total++;
+        if (total == place) {
+          cout << i << endl;
+          break;
+        }
+      }
+    }
+    
+  }
   return 0;
 }
