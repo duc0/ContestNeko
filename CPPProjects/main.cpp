@@ -70,7 +70,36 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("biginput1.txt", "r", stdin);
+  freopen("biginput1.out", "w", stdout);
 #endif
+  
+  int nTest;
+  cin >> nTest;
+  for_inc_range(test, 1, nTest) {
+    int n;
+    cin >> n;
+    vector<int> a(n + 1);
+    
+    
+    for_inc_range(i, 1, n) {
+      cin >> a[i];
+    }
+    
+    int ans1 = 0, maxDiff = 0;
+    for_inc_range(i, 2, n) {
+      if (a[i] < a[i - 1]) {
+        ans1 += a[i - 1] - a[i];
+        maxDiff = max(maxDiff, a[i - 1] - a[i]);
+      }
+    }
+    
+    int ans2 = 0;
+    for_inc_range(i, 1, n - 1) {
+      ans2 += min(a[i], maxDiff);
+    }
+    
+    cout << "Case #" << test << ": " << ans1 << " " << ans2 << endl;
+  }
   return 0;
 }
