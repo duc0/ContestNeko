@@ -112,47 +112,58 @@ vector<pair<int ,int>> getGcd(const vector<pair<int ,int>>&a, const vector<pair<
   return ans;
 }
 
-int64 powerMod(int a, int b) {
-  int64 ans = 1;
-  for_inc_range (i, 1, b) {
-    ans = (ans * a) % MOD;
-  }
-  return ans;
-}
+
 
 class PolynomialGCD {
+  long long mod = 1e9 + 7;
+  int64 fp(int64 b, int64 p) {
+    if (p <= 0) return 1;
+    if (p%2) return (b * (fp(b, p - 1))) % mod;
+    return fp((b * b) % mod, p /2);
+  }
 public:
   int gcd( string s ) {
-    int l = (int) s.length();
-    int val = 30000;
-    int cnt = 100;
-    
-    vector<pair<int, int>> ans;
-    bool first = true;
-    for_inc_range(x, val, val + cnt) {
-      vector<pair<int, int>> g;
-      for_inc(i, l) {
-        int y = x - i;
-        
-        vector<pair<int ,int>> f = factor(y);
-        for_inc(t, f.size()) {
-          f[t].second *= s[i] - '0';
+    int lpf[40003] = {1, 1};
+    for_inc_range(f, 2, 200) {
+      if (lpf[f] == 0) {
+        lpf[f] = f;
+        for(int f1 = f * f; f1 < 40000; f1 += f) {
+          lpf[f1] = f;
         }
-        g = merge(g, f);
       }
-      if (first) {
-        ans = g;
-        first = false;
-      } else {
-        ans = getGcd(ans, g);
+    }
+    
+    for(int f= 2; f < 40000; f++) {
+      if (!lpf[f]) {
+        lpf[f] =f;
+      }
+    }
+    
+    int ans[30009];
+    for_inc(f, 10009) {
+      ans[f] = 1e9;
+    }
+    
+    for(int f=s.size(); f < 2 * s.size(); f++) {
+      int tmp[30009] = {0};
+      for_inc(f1, s.size()) {
+        int x = f - f1;
+        while (lpf[x] != 1) {
+          tmp[lpf[x]] += (s[f1] - '0');
+          x /= lpf[x];
+        }
+      }
+      
+      for_inc(f, 10009) {
+        ans[f] = min(ans[f], tmp[f]);
       }
     }
     
     int64 ret = 1;
-    for (auto &p : ans) {
-      ret = (ret * (powerMod(p.first, p.second))) % MOD;
+    for_inc(f, 10009) {
+      ret = (ret * fp(f, ans[f])) % mod;
     }
-    return (int)ret;
+    return ret;
   }
 };
 
@@ -269,8 +280,9 @@ namespace moj_harness {
         ostringstream ss;
         string s                  = "";
         for_inc(i, 10000) ss << "9";
+        frop
         s = ss.str();
-        int expected__            = 562564034;
+        int expected__            = 540982506;
         
         std::clock_t start__      = std::clock();
         int received__            = PolynomialGCD().gcd(s);
