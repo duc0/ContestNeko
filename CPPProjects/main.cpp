@@ -55,19 +55,11 @@ using namespace std;
 #define INT_INF ((int)2E9L)
 #define INT64_INF ((int64)1E18L)
 
-template <int BASE, int64 MODULO> class StringHash {
-  template <int B, int64 M> friend class StringHasher;
-  vector<int64> hash;
+template <int BASE, int MODULO> class BasePowerUtils {
   
 public:
-  size_t getSize() const { return hash.size(); }
-};
-
-template <int BASE, int64 MODULO> class StringHasher {
-  
-public:
-  static int64 getBasePower(int n) {
-    static vector<int64> power; // cache
+  static int getBasePower(int n) {
+    static vector<int> power; // cache
     if (n > (int)power.size() - 1) {
       int cur = (int)power.size() - 1;
       power.resize(n + 1);
@@ -75,57 +67,165 @@ public:
         if (i == 0) {
           power[i] = 1;
         } else {
-          power[i] = (power[i - 1] * BASE) % MODULO;
+          power[i] = ((int64)power[i - 1] * BASE) % MODULO;
         }
       }
     }
     return power[n];
   }
+};
 
-  template <class Iterator>
-  static StringHash<BASE, MODULO> getHash(Iterator begin, Iterator end) {
-    StringHash<BASE, MODULO> h;
-    int n = (int)(end - begin);
-    h.hash.resize(n);
-    int idx = 0;
-    int64 last = 0;
+
+template <int BASE, int MODULO> class StringHash {
+  int length;
+  int hash;
+public:
+  int getLength() const {
+    return length;
+  }
+  
+  int getHash() const {
+    return hash;
+  }
+  
+  StringHash(int hash, int length): hash(hash), length(length) {}
+  
+  template <class Iterator> StringHash(Iterator begin, Iterator end) {
+    hash = 0;
     for (auto it = begin; it != end; ++it) {
-      h.hash[idx] = (last * BASE + *it) % MODULO;
-      last = h.hash[idx];
+      hash = ((int64)hash * BASE + *it) % MODULO;
+    }
+    length = (int) (end - begin);
+  }
+  
+  static StringHash<BASE, MODULO> fromSingleChar(int singleChar) {
+    return StringHash<BASE, MODULO>(singleChar % MODULO, 1);
+  }
+  
+  StringHash<BASE, MODULO> concat(const StringHash<BASE, MODULO> &sh) const {
+    return StringHash<BASE, MODULO>(((int64) getHash() * BasePowerUtils<BASE, MODULO>::getBasePower(sh.getLength()) +
+            sh.getHash()) % MODULO, getLength() + sh.getLength());
+  }
+};
+
+template <int BASE, int MODULO> class StringPrefixHash {
+  vector<int> hash;
+  
+public:
+  template <class Iterator> StringPrefixHash(Iterator begin, Iterator end) {
+    int n = (int)(end - begin);
+    hash.resize(n);
+    int idx = 0;
+    int last = 0;
+    for (auto it = begin; it != end; ++it) {
+      hash[idx] = ((int64)last * BASE + *it) % MODULO;
+      last = hash[idx];
       idx++;
     }
-    return h;
   }
   
-  static int64 getHashValue(const StringHash<BASE, MODULO> &sh) {
-    return sh.hash[sh.getSize() - 1];
+  size_t getSize() const { return hash.size(); }
+
+  StringHash<BASE, MODULO> getPrefixHash(int i) const {
+    assert(i < getSize());
+    return StringHash<BASE, MODULO>(hash[i], i);
   }
   
-  static int64 getHashValue(const StringHash<BASE, MODULO> &sh, int first,
-                            int len) {
-    if (len == 0) return 0;
-    assert(0 <= first && first < sh.getSize());
+  StringHash<BASE, MODULO> getStringHash() const {
+    return getPrefixHash(hash.size() - 1);
+  }
+  
+  StringHash<BASE, MODULO> getSubstringHash(int first, int len) const {
+    if (len == 0) return StringHash<BASE, MODULO>(0, 0);
+    assert(0 <= first && first < getSize());
     assert(len >= 1);
-    assert(first + len - 1 < sh.getSize());
-    
+    assert(first + len - 1 < getSize());
     int last = first + len - 1;
-    
-    if (first == 0)
-      return sh.hash[last];
-    
-    int64 ret =
-    (sh.hash[last] - sh.hash[first - 1] * getBasePower(len)) % MODULO;
+    if (first == 0) {
+      return StringHash<BASE, MODULO>(hash[last], len);
+    }
+    int ret = (hash[last] - (int64) hash[first - 1] * BasePowerUtils<BASE, MODULO>::getBasePower(len)) % MODULO;
     if (ret < 0)
       ret += MODULO;
-    return ret;
+    return StringHash<BASE, MODULO>(ret, len);
   }
   
-  static int64 getHashValueConcat(const StringHash<BASE, MODULO> &sh1,
-                                  const StringHash<BASE, MODULO> &sh2) {
-    
-    return (getHashValue(sh1) * getBasePower((int)sh2.getSize()) +
-            getHashValue(sh2)) %
-    MODULO;
+  // Range is inclusive
+  StringHash<BASE, MODULO> getSubstringHashByRange(int first, int last) const {
+    return getSubstringHash(first, last - first + 1);
+  }
+};
+
+template <int BASE1, int MODULO1, int BASE2, int MODULO2> class StringDoubleHash {
+  int length;
+  int hash1;
+  int hash2;
+public:
+  int getLength() const {
+    return length;
+  }
+  
+  int64 getHashValue() const {
+    return (int64) hash1 * MODULO2 + hash2;
+  }
+  
+  StringHash<BASE1, MODULO1> getHash1() const {
+    return StringHash<BASE1, MODULO1>(hash1, length);
+  }
+
+  StringHash<BASE2, MODULO2> getHash2() const {
+    return StringHash<BASE2, MODULO2>(hash2, length);
+  }
+  
+  StringDoubleHash(int hash1, int hash2, int length): hash1(hash1), hash2(hash2), length(length) {}
+  
+  StringDoubleHash(const StringHash<BASE1, MODULO1> &h1, const StringHash<BASE2, MODULO2> &h2): hash1(h1.getHash()), hash2(h2.getHash()), length(h1.getLength()) {
+    assert(h1.getLength() == h2.getLength());
+  }
+  
+  template <class Iterator> StringDoubleHash(Iterator begin, Iterator end) {
+    hash1 = StringHash<BASE1, MODULO1>(begin, end).getHash();
+    hash2 = StringHash<BASE2, MODULO2>(begin, end).getHash();
+    length = (int) (end - begin);
+  }
+  
+  static StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> fromSingleChar(int singleChar) {
+    return StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2>(singleChar % MODULO1, singleChar % MODULO2, 1);
+  }
+  
+  StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> concat(const StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> &sh) const {
+    return StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2>(
+       getHash1().concat(sh.getHash1()),
+       getHash2().concat(sh.getHash2())
+    );
+  }
+};
+
+
+template <int BASE1, int MODULO1, int BASE2, int MODULO2> class StringPrefixDoubleHash {
+  StringPrefixHash<BASE1, MODULO1> hash1;
+  StringPrefixHash<BASE2, MODULO2> hash2;
+  
+public:
+  template <class Iterator> StringPrefixDoubleHash(Iterator begin, Iterator end): hash1(StringPrefixHash<BASE1, MODULO1>(begin, end)), hash2(StringPrefixHash<BASE2, MODULO2>(begin, end)) {}
+  
+  size_t getSize() const { return hash1.getSize(); }
+  
+  StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> getPrefixHash(int i) const {
+    return StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2>(hash1.getPrefixHash(i), hash2.getPrefixHash(i));
+  }
+  
+  StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> getStringHash() const {
+    return getPrefixHash(getSize() - 1);
+  }
+  
+  StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> getSubstringHash(int first, int len) const {
+    return StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2>(hash1.getSubstringHash(first, len), hash2.getSubstringHash(first, len));
+  }
+  
+  // Range is inclusive
+  StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> getSubstringHashByRange(int first, int last) const {
+    return getSubstringHash(first, last - first + 1);
   }
 };
 
@@ -145,33 +245,25 @@ void testGen() {
   fclose(stdout);
 }
 
-template<int BASE, int64 M> int64 getHash(int i, int c, int n, const StringHash<BASE, M> &h) {
-  int64 hL = StringHasher<BASE, M>::getHashValue(h, 0, i);
-  int64 hR = StringHasher<BASE, M>::getHashValue(h, i, n - i);
-  
-  int64 hAll = (hL * BASE + c + 3) % M;
-  hAll = (hAll * StringHasher<BASE, M>::getBasePower(n - i) + hR) % M;
-  return hAll;
-}
+// VKCup 2015 - R2, E
 
 #define B1 31
 #define B2 37
 #define HMOD1 1000001927
 #define HMOD2 1000001963
-
+#define SH StringDoubleHash<B1, HMOD1, B2, HMOD2>
+#define SPH StringPrefixDoubleHash<B1, HMOD1, B2, HMOD2>
 
 vector<int64> getAll(const vector<int> &s, int n) {
-  StringHash<B1, HMOD1> h1 = StringHasher<B1, HMOD1>::getHash(s.begin(), s.end());
-  StringHash<B2, HMOD2> h2 = StringHasher<B2, HMOD2>::getHash(s.begin(), s.end());
-
+  SPH h(s.begin(), s.end());
   
   vector<int64> ans;
   for_inc_range(i, 0, n) {
     for_inc(c, 26) {
-      int64 v1 = getHash<B1, HMOD1>(i, c, n, h1);
-      int64 v2 = getHash<B2, HMOD2>(i, c, n, h2);
-      int64 v = v1 * HMOD1 + v2;
-      ans.push_back(v);
+      auto dh = h.getSubstringHashByRange(0, i - 1);
+      dh = dh.concat(SH::fromSingleChar(c));
+      dh = dh.concat(h.getSubstringHashByRange(i, n - 1));
+      ans.push_back(dh.getHashValue());
     }
   }
   sort(ans.begin(), ans.end());
@@ -182,7 +274,7 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("biginput1.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
   int n;
@@ -191,9 +283,9 @@ int main() {
   cin >> ss1 >> ss2;
   
   vector<int> s1(n);
-  for_inc(i, n) s1[i] = ss1[i] - 'a' + 3;
+  for_inc(i, n) s1[i] = ss1[i] - 'a';
   vector<int> s2(n);
-  for_inc(i, n) s2[i] = ss2[i] - 'a' + 3;
+  for_inc(i, n) s2[i] = ss2[i] - 'a';
   
   vector<int64> all1 = getAll(s1, n);
   vector<int64> all2 = getAll(s2, n);
