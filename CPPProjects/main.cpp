@@ -124,7 +124,7 @@ class PolynomialGCD {
 public:
   int gcd( string s ) {
     int l = (int) s.length();
-    int val = 20000;
+    int val = 30000;
     int cnt = 100;
     
     vector<pair<int, int>> ans;
@@ -265,6 +265,17 @@ namespace moj_harness {
 			int received__            = PolynomialGCD().gcd(s);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
 		}
+      case 4: {
+        ostringstream ss;
+        string s                  = "";
+        for_inc(i, 10000) ss << "9";
+        s = ss.str();
+        int expected__            = 562564034;
+        
+        std::clock_t start__      = std::clock();
+        int received__            = PolynomialGCD().gcd(s);
+        return verify_case(casenum__, expected__, received__, clock()-start__);
+      }
 
 		// custom cases
 
