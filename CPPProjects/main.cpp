@@ -106,7 +106,13 @@ int getCount(const vector<int> &a) {
   return cnt;
 }
 
-int findCycle(const vector<int> &p, int n) {
+int64 lcm(int64 a, int64 b)
+{
+  int64 temp = __gcd(a, b);
+  return temp ? (a / temp * b) : 0;
+}
+
+int64 findCycle(const vector<int> &p, int n) {
   vector<bool> mark(n + 1);
   vector<int> cycleSize;
   for_inc_range(i, 1, n) {
@@ -122,15 +128,18 @@ int findCycle(const vector<int> &p, int n) {
     }
   }
   
-
-  return 0;
+  int64 ans = cycleSize[0];
+  for_inc_range(i, 1, (int)cycleSize.size() - 1) {
+    ans = lcm(ans, cycleSize[i]);
+  }
+  return ans;
 }
 
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("biginput1.txt", "r", stdin);
 #endif
   
   cin >> n;
@@ -185,8 +194,16 @@ int main() {
     }
   }
   
-  int cycle = findCycle(p, permSize);
+  int64 cycle = findCycle(p, permSize);
   
+  int64 ans = start;
+  if (ans % cycle != 0) {
+    ans += (cycle - ans % cycle);
+  } else if (ans == 0) {
+    ans = cycle;
+  }
+  
+  cout << ans << endl;
   
   return 0;
 }
