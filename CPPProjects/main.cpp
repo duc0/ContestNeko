@@ -82,22 +82,57 @@ void testGen() {
 
 vector<int> f;
 int n;
-void apply(vector<int> &a) {
+vector<int> apply(const vector<int> &a) {
+  vector<int> ans(n + 1);
   for_inc_range(i, 1, n) {
-    a[i] = f[a[i]];
+    ans[i] = f[a[i]];
   }
+  return ans;
+}
+
+int getCount(const vector<int> &a) {
+  vector<bool> in(n + 1);
+  for_inc_range(i, 1, n) {
+    in[a[i]] = true;
+  }
+  
+  int cnt = 0;
+  for_inc_range(i, 1, n) {
+    if (in[i]) {
+      cnt++;
+    }
+  }
+  
+  return cnt;
+}
+
+int findCycle(const vector<int> &p, int n) {
+  vector<bool> mark(n + 1);
+  vector<int> cycleSize;
+  for_inc_range(i, 1, n) {
+    if (!mark[i]) {
+      int x = i;
+      int sz = 0;
+      while (!mark[x]) {
+        sz++;
+        mark[x] = true;
+        x = p[x];
+      }
+      cycleSize.push_back(sz);
+    }
+  }
+  
+
+  return 0;
 }
 
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("biginput1.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
-  int nTest;
-  cin >> nTest;
-  while (nTest--) {
   cin >> n;
   
   f.resize(n + 1);
@@ -105,48 +140,53 @@ int main() {
     cin >> f[i];
   }
   
-  vector<int> p1(n + 1), p2(n + 1);
+  vector<int> a(n + 1);
   for_inc_range(i, 1, n) {
-    p1[i] = i;
-    p2[i] = i;
-  }
-  
-  apply(p1);
-  apply(p2); apply(p2);
-  
-  int cnt = 0;
-  while (p1 != p2) {
-    cnt++;
-    apply(p1);
-    apply(p2); apply(p2);
+    a[i] = i;
   }
   
   int start = 0;
-  for_inc_range(i, 1, n) {
-    p1[i] = i;
-  }
+  int cnt = getCount(a);
+  vector<int> next;
   
-  while (p1 != p2) {
-    apply(p1);
-    apply(p2);
+  while (true) {
+    next = apply(a);
+    int nextCnt = getCount(next);
+    
+    if (cnt == nextCnt) {
+      // Find a permutation
+      break;
+    }
+    
     start++;
+    cnt = nextCnt;
+    a = next;
   }
   
-  int period = 1;
-  p2 = p1;
-  apply(p2);
-  while (p2 != p1) {
-    apply(p2);
-    period++;
+  vector<bool> in(n + 1);
+  for_inc_range(i, 1, n) {
+    in[a[i]] = true;
   }
   
-  if ((start % period) != 0) {
-    start += (period - (start % period));
-  } else if (start == 0) {
-    start = period;
+  vector<int> idx(n + 1);
+  int permSize = 0;
+  for_inc_range(i, 1, n) {
+    if (in[i]) {
+      permSize++;
+      idx[i] = permSize;
+    }
   }
   
-  cout << start << endl;
+  vector<int> p(permSize + 1);
+  
+  for_inc_range(i, 1, n) {
+    if (in[i]) {
+      p[idx[i]] = idx[f[i]];
+    }
   }
+  
+  int cycle = findCycle(p, permSize);
+  
+  
   return 0;
 }
