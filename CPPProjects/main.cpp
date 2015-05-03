@@ -72,5 +72,55 @@ int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n, totalTime;
+  vector<int> score(n + 1), timeTake(n + 1);
+  
+  cin >> n >> totalTime;
+  
+  for_inc_range(i, 1, n) {
+    cin >> timeTake[i] >> score[i];
+  }
+  
+  vector<int> sortByScore(n + 1);
+  for_inc_range(i, 1, n) {
+    sortByScore[i] = i;
+  }
+  sort(sortByScore.begin() + 1, sortByScore.end(), [&](int i, int j) {
+    return score[i] > score[j];
+  });
+  
+  for_inc_range(availTime, 1, totalTime) {
+    int best = 0;
+    
+    // One task
+    for_inc_range(i, 1, n) {
+      int j = sortByScore[i];
+      if (timeTake[j] <= availTime) {
+        best = score[j];
+        break;
+      }
+    }
+    
+    // A question and two tasks
+    int cnt = 0;
+    int two = 0;
+    for_inc_range(i, 1, n) {
+      int j = sortByScore[i];
+      if (timeTake[j] <= availTime - 1) {
+        cnt++;
+        two += score[j];
+        if (cnt == 2) {
+          break;
+        }
+      }
+    }
+    
+    best = max(best, two);
+    
+    
+    
+    
+  }
   return 0;
 }
