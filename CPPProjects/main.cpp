@@ -66,11 +66,47 @@ void testGen() {
   fclose(stdout);
 }
 
+int n;
+vector<vector<pair<int, int>>> adj;
+
+#define MAXN 200100
+int cache[2*MAXN];
+
+int solve(int u, int edgeId) {
+  if (edgeId != -1 && cache[edgeId] != -1) {
+    return cache[edgeId];
+  }
+  int ans = 1;
+  for (auto &edge: adj[u]) {
+    ans = ((int64) ans * (solve(edge.first, edge.second) + 1)) % MOD;
+  }
+  return ans;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  cin >> n;
+  
+  adj.resize(n + 1);
+  
+  memset(cache, -1, sizeof(cache));
+  int nDirectEdge = 0;
+  for_inc_range(u, 2, n) {
+    int x;
+    cin >> x;
+    nDirectEdge++;
+    adj[u].push_back(make_pair(x, nDirectEdge));
+    nDirectEdge++;
+    adj[x].push_back(make_pair(u, nDirectEdge));
+  }
+  
+  for_inc_range(u, 1, n) {
+    cout << solve(u, -1) << endl;
+  }
   return 0;
 }
