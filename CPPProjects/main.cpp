@@ -66,20 +66,21 @@ void testGen() {
   fclose(stdout);
 }
 
-int n;
-vector<vector<pair<int, int>>> adj;
-
 #define MAXN 200100
+int n;
+vector<pair<int, int>> adj[MAXN];
+
 int cache[2*MAXN];
 
-int solve(int u, int edgeId) {
+int solve(int u, int edgeId, int parent) {
   if (edgeId != -1 && cache[edgeId] != -1) {
     return cache[edgeId];
   }
   int ans = 1;
-  for (auto &edge: adj[u]) {
-    ans = ((int64) ans * (solve(edge.first, edge.second) + 1)) % MOD;
+  for (auto &edge: adj[u]) if (edge.first != parent) {
+    ans = ((int64) ans * (solve(edge.first, edge.second, u) + 1)) % MOD;
   }
+  cache[edgeId] = ans;
   return ans;
 }
 
@@ -91,8 +92,6 @@ int main() {
 #endif
   
   cin >> n;
-  
-  adj.resize(n + 1);
   
   memset(cache, -1, sizeof(cache));
   int nDirectEdge = 0;
@@ -106,7 +105,7 @@ int main() {
   }
   
   for_inc_range(u, 1, n) {
-    cout << solve(u, -1) << endl;
+    cout << solve(u, -1, -1) << " ";
   }
   return 0;
 }
