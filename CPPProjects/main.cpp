@@ -231,36 +231,47 @@ namespace moj_harness {
 
 		// custom cases
 
-/*      case 5: {
-			int N                     = ;
-			int K                     = ;
-			int info[]                = ;
-			int expected__            = ;
+      case 5: {
+			int N                     = 2000;
+			int K                     = 1999;
+        int info[]                = {};
+			int expected__            = 1000;
 
 			std::clock_t start__      = std::clock();
 			int received__            = ApplesAndOrangesEasy().maximumApples(N, K, vector <int>(info, info + (sizeof info / sizeof info[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
-/*      case 6: {
-			int N                     = ;
-			int K                     = ;
-			int info[]                = ;
-			int expected__            = ;
+		}
+      case 6: {
+			int N                     = 2000;
+			int K                     = 997;
+      int info[]                = {};
+			int expected__            = 1002;
 
 			std::clock_t start__      = std::clock();
 			int received__            = ApplesAndOrangesEasy().maximumApples(N, K, vector <int>(info, info + (sizeof info / sizeof info[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
-/*      case 7: {
-			int N                     = ;
-			int K                     = ;
-			int info[]                = ;
-			int expected__            = ;
+		}
+      case 7: {
+			int N                     = 2000;
+			int K                     = 1505;
+        int info[]                = {1, 25, 7, 887, 907, 908, 909, 24, 23, 2, 3, 4, 5, 6, 8, 10};
+			int expected__            = 1247;
 
 			std::clock_t start__      = std::clock();
 			int received__            = ApplesAndOrangesEasy().maximumApples(N, K, vector <int>(info, info + (sizeof info / sizeof info[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
+		}
+      case 8: {
+        int N                     = 2000;
+        int K                     = 3;
+        int info[]                = {1, 4, 1998, 1995};
+        int expected__            = 666;
+        
+        std::clock_t start__      = std::clock();
+        int received__            = ApplesAndOrangesEasy().maximumApples(N, K, vector <int>(info, info + (sizeof info / sizeof info[0])));
+        return verify_case(casenum__, expected__, received__, clock()-start__);
+      }
+
 		default:
 			return -1;
 		}
