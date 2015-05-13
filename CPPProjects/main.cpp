@@ -45,29 +45,51 @@ using namespace std;
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
 
+int bit[10000], n;
+const int bias = 4000;
+
+int sum(int i) {
+  int s = 0;
+  while (i > 0) {
+    s += bit[i];
+    i -= i & -i;
+  }
+  return s;
+}
+
+void add(int i, int x) {
+  while (i <= n) {
+    bit[i] += x;
+    i += i & -i;
+  }
+}
+
 class ApplesAndOrangesEasy {
 public:
-  int maximumApples( int n, int k, vector <int> info ) {
-    vector<int> a(n + 2 * k, 0);
-    for (auto i: info) {
-      a[i + k - 1] = 1;
+  int maximumApples( int N, int K, vector <int> info ) {
+    fill0(bit);
+    int apples[2048] = {0};
+    n = N + bias;
+    for(int i= 0; i <info.size(); ++i) {
+      add(info[i] - 1 + bias, 1);
+      apples[info[i] - 1] = 1;
     }
-    for (int tic = k; tic < n + k; ++tic) {
-      bool fail = false;
-      if (a[tic] == 1) {
-        continue;
+    
+    for_inc(i, N) {
+      if (!apples[i]) {
+        add(i + bias, 1);
+        int flg = true;
+        for_inc(j, K) {
+          int a;
+          a = sum((i - j - 1) + K + bias) - sum((i - j - 1) + bias);
+          flg &= a <= K / 2;
+        }
+        if (!flg) {
+          add(i + bias, -1);
+        }
       }
-      int acc = 0;
-      for (int i = tic - k; i < tic; ++i) {
-        acc += a[i];
-      }
-      for (int i = tic - k + 1; i < tic + 1 && !fail ; ++i) {
-        acc += a[i + k - 1] - a[i - 1];
-        fail = (k / 2) < acc + 1;
-      }
-      a[tic] = !fail ? 1 : 0;
     }
-    return accumulate(a.begin(), a.end(), 0);
+    return sum(N+bias);
   }
 };
 
