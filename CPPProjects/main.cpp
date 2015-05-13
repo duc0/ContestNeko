@@ -48,56 +48,26 @@ using namespace std;
 class ApplesAndOrangesEasy {
 public:
   int maximumApples( int n, int k, vector <int> info ) {
-    vector<bool> hasApple(n + 1);
-    for (int i : info) {
-      hasApple[i] = true;
+    vector<int> a(n + 2 * k, 0);
+    for (auto i: info) {
+      a[i + k - 1] = 1;
     }
-    vector<bool> sol(n + 1);
-    
-    int ans = 0;
-    for_inc_range(i, 1, n) {
-      if (hasApple[i]) {
-        sol[i] = true;
-        ++ans;
+    for (int tic = k; tic < n + k; ++tic) {
+      bool fail = false;
+      if (a[tic] == 1) {
+        continue;
       }
-    }
-    
-    int most = k / 2;
-    for_inc_range(i, 1, n) {
-      if (!hasApple[i]) {
-        // Try it
-        
-        int leftIdx = max(0, i - k + 1);
-        
-        int sum = 0;
-        for_inc_range(j, leftIdx, i) {
-          sum += sol[j];
-        }
-        
-        bool bad = false;
-        
-        int rightIdx = min(n, i + k - 1);
-        for_inc_range(curIdx, i, rightIdx) {
-          if (sum + 1 > most) {
-            bad = true;
-            break;
-          }
-          if (curIdx - k + 1 >= 1) {
-            sum -= sol[curIdx - k + 1];
-          }
-          if (curIdx + 1 <= n) {
-            sum += sol[curIdx + 1];
-          }
-        }
-        
-        if (!bad) {
-          sol[i] = 1;
-          ++ans;
-        }
+      int acc = 0;
+      for (int i = tic - k; i < tic; ++i) {
+        acc += a[i];
       }
+      for (int i = tic - k + 1; i < tic + 1 && !fail ; ++i) {
+        acc += a[i + k - 1] - a[i - 1];
+        fail = (k / 2) < acc + 1;
+      }
+      a[tic] = !fail ? 1 : 0;
     }
-    
-    return ans;
+    return accumulate(a.begin(), a.end(), 0);
   }
 };
 
