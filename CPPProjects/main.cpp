@@ -45,51 +45,49 @@ using namespace std;
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
 
-int bit[10000], n;
-const int bias = 4000;
-
-int sum(int i) {
-  int s = 0;
-  while (i > 0) {
-    s += bit[i];
-    i -= i & -i;
-  }
-  return s;
-}
-
-void add(int i, int x) {
-  while (i <= n) {
-    bit[i] += x;
-    i += i & -i;
-  }
-}
 
 class ApplesAndOrangesEasy {
+  bool apple[3000];
 public:
   int maximumApples( int N, int K, vector <int> info ) {
-    fill0(bit);
-    int apples[2048] = {0};
-    n = N + bias;
-    for(int i= 0; i <info.size(); ++i) {
-      add(info[i] - 1 + bias, 1);
-      apples[info[i] - 1] = 1;
+    memset(apple, 0, sizeof(apple));
+    for_inc(i, info.size()) {
+      apple[info[i]] = true;
     }
-    
-    for_inc(i, N) {
-      if (!apples[i]) {
-        add(i + bias, 1);
-        int flg = true;
-        for_inc(j, K) {
-          int a;
-          a = sum((i - j - 1) + K + bias) - sum((i - j - 1) + bias);
-          flg &= a <= K / 2;
+    int ans = (int) info.size();
+    for_inc_range(i, 1, N) {
+      if (apple[i]) {
+        continue;
+      }
+      int j = max(i - (K - 1), 1);
+      int rcnt = 0;
+      bool ok = true;
+      for(int k = j; k <j + K; k++) {
+        if (apple[k]) {
+          rcnt++;
         }
-        if (!flg) {
-          add(i + bias, -1);
+        if (rcnt > (K / 2) - 1) {
+          continue;
+        }
+        for (j = j + 1; j <= min(i, N - (K - 1)); j++) {
+          if (apple[j - 1]) {
+            rcnt --;
+          }
+          if (apple[j + K - 1]) {
+            rcnt++;
+          }
+          if (rcnt > (K / 2) - 1) {
+            ok = false;
+            break;
+          }
         }
       }
+      if (ok) {
+        ans++;
+        apple[i] = true;
+      }
     }
-    return sum(N+bias);
+    return ans;
   }
 };
 
