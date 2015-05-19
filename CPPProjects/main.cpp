@@ -68,20 +68,64 @@ void testGen() {
 
 #define MAXN 200100
 int n;
-vector<pair<int, int>> adj[MAXN];
+vector<int> adj[MAXN];
+vector<int> children[MAXN];
 
-int cache[2*MAXN];
+int f[MAXN];
+int fPar[MAXN];
+vector<int> prefix[MAXN];
+vector<int> suffix[MAXN];
 
-int solve(int u, int edgeId, int parent) {
-  if (edgeId != -1 && cache[edgeId] != -1) {
-    return cache[edgeId];
+int ans[MAXN];
+
+void calcChildren(int cur, int parent) {
+  for (int child: adj[cur]) {
+    if (child != parent) {
+      children[cur].push_back(child);
+      calcChildren(child, cur);
+    }
   }
-  int ans = 1;
-  for (auto &edge: adj[u]) if (edge.first != parent) {
-    ans = ((int64) ans * (solve(edge.first, edge.second, u) + 1)) % MOD;
+}
+
+void calcF(int cur, int parent) {
+  f[cur] = 1;
+  int nChild = (int) children[cur].size();
+  prefix[cur].resize(nChild);
+  suffix[cur].resize(nChild);
+  for_inc(i, nChild) {
+    calcF(children[cur][i], cur);
+    f[cur] = ((int64) f[cur] * (f[children[cur][i]] + 1)) % MOD;
   }
-  cache[edgeId] = ans;
-  return ans;
+  for_inc(i, nChild) {
+    if (i == 0) {
+      prefix[cur][i] = 1;
+    } else {
+      prefix[cur][i] = ((int64)prefix[cur][i - 1] * (f[children[cur][i - 1]] + 1)) % MOD;
+    }
+  }
+  
+  for_dec(i, nChild) {
+    if (i == nChild - 1) {
+      suffix[cur][i] = 1;
+    } else {
+      suffix[cur][i] = ((int64) suffix[cur][i + 1] * (f[children[cur][i + 1]] + 1)) % MOD;
+    }
+  }
+}
+
+void calcAns(int cur, int childId, int parent) {
+  if (parent == -1) {
+    ans[cur] = f[cur];
+    fPar[cur] = 0;
+  } else {
+    fPar[cur] = ((int64)suffix[parent][childId] * prefix[parent][childId]) % MOD;
+    fPar[cur] = ((int64)fPar[cur] * (fPar[parent] + 1)) % MOD;
+    ans[cur] = ((int64)f[cur] * (fPar[cur] + 1)) % MOD;
+  }
+  int nChild = (int) children[cur].size();
+  for_inc(i, nChild) {
+    calcAns(children[cur][i], i, cur);
+  }
 }
 
 int main() {
@@ -93,19 +137,20 @@ int main() {
   
   cin >> n;
   
-  memset(cache, -1, sizeof(cache));
-  int nDirectEdge = 0;
   for_inc_range(u, 2, n) {
     int x;
     cin >> x;
-    nDirectEdge++;
-    adj[u].push_back(make_pair(x, nDirectEdge));
-    nDirectEdge++;
-    adj[x].push_back(make_pair(u, nDirectEdge));
+    adj[u].push_back(x);
+    adj[x].push_back(u);
   }
   
+  int root = 1;
+  calcChildren(root, -1);
+  calcF(root, -1);
+  calcAns(root, -1, -1);
+  
   for_inc_range(u, 1, n) {
-    cout << solve(u, -1, -1) << " ";
+    cout << ans[u] << " ";
   }
   return 0;
 }
