@@ -89,6 +89,8 @@
 		592559981A98331700A3BBB8 /* MaxFlowDinic.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MaxFlowDinic.cpp; sourceTree = "<group>"; };
 		592559991A983EEB00A3BBB8 /* SuffixArrayLCP.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = SuffixArrayLCP.cpp; sourceTree = "<group>"; };
 		5925599B1A98402E00A3BBB8 /* blank_main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = blank_main.cpp; sourceTree = "<group>"; };
+		599B5A641B0BEC7A005313A4 /* NumberTheory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = NumberTheory.cpp; sourceTree = "<group>"; };
+		599B5A651B0BECEB005313A4 /* PrimeGenerator.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = PrimeGenerator.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -231,6 +233,7 @@
 		592559931A98326500A3BBB8 /* algorithms */ = {
 			isa = PBXGroup;
 			children = (
+				599B5A631B0BEC51005313A4 /* number_theory */,
 				2267A11D1ABFD46F0035031F /* combinatorics */,
 				2267A11C1ABFD4680035031F /* geometry */,
 				2267A11B1ABFD42C0035031F /* graph */,
@@ -252,6 +255,15 @@
 				22221B571AC3129200C81B49 /* topcoder_moj_template.cpp */,
 			);
 			name = template;
+			sourceTree = "<group>";
+		};
+		599B5A631B0BEC51005313A4 /* number_theory */ = {
+			isa = PBXGroup;
+			children = (
+				599B5A641B0BEC7A005313A4 /* NumberTheory.cpp */,
+				599B5A651B0BECEB005313A4 /* PrimeGenerator.cpp */,
+			);
+			name = number_theory;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
