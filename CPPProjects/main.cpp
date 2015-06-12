@@ -274,6 +274,14 @@ namespace moj_harness {
 			int received__            = MissingLCM().getMin(N);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
 		}
+      case 7: {
+        int N                     = 1000000;
+        int expected__            = 1999966;
+        
+        std::clock_t start__      = std::clock();
+        int received__            = MissingLCM().getMin(N);
+        return verify_case(casenum__, expected__, received__, clock()-start__);
+      }
 
 		// custom cases
 
