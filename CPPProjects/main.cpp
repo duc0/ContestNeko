@@ -223,22 +223,31 @@ namespace moj_harness {
 			double received__         = Bitwisdom().expectedActions(vector <int>(p, p + (sizeof p / sizeof p[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
 		}
-/*      case 5: {
-			int p[]                   = ;
-			double expected__         = ;
+     case 5: {
+       int p[300] ;
+       p[0] = 0;
+       for (int i = 1; i < 300; ++i) {
+         p[i] = 0;
+       }
+
+			double expected__         = 0;
 
 			std::clock_t start__      = std::clock();
 			double received__         = Bitwisdom().expectedActions(vector <int>(p, p + (sizeof p / sizeof p[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
-/*      case 6: {
-			int p[]                   = ;
-			double expected__         = ;
-
+		}
+      case 6: {
+        int p[300] ;
+        p[0] = 100;
+        for (int i = 1; i < 300; ++i) {
+          p[i] = 100;
+        }
+        
+        double expected__         = 1.0000;
 			std::clock_t start__      = std::clock();
 			double received__         = Bitwisdom().expectedActions(vector <int>(p, p + (sizeof p / sizeof p[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
+		}
 		default:
 			return -1;
 		}
