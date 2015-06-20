@@ -211,14 +211,18 @@ namespace moj_harness {
 
 		// custom cases
 
-/*      case 4: {
-			int p[]                   = ;
-			double expected__         = ;
+      case 4: {
+        int p[300] ;
+        p[0] = 15;
+        for (int i = 1; i < 300; ++i) {
+          p[i] = (p[i - 1] * 7 + 31) % 101;
+        }
+			double expected__         = 149.825199999999;
 
 			std::clock_t start__      = std::clock();
 			double received__         = Bitwisdom().expectedActions(vector <int>(p, p + (sizeof p / sizeof p[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
+		}
 /*      case 5: {
 			int p[]                   = ;
 			double expected__         = ;
