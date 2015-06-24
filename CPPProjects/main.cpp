@@ -200,6 +200,27 @@ public:
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
+  cout << 100 << endl;
+  int n = 7;
+  int edge[10][10];
+  
+  repeat(100) {
+    memset(edge, -1, sizeof(edge));
+  
+    int m = rand() % 5;
+    cout << n << " " << m << endl;
+    int cnt = 0;
+    while (cnt < m) {
+      int u = rand() % n + 1;
+      int v = rand() % n + 1;
+      if (u != v && edge[u][v] == -1) {
+        cnt++;
+        edge[u][v] = edge[v][u] = rand() % 2;
+        cout << u << " " << v << " " << edge[u][v] << endl;
+      }
+    }
+    cout << endl;
+  }
   fclose(stdout);
 }
 
@@ -255,11 +276,61 @@ void dfsEq(int u) {
   }
 }
 
+int edge[20][20], curVal[20];
+
+int bruteForceSolver() {
+  int ret = 0;
+  memset(edge, -1, sizeof(edge));
+  for_inc_range(u, 2, n) {
+    for (int v: eq[u]) {
+      edge[u][v] = edge[v][u] = 1;
+    }
+    for (int v: diff[u]) {
+      edge[u][v] = edge[v][u] = 0;
+    }
+  }
+  
+  int all = (1 << (n - 1));
+  for_inc(state, all) {
+    for_inc(i, n) {
+      curVal[i + 2] = (state >> i) & 1;
+    }
+    bool badState = false;
+    for_inc_range(u, 2, n) {
+      if (val[u] != -1 && (val[u] != curVal[u])) {
+        badState = true;
+        break;
+      }
+    }
+    if (badState) {
+      continue;
+    }
+    
+    for_inc_range(u, 1, n) {
+      for_inc_range(v, 1, n) {
+        if ((edge[u][v] != -1) && (edge[u][v] != (curVal[u] == curVal[v]))) {
+          badState = true;
+          break;
+        }
+      }
+      if (badState) {
+        break;
+      }
+    }
+    
+    if (!badState) {
+      ++ret;
+    }
+  }
+
+  return ret;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input3.txt", "r", stdin);
+  freopen("biginput1.txt", "r", stdin);
 #endif
   
   scanf("%d%d", &n, &m);
@@ -285,6 +356,8 @@ int main() {
       }
     }
   }
+  
+  LOG(1, bruteForceSolver());
   
   for_inc_range(u, 2, n) {
     if (val[u] != -1) {
