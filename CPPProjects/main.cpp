@@ -72,5 +72,28 @@ int main() {
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  int n;
+  int64 k;
+  cin >> n >> k;
+  
+  int64 f[60];
+  f[0] = 1;
+  f[1] = 1;
+  for_inc_range(i, 2, n) {
+    f[i] = f[i - 1] + f[i - 2];
+  }
+  
+  int i = n;
+  while (i >= 1) {
+    if (k <= f[i - 1]) {
+      cout << (n - i + 1) << " ";
+      i--;
+    } else {
+      cout << (n - i + 2) << " " << (n - i + 1) << " ";
+      k -= f[i - 1];
+      i-=2;
+    }
+  }
   return 0;
 }
