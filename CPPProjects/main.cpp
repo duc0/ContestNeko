@@ -66,11 +66,42 @@ void testGen() {
   fclose(stdout);
 }
 
+#define MAXN 1010
+
+int f[MAXN + 1][MAXN + 1];
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  f[0][0] = 1;
+  for_inc_range(n, 1, MAXN) {
+    f[n][0] = 1;
+    for_inc_range(k, 1, MAXN) {
+      f[n][k] = (f[n - 1][k - 1] + f[n - 1][k]) % MOD;
+      
+      //cout << f[n][k] << " ";
+    }
+    //cout << endl;
+  }
+  
+  int k;
+  cin >> k;
+  
+  int ret = 1;
+  int total = 0;
+  for_inc_range(i, 1, k) {
+    int c;
+    cin >> c;
+    total += c;
+    
+    ret = ((int64)ret * (f[total - 1][c - 1])) % MOD;
+  }
+  
+  cout << ret << endl;
+  
   return 0;
 }
