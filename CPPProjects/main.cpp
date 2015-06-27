@@ -70,7 +70,29 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
+  
+  int n, nChain;
+  int ret = 0;
+  scanf("%d%d", &n, &nChain);
+  int largest = 0;
+  for_inc_range(chain, 1, nChain) {
+    int nDoll;
+    scanf("%d", &nDoll);
+    ret += nDoll - 1;
+    
+    for_inc_range(doll, 1, nDoll) {
+      int x;
+      scanf("%d", &x);
+      if (x == doll) {
+        largest = x;
+      }
+    }
+  }
+  ret += n - 1;
+  ret -= 2 * (largest - 1);
+  
+  cout << ret << endl;
   return 0;
 }
