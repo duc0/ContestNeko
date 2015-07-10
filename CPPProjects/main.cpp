@@ -72,17 +72,11 @@ public:
     vector<int> bestRet;
     for_inc_range(i, 1, n - 1) {
       b[n - 1] = i;
-      int last = a[i].first;
-      int posBegin = 1, posEnd = n - 2;
+      int posBegin = 1;
       for_inc_range(j, 0, n - 1) {
         if (j != i && j != 0) {
-          if (a[j].first <= last) {
-            b[posBegin] = j;
-            ++posBegin;
-          } else {
-            b[posEnd] = j;
-            --posEnd;
-          }
+          b[posBegin] = j;
+          ++posBegin;
         }
       }
       int d = calcD(b);
