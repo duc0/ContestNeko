@@ -35,6 +35,55 @@ using namespace std;
 #define MAXN 220
 #define MAXV 110
 
+template<class T> T binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate) {
+  T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+  while (leftIndex <= rightIndex) {
+    midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+    if (predicate(midIndex)) {
+      ret = midIndex;
+      leftIndex = midIndex + 1;
+    } else {
+      rightIndex = midIndex - 1;
+    }
+  }
+  return ret;
+}
+
+// Find LIS in O(nlogn)
+// Usage: construct with iterators
+// Then query the LIS
+// O(nlogn)
+
+template <class T> class LongestIncreasingSubsequence {
+  int n, longest;
+  vector<int> minVal; // minVal[k] = min{a[i], lis(i) = k}
+  
+public:
+  template<class Iterator> LongestIncreasingSubsequence(Iterator begin, Iterator end) {
+    vector<T> seq(begin, end);
+    
+    n = (int) seq.size();
+    
+    minVal.resize(n + 1);
+    minVal[1] = seq[0];
+    
+    longest = 1;
+    for_inc_range(i, 1, n - 1) {
+      int k = binarySearchMax<int>(1, longest, [&](int l) {return minVal[l] < seq[i];});
+      if (k == longest) {
+        longest++;
+        minVal[longest] = seq[i];
+      } else {
+        minVal[k + 1] = min(minVal[k + 1], seq[i]);
+      }
+    }
+  }
+  
+  int getLength() {
+    return longest;
+  }
+};
+
 int f[MAXN][MAXV];
 
 bool in[2][MAXV];
@@ -72,6 +121,16 @@ public:
       }
     }
     
+    vector<int> all;
+    for (int x : first) {
+      all.push_back(x);
+    }
+    for (int x : second) {
+      all.push_back(x);
+    }
+    sort(all.begin(), all.end());
+    LongestIncreasingSubsequence<int> lis(all.begin(), all.end());
+    //return lis.getLength();
     return ret;
   }
 };
@@ -201,24 +260,24 @@ namespace moj_harness {
 			int received__            = YetAnotherCardGame().maxCards(vector <int>(petr, petr + (sizeof petr / sizeof petr[0])), vector <int>(snuke, snuke + (sizeof snuke / sizeof snuke[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
 		}
-/*      case 5: {
-			int petr[]                = ;
-			int snuke[]               = ;
-			int expected__            = ;
+      case 5: {
+        int petr[]                = {17, 22, 25, 47, 32, 40, 18, 33, 45, 33, 49, 46, 28, 15, 42, 19, 15, 41, 45, 45, 49, 22, 17, 19, 50, 19, 20, 15, 16, 16, 27, 20, 26, 48, 21, 44, 41, 35, 35, 42, 36, 23, 26, 23, 29, 50, 30, 17, 32, 44};
+        int snuke[]               = {31, 40, 18, 17, 38, 16, 25, 28, 21, 16, 15, 49, 39, 49, 32, 49, 46, 37, 33, 33, 23, 28, 41, 22, 45, 33, 36, 44, 38, 19, 23, 15, 15, 49, 36, 49, 43, 26, 49, 48, 31, 17, 26, 20, 28, 17, 40, 50, 22, 43};
+			int expected__            = 34;
 
 			std::clock_t start__      = std::clock();
 			int received__            = YetAnotherCardGame().maxCards(vector <int>(petr, petr + (sizeof petr / sizeof petr[0])), vector <int>(snuke, snuke + (sizeof snuke / sizeof snuke[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
-/*      case 6: {
-			int petr[]                = ;
-			int snuke[]               = ;
-			int expected__            = ;
+		}
+      case 6: {
+        int petr[]                = {49, 56, 61, 95, 72, 85, 50, 73, 92, 74, 97, 94, 65, 45, 87, 52, 45, 85, 92, 91, 98, 56, 49, 51, 99, 51, 53, 46, 47, 47, 64, 54, 62, 97, 54, 90, 86, 76, 77, 88, 77, 57, 63, 58, 67, 100, 68, 48, 71, 90};
+        int snuke[]               = {25, 39, 5, 4, 37, 3, 17, 22, 11, 3, 1, 53, 38, 53, 28, 53, 48, 34, 29, 28, 13, 21, 40, 11, 47, 29, 34, 46, 36, 8, 14, 1, 2, 53, 33, 54, 43, 18, 54, 51, 26, 5, 18, 10, 21, 5, 40, 54, 12, 43};
+			int expected__            = 54;
 
 			std::clock_t start__      = std::clock();
 			int received__            = YetAnotherCardGame().maxCards(vector <int>(petr, petr + (sizeof petr / sizeof petr[0])), vector <int>(snuke, snuke + (sizeof snuke / sizeof snuke[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
+		}
 		default:
 			return -1;
 		}
