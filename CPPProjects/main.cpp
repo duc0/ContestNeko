@@ -88,51 +88,54 @@ int f[MAXN][MAXV];
 
 bool in[2][MAXV];
 
+int ra[105], rb[105];
+
 class YetAnotherCardGame {
 public:
-  int maxCards( vector <int> first, vector <int> second ) {
-    memset(f, 0, sizeof(f));
-    int n = 2 * ((int) first.size());
-    
-    memset(in, 0, sizeof(in));
-    
-    for (int x : first) {
-      in[0][x] = true;
-    }
-    
-    for (int x : second) {
-      in[1][x] = true;
-    }
-    
-    int ret = 1;
-    for_inc_range(i, 1, n) {
-      for_inc_range(x, 1, 100) {
-        int par = (i + 1) % 2;
-        if (in[par][x]) {
-          int best = 1;
-          for_inc_range(prev, 1, i - 1) {
-            for_inc_range(prevX, 1, x - 1) {
-              best = max(best, 1 + f[prev][prevX]);
+  int maxCards( vector <int> a, vector <int> b ) {
+    sort(a.begin(), a.end());
+    sort(b.begin(), b.end());
+    memset(ra, 0, sizeof(ra));
+    memset(rb, 0, sizeof(rb));
+    for(int ee =0; ee<a.size(); ++ee) {
+      for (int i=a.size() - 1; i>=0; i--) {
+        ra[i] = max(ra[i] , 1);
+        for(int j = 0; j < i; ++j) {
+          if (a[j] < a[i]) {
+            ra[i] = max(ra[i], ra[j] + 1);
+          }
+        }
+        for(int j = 0; j < b.size(); ++j)
+            {
+              if (b[j] < a[i]) {
+                ra[i] = max(ra[i], rb[j] + 1);
+              }
+            }
+      }
+      for (int i = b.size() - 1; i >= 0; i--) {
+        rb[i ] =max(rb[i], 1);
+        for(int j = 0; j < i; ++j) {
+          if (b[j] < b[i]) {
+            rb[i] = max(rb[i], rb[j] + 1);
+          }
+        }
+          for (int j = 0; j < a.size(); ++j) {
+            if (a[j] < b[i]) {
+              rb[i] = max(rb[i], ra[j] + 1);
             }
           }
-          f[i][x] = best;
-          ret = max(ret, best);
         }
       }
+      int ret = 0;
+      for(int i = 0; i < a.size(); ++i) {
+        ret = max(ret, ra[i]);
+      }
+      for (int i = 0; i < b.size(); ++i) {
+        ret = max(ret, rb[i]);
+      }
+      return ret;
     }
-    
-    vector<int> all;
-    for (int x : first) {
-      all.push_back(x);
-    }
-    for (int x : second) {
-      all.push_back(x);
-    }
-    sort(all.begin(), all.end());
-    LongestIncreasingSubsequence<int> lis(all.begin(), all.end());
-    //return lis.getLength();
-    return ret;
-  }
+
 };
 
 // BEGIN CUT HERE
