@@ -30,7 +30,12 @@
 
 using namespace std;
 
+#define for_inc(i, x) for (auto i = 0; i < x; ++i)
+#define for_dec(i, x) for (auto i = x - 1; i >= 0; --i)
 #define for_inc_range(i, x, y) for (auto i = x; i <= y; ++i)
+#define for_dec_range(i, x, y) for (auto i = x; i >= y; --i)
+
+#define pb push_back
 
 #define MAXN 220
 #define MAXV 110
@@ -93,49 +98,54 @@ int ra[105], rb[105];
 class YetAnotherCardGame {
 public:
   int maxCards( vector <int> a, vector <int> b ) {
-    sort(a.begin(), a.end());
-    sort(b.begin(), b.end());
-    memset(ra, 0, sizeof(ra));
-    memset(rb, 0, sizeof(rb));
-    for(int ee =0; ee<a.size(); ++ee) {
-      for (int i=a.size() - 1; i>=0; i--) {
-        ra[i] = max(ra[i] , 1);
-        for(int j = 0; j < i; ++j) {
-          if (a[j] < a[i]) {
-            ra[i] = max(ra[i], ra[j] + 1);
-          }
-        }
-        for(int j = 0; j < b.size(); ++j)
-            {
-              if (b[j] < a[i]) {
-                ra[i] = max(ra[i], rb[j] + 1);
-              }
-            }
-      }
-      for (int i = b.size() - 1; i >= 0; i--) {
-        rb[i ] =max(rb[i], 1);
-        for(int j = 0; j < i; ++j) {
-          if (b[j] < b[i]) {
-            rb[i] = max(rb[i], rb[j] + 1);
-          }
-        }
-          for (int j = 0; j < a.size(); ++j) {
-            if (a[j] < b[i]) {
-              rb[i] = max(rb[i], ra[j] + 1);
-            }
-          }
-        }
-      }
-      int ret = 0;
-      for(int i = 0; i < a.size(); ++i) {
-        ret = max(ret, ra[i]);
-      }
-      for (int i = 0; i < b.size(); ++i) {
-        ret = max(ret, rb[i]);
-      }
-      return ret;
+    vector<int> p, s;
+    
+    for_inc(i, a.size()) {
+      p.pb(a[i]);
     }
-
+    
+    
+    for_inc(i, b.size()) {
+      s.pb(b[i]);
+    }
+    
+    int p1 = p.size(), s1 = s.size(), mo;
+    
+    if (s1 < p1) {
+      mo = s1 + s1 + 1;
+    } else {
+      mo = p1 + p1;
+    }
+    
+    int dp[mo + 5][140];
+    
+    memset(dp, 0, sizeof(dp));
+    
+    for_inc_range(i, 1, mo) {
+      if (i % 2 == 1) {
+        for_inc(j, p1) {
+          for_dec_range(k, p[j] - 1, 0) {
+            dp[i][p[j]] = max(dp[i - 1][k] + 1, dp[i][p[j]]);
+          }
+        }
+      } else {
+        for_inc(j, s1) {
+          for_dec_range(k, s[j] - 1, 0) {
+            dp[i][s[j]] = max(dp[i - 1][k] + 1, dp[i][s[j]]);
+          }
+        }
+      }
+      for_inc_range(j, 1, 100) {
+        dp[i][j] = max(dp[i][j], dp[i - 1][j]);
+      }
+    }
+    int ans = 0;
+    for_inc_range(i, 1, 100) {
+      ans = max(dp[mo][i], ans);
+    }
+    return ans;
+  }
+  
 };
 
 // BEGIN CUT HERE
