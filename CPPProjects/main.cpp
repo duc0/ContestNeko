@@ -192,15 +192,15 @@ namespace moj_harness {
 
 		// custom cases
 
-/*      case 4: {
-			int petr[]                = ;
-			int snuke[]               = ;
-			int expected__            = ;
+      case 4: {
+        int petr[]                = {50, 27, 64, 25, 48, 98, 9, 32, 68, 9, 16, 83, 98, 32, 19, 98, 33, 61, 61, 64, 92, 97, 70, 83, 80, 65, 44, 23, 27, 94, 71, 11, 92, 28, 70, 46, 27, 21, 58, 42, 63, 70, 82, 86, 63, 97, 50, 89, 82, 82};
+        int snuke[]               = {13, 58, 52, 10, 37, 52, 1, 1, 59, 42, 98, 86, 83, 81, 23, 73, 10, 14, 38, 25, 4, 52, 97, 8, 24, 93, 53, 47, 42, 83, 48, 41, 37, 78, 2, 45, 64, 1, 32, 35, 65, 52, 50, 31, 43, 93, 12, 9, 16, 6};
+			int expected__            = 58;
 
 			std::clock_t start__      = std::clock();
 			int received__            = YetAnotherCardGame().maxCards(vector <int>(petr, petr + (sizeof petr / sizeof petr[0])), vector <int>(snuke, snuke + (sizeof snuke / sizeof snuke[0])));
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
+		}
 /*      case 5: {
 			int petr[]                = ;
 			int snuke[]               = ;
