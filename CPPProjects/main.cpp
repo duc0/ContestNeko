@@ -74,7 +74,7 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input3.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   
   scanf("%d%d", &n1, &n2);
