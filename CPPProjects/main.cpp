@@ -213,14 +213,15 @@ public:
 
 /******* PREDEFINE SOME COMMON SEG TREES ******* */
 
+template <class T> struct MaxTreeQ;
+
 // A segment tree with two queries:
 // add(i, j, v): add all elements in range [i, j] by V
 // queryMax(i, j)
 // all 0 initially.
-template <class T> struct MaxTreeQ;
-template <class T> class MaxTree : public SegmentTree<T, MaxTreeQ<T>> {
+template <class T> class MaxAddTree : public SegmentTree<T, MaxTreeQ<T>> {
 public:
-  MaxTree(int minIndex, int maxIndex)
+  MaxAddTree(int minIndex, int maxIndex)
   : SegmentTree<T, MaxTreeQ<T>>(
                                 minIndex, maxIndex, 0,
                                 [](const MaxTreeQ<T> &l, const MaxTreeQ<T> &r) {
@@ -247,6 +248,40 @@ public:
   void add(int l, int r, T v) { SegmentTree<T, MaxTreeQ<T>>::update(l, r, v); }
 };
 
+// A segment tree with two queries:
+// update(i, j, v): set Element[k] = max(Element[k], v) for all i <= k <= j
+// queryMax(i, j)
+// all 0 initially.
+template <class T> class MaxMaxTree : public SegmentTree<T, MaxTreeQ<T>> {
+public:
+  MaxMaxTree(int minIndex, int maxIndex)
+  : SegmentTree<T, MaxTreeQ<T>>(
+                                minIndex, maxIndex, 0,
+                                [](const MaxTreeQ<T> &l, const MaxTreeQ<T> &r) {
+                                  return MaxTreeQ<T>(max(l.queryMax, r.queryMax), 0);
+                                },
+                                [](const MaxTreeQ<T> &cur, T oldV, T newV, int l, int r) {
+                                  return MaxTreeQ<T>(max(cur.queryMax, newV), max(cur.lazy, newV));
+                                },
+                                [](MaxTreeQ<T> &cur, MaxTreeQ<T> & lChild, MaxTreeQ<T> & rChild,
+                                   T curV, int l, int m, int r) {
+                                  lChild.lazy = max(lChild.lazy, cur.lazy);
+                                  rChild.lazy = max(rChild.lazy, cur.lazy);
+                                  lChild.queryMax = max(lChild.queryMax, cur.lazy);
+                                  rChild.queryMax = max(rChild.queryMax, cur.lazy);
+                                  cur.lazy = 0;
+                                }) {}
+  
+  T queryMax(int l, int r) {
+    return SegmentTree<T, MaxTreeQ<T>>::query(l, r).queryMax;
+  }
+  
+  T queryMax() { return SegmentTree<T, MaxTreeQ<T>>::query().queryMax; }
+  
+  void add(int l, int r, T v) { SegmentTree<T, MaxTreeQ<T>>::update(l, r, v); }
+};
+
+
 template <class T> struct MaxTreeQ {
   T queryMax = 0;
   T lazy = 0;
@@ -263,60 +298,63 @@ void testGen() {
   fclose(stdout);
 }
 
-#define MAXQ 200200
+template <class T> class MaxTreeNaive {
+  vector<T> a;
+public:
+  MaxTreeNaive(int minIndex, int maxIndex) {
+    a.resize(maxIndex - minIndex + 1);
+  }
+  
+  T queryMax(int l, int r) {
+    T best = a[l];
+    for_inc_range(i, l, r) {
+      best = max(best, a[i]);
+    }
+    return best;
+  }
+  
+  void update(int l, int r, T v) {
+    for_inc_range(i, l, r) {
+      a[i] = max(a[i], v);
+    }
+  }
+};
 
 int n, q;
-pair<int, int> query[MAXQ];
-bool queryUp[MAXQ];
-
-set<int> coord;
-map<int, int> mapCoordCol, mapCoordRow;
-int rowCoordById[MAXQ], colCoordById[MAXQ];
 
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("input2.txt", "r", stdin);
 #endif
   cin >> n >> q;
+  
+  MaxMaxTree<int> maxRow(1, n), maxCol(1, n);
+  set<int> usedX, usedY;
   for_inc_range(i, 1, q) {
     int x, y;
     string s;
     cin >> x >> y >> s;
-    query[i] = make_pair(x, y);
-    queryUp[i] = s[0] == 'U';
-    coord.insert(x);
-  }
-  
-  int id = 0;
-  for (auto &x: coord) {
-    id++;
-    mapCoordCol[x] = id;
-    mapCoordRow[n + 1 - x] = id;
-    colCoordById[id] = x;
-    rowCoordById[id] = n + 1 - x;
-  }
-  
-  MaxTree<int> maxCol(1, id);
-  MaxTree<int> maxRow(1, id);
-  
-  for_inc_range(i, 1, q) {
+    bool isUp = s[0] == 'U';
     int ret = 0;
-    if (queryUp[i]) {
-      int qCol = mapCoordCol[query[i].first]; // col
-      int qRow = mapCoordRow[query[i].second]; // row
-      int rowUp = maxCol.queryMax(qCol, qCol); // row
-      ret = rowCoordById[rowUp] - query[i].second; // uncompressed row
-      maxRow.add(qRow, rowUp, qCol); // col
+    if (isUp) {
+      if (!usedX.count(x)) {
+        int maxy = maxCol.queryMax(x, x);
+        ret = y - maxy;
+        maxRow.update(maxy + 1, y, x);
+        usedX.insert(x);
+      }
     } else {
-      int qCol = mapCoordCol[query[i].first]; // col
-      int qRow = mapCoordRow[query[i].second]; // row
-      int colUp = maxRow.queryMax(qRow, qRow); // row
-      ret = colCoordById[colUp] - query[i].first; // uncompressed row
-      maxCol.add(qCol, colUp, qRow); // col
+      if (!usedY.count(y)) {
+        int maxx = maxRow.queryMax(y, y);
+        ret = x - maxx;
+        maxCol.update(maxx + 1, x, y);
+        usedY.insert(y);
+      }
     }
     cout << ret << endl;
   }
+  
   return 0;
 }
