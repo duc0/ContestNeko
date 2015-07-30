@@ -66,11 +66,108 @@ void testGen() {
   fclose(stdout);
 }
 
+#define prev prev_
+#define next next_
+
+vector<pair<string, int>> a;
+
+vector<int> prev, next;
+
+int n;
+
+int getType(int id) {
+  if (id <= n) return 1;
+  return 2;
+}
+
+int getLcp(string s1, string s2) {
+  int i = 0, l1 = (int) s1.length(), l2 = (int) s2.length();
+  while (i < l1 && i < l2 && s1[i] == s2[i]) ++i;
+  return i;
+}
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  cin >> n;
+  
+  prev.resize(2 * n + 1);
+  next.resize(2 * n + 1);
+  a.resize(2 * n + 1);
+  for_inc_range(i, 1, n) {
+    string s;
+    cin >> s;
+    a[i] = make_pair(s, i);
+  }
+  
+  for_inc_range(i, n + 1, 2 * n) {
+    string s;
+    cin >> s;
+    a[i] = make_pair(s, i);
+  }
+  
+  sort(a.begin() + 1, a.end());
+  
+  prev[1] = -1;
+  for_inc_range(i, 2, 2 * n) {
+    prev[i] = i - 1;
+  }
+
+  for_inc_range(i, 1, 2 * n - 1) {
+    next[i] = i + 1;
+  }
+  next[2 * n] = -1;
+  
+  set<pair<int, int>> best;
+  for_inc_range(i, 2, 2 * n) {
+    if (getType(a[i - 1].second) != getType(a[i].second)) {
+      int lcp = getLcp(a[i - 1].first, a[i].first);
+      best.insert(make_pair(lcp, i));
+    }
+  }
+  
+  vector<bool> used(2 * n + 1);
+  vector<pair<int, int>> res;
+  int ret = 0;
+  while (!best.empty()) {
+    pair<int, int> curBest = *best.rbegin();
+    best.erase(curBest);
+    int i = curBest.second;
+    int prevI = prev[i];
+    if (used[i] || used[prevI]) {
+      continue;
+    }
+    used[i] = true;
+    used[prevI] = true;
+    ret += curBest.first;
+    //LOG(1, a[prevI].first << " " << a[i].first << " " << curBest.first);
+    if (getType(a[prevI].second) == 1) {
+      res.push_back(make_pair(a[prevI].second, a[i].second));
+    } else {
+      res.push_back(make_pair(a[i].second, a[prevI].second));
+    }
+    int theNext = next[i];
+    int thePrev = prev[prevI];
+    if (theNext != -1) {
+      prev[theNext] = thePrev;
+    }
+    if (thePrev != -1) {
+      next[thePrev] = theNext;
+    }
+    if (theNext != -1 && thePrev != -1 && getType(a[thePrev].second) != getType(a[theNext].second)) {
+      int lcp = getLcp(a[thePrev].first, a[theNext].first);
+      best.insert(make_pair(lcp, theNext));
+    }
+  }
+  
+  cout << ret << endl;
+  for (auto &p: res) {
+    cout << p.first << " " << p.second - n << endl;
+  }
+  
   return 0;
 }
