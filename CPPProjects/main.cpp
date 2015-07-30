@@ -66,11 +66,47 @@ void testGen() {
   fclose(stdout);
 }
 
+int n1, n2, x, y;
+
+vector<pair<pair<int, int>, int>> all;
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input1.txt", "r", stdin);
+  freopen("input3.txt", "r", stdin);
 #endif
+  
+  scanf("%d%d", &n1, &n2);
+  scanf("%d%d", &x, &y);
+  
+  repeat(n1) {
+    int a, b;
+    scanf("%d%d", &a, &b);
+    all.push_back(make_pair(make_pair(a, 1), b));
+  }
+  
+  repeat(n2) {
+    int a, b;
+    scanf("%d%d", &a, &b);
+    all.push_back(make_pair(make_pair(a, 0), b));
+  }
+  
+  sort(all.begin(), all.end());
+  
+  set<int> c2;
+  
+  for (int i = (int) (all.size()) - 1; i >= 0; i--) {
+    if (all[i].first.second == 1) {
+      if (c2.upper_bound(all[i].second) == c2.end()) {
+        cout << "Max";
+        return 0;
+      }
+    } else {
+      c2.insert(all[i].second);
+    }
+  }
+  
+  cout << "Min";
   return 0;
 }
