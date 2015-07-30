@@ -138,6 +138,10 @@ int main() {
     best.erase(curBest);
     int i = curBest.second;
     int prevI = prev[i];
+    if (!(prevI != -1 && getType(a[prevI].second) != getType(a[i].second) && getLcp(a[prevI].first, a[i].first) == curBest.first)) {
+      // Invalid
+      continue;
+    }
     if (used[i] || used[prevI]) {
       continue;
     }
