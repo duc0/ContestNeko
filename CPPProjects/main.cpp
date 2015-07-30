@@ -65,16 +65,15 @@ template <class T, class Q>
 using TreeMergeFunction = function<Q(const Q &, const Q &)>;
 template <class T, class Q>
 using TreeUpdateLeafFunction =
-function<Q(const Q &, const T &, const T &, int, int)>;
+function<Q(const Q &, const T &, int, int)>;
 template <class T, class Q>
-using TreeSplitFunction = function<void(Q &, Q &, Q &, T, int, int, int)>;
+using TreeSplitFunction = function<void(Q &, Q &, Q &, int, int, int)>;
 template <class T, class Q>
 using TreeInitFunction = function<Q(const T &, int, int)>;
 
 template <class T, class Q> struct SegmentTree {
   struct TreeNode {
     bool leaf = true; // All elements in the leaf node's segment are the same
-    T value;
     Q query;
     int leftChild = -1,
     rightChild =
@@ -91,7 +90,6 @@ protected:
   
   int addNode(int l, int r) {
     TreeNode newNode;
-    newNode.value = defaultValue;
     node.push_back(newNode);
     return (int)node.size() - 1;
   }
@@ -110,9 +108,7 @@ protected:
     int rc = node[p].rightChild;
     node[lc].leaf = true;
     node[rc].leaf = true;
-    node[lc].value = node[p].value;
-    node[rc].value = node[p].value;
-    split(node[p].query, node[lc].query, node[rc].query, node[p].value, l, m,
+    split(node[p].query, node[lc].query, node[rc].query, l, m,
           r);
   }
   
@@ -122,12 +118,10 @@ protected:
     int m = (l + r) / 2;
     if (i <= l && r <= j) { // [i,j] covers [l,r]
       if (node[p].leaf) {
-        node[p].query = updateLeaf(node[p].query, node[p].value, v, l, r);
-        node[p].value = v;
+        node[p].query = updateLeaf(node[p].query, v, l, r);
         return;
       } else {
         node[p].leaf = true;
-        node[p].value = v;
       }
     } else if (node[p].leaf) { // [i,j] intersects [l, r]
       splitNode(p, l, r);
@@ -260,11 +254,11 @@ public:
                                 [](const MaxTreeQ<T> &l, const MaxTreeQ<T> &r) {
                                   return MaxTreeQ<T>(max(l.queryMax, r.queryMax), 0);
                                 },
-                                [](const MaxTreeQ<T> &cur, T oldV, T newV, int l, int r) {
+                                [](const MaxTreeQ<T> &cur, T newV, int l, int r) {
                                   return MaxTreeQ<T>(max(cur.queryMax, newV), max(cur.lazy, newV));
                                 },
                                 [](MaxTreeQ<T> &cur, MaxTreeQ<T> & lChild, MaxTreeQ<T> & rChild,
-                                   T curV, int l, int m, int r) {
+                                   int l, int m, int r) {
                                   lChild.lazy = max(lChild.lazy, cur.lazy);
                                   rChild.lazy = max(rChild.lazy, cur.lazy);
                                   lChild.queryMax = max(lChild.queryMax, cur.lazy);
