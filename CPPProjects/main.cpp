@@ -51,7 +51,7 @@ public:
     if (a > b) {
       swap(a, b);
     }
-    map<int, int> pos;
+    unordered_map<int, int> pos;
     pos[a] = 0;
     int i = 1;
     while (i <= k) {
@@ -60,6 +60,7 @@ public:
       if (a > b) {
         swap(a, b);
       }
+      //LOG(1, a);
       if (pos.count(a)) {
         int l = i - pos[a];
         int x = (k - i) / l;
@@ -77,6 +78,7 @@ public:
       if (a > b) {
         swap(a, b);
       }
+      i++;
     }
     
     return a;
@@ -210,6 +212,26 @@ namespace moj_harness {
 			int received__            = BearPlays().pileSize(A, B, K);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
 		}
+      case 5: {
+        int A                     = 433234427;
+        int B                     = 4234233244;
+        int K                     = 1090000004;
+        int expected__            = 141659367;
+        
+        std::clock_t start__      = std::clock();
+        int received__            = BearPlays().pileSize(A, B, K);
+        return verify_case(casenum__, expected__, received__, clock()-start__);
+      }
+      case 6: {
+        int A                     = 33234427;
+        int B                     = 1234233249;
+        int K                     = 1090002004;
+        int expected__            = 596162936;
+        
+        std::clock_t start__      = std::clock();
+        int received__            = BearPlays().pileSize(A, B, K);
+        return verify_case(casenum__, expected__, received__, clock()-start__);
+      }
 
 		// custom cases
 
