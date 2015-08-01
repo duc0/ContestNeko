@@ -45,7 +45,7 @@ using namespace std;
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
 
-class BearPlays {  
+class BearPlays {
 public:
   int pileSize( int a, int b, int k ) {
     if (a > b) {
@@ -55,13 +55,11 @@ public:
     pos[a] = 0;
     int i = 1;
     while (i <= k) {
-      while (i <= k && a <= b) {
-        b -= a;
-        a += a;
-        i++;
+      b -= a;
+      a += a;
+      if (a > b) {
+        swap(a, b);
       }
-      i--;
-      swap(a, b);
       //LOG(1, a);
       if (pos.count(a)) {
         int l = i - pos[a];
