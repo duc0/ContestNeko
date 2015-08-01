@@ -95,7 +95,7 @@ namespace moj_harness {
 	using std::string;
 	using std::vector;
 	int run_test_case(int);
-	void run_test(int casenum = -1, bool quiet = false) {
+	void run_test(int casenum = 5, bool quiet = false) {
 		if (casenum != -1) {
 			if (run_test_case(casenum) == -1 && !quiet) {
 				std::cerr << "Illegal input! Test case " << casenum << " does not exist." << std::endl;
@@ -214,9 +214,9 @@ namespace moj_harness {
 		}
       case 5: {
         int A                     = 433234427;
-        int B                     = 4234233244;
-        int K                     = 1090000004;
-        int expected__            = 141659367;
+        int B                     = 934233244;
+        int K                     = 1990000004;
+        int expected__            = 501577480;
         
         std::clock_t start__      = std::clock();
         int received__            = BearPlays().pileSize(A, B, K);
@@ -224,9 +224,9 @@ namespace moj_harness {
       }
       case 6: {
         int A                     = 33234427;
-        int B                     = 1234233249;
+        int B                     = 934233249;
         int K                     = 1090002004;
-        int expected__            = 596162936;
+        int expected__            = 92445112;
         
         std::clock_t start__      = std::clock();
         int received__            = BearPlays().pileSize(A, B, K);
