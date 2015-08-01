@@ -13,6 +13,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <bitset>
 #include <cmath>
 #include <cstdlib>
 #include <array>
@@ -45,14 +46,16 @@ using namespace std;
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
 
+bitset<1000000100> has;
+
 class BearPlays {
 public:
   int pileSize( int a, int b, int k ) {
     if (a > b) {
       swap(a, b);
     }
-    unordered_map<int, int> pos;
-    pos[a] = 0;
+    has.reset();
+    has.set(a);
     int i = 1;
     while (i <= k) {
       b -= a;
@@ -61,14 +64,26 @@ public:
         swap(a, b);
       }
       //LOG(1, a);
-      if (pos.count(a)) {
-        int l = i - pos[a];
+      if (has.test(a)) {
+        int l = 0;
+        int orig = a;
+        while (true) {
+          b -= a;
+          a += a;
+          if (a > b) {
+            swap(a, b);
+          }
+          l++;
+          if (a == orig) {
+            break;
+          }
+        }
         int x = (k - i) / l;
         i = i + l * x;
         i++;
         break;
       }
-      pos[a] = i;
+      has.set(a);
       i++;
     }
     
@@ -95,7 +110,7 @@ namespace moj_harness {
 	using std::string;
 	using std::vector;
 	int run_test_case(int);
-	void run_test(int casenum = 5, bool quiet = false) {
+	void run_test(int casenum = -1, bool quiet = false) {
 		if (casenum != -1) {
 			if (run_test_case(casenum) == -1 && !quiet) {
 				std::cerr << "Illegal input! Test case " << casenum << " does not exist." << std::endl;
