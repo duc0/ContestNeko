@@ -61,258 +61,104 @@ int MODP(int64 x) {
   return r;
 }
 
-template <class T, class Q>
-using TreeMergeFunction = function<Q(const Q &, const Q &)>;
-template <class T, class Q>
-using TreeUpdateLeafFunction =
-function<Q(const Q &, const T &, int, int)>;
-template <class T, class Q>
-using TreeSplitFunction = function<void(Q &, Q &, Q &, int, int, int)>;
-template <class T, class Q>
-using TreeInitFunction = function<Q(const T &, int, int)>;
-
-template <class T, class Q> struct SegmentTree {
-  struct TreeNode {
-    bool leaf = true; // All elements in the leaf node's segment are the same
-    Q query;
-    int leftChild = -1,
-    rightChild =
-    -1; // index of the left and right children, -1 for no child
-  };
-  
-protected:
-  vector<TreeNode> node;
-  TreeMergeFunction<T, Q> merge;
-  TreeUpdateLeafFunction<T, Q> updateLeaf;
-  TreeSplitFunction<T, Q> split;
-  TreeInitFunction<T, Q> init;
-  const T defaultValue;
-  
-  int addNode(int l, int r) {
-    TreeNode newNode;
-    node.push_back(newNode);
-    return (int)node.size() - 1;
-  }
-  
-  void splitNode(int p, int l, int r) {
-    assert(node[p].leaf);
-    int m = (l + r) / 2;
-    node[p].leaf = false;
-    if (node[p].leftChild == -1) {
-      int c = addNode(l, m);
-      node[p].leftChild = c;
-      c = addNode(m + 1, r);
-      node[p].rightChild = c;
-    }
-    int lc = node[p].leftChild;
-    int rc = node[p].rightChild;
-    node[lc].leaf = true;
-    node[rc].leaf = true;
-    split(node[p].query, node[lc].query, node[rc].query, l, m,
-          r);
-  }
-  
-  void update(int p, int l, int r, int i, int j, const T &v) {
-    if (j < l || i > r)
-      return;
-    int m = (l + r) / 2;
-    if (i <= l && r <= j) { // [i,j] covers [l,r]
-      if (node[p].leaf) {
-        node[p].query = updateLeaf(node[p].query, v, l, r);
-        return;
-      } else {
-        node[p].leaf = true;
-      }
-    } else if (node[p].leaf) { // [i,j] intersects [l, r]
-      splitNode(p, l, r);
-    }
-    update(node[p].leftChild, l, m, i, j, v);
-    update(node[p].rightChild, m + 1, r, i, j, v);
-    node[p].query =
-    merge(node[node[p].leftChild].query, node[node[p].rightChild].query);
-  }
-  
-  Q query(int p, int l, int r, int i, int j) {
-    if (i <= l && r <= j) { // [i,j] contains [l,r]
-      return node[p].query;
-    }
-    if (node[p].leaf) { // [i,j] intersects [l, r]
-      splitNode(p, l, r);
-    }
-    int m = (l + r) / 2;
-    Q ret;
-    if (j <= m) {
-      ret = query(node[p].leftChild, l, m, i, j);
-    } else if (i >= m + 1) {
-      ret = query(node[p].rightChild, m + 1, r, i, j);
-    } else {
-      ret = merge(query(node[p].leftChild, l, m, i, j),
-                  query(node[p].rightChild, m + 1, r, i, j));
-    }
-    node[p].query =
-    merge(node[node[p].leftChild].query, node[node[p].rightChild].query);
-    return ret;
-  }
-  
-  int minIndex, maxIndex;
-  int root;
-  
-public:
-  // First way to specify a segment tree, usually use when lazy propagation is
-  // needed.
-  // Q merge(Q, Q) that merges the query from left and right children
-  // Q updateLeaf(Q cur, T oldV, T curV, int l, int r) return the updated
-  //   query in a leaf node if its old value is oldV and new value is curV
-  // split(Q& cur, Q &lChild, Q &rChild, int curV, int l, int m, int r)
-  //   modify the query in the current node and it's left and right children
-  //   when
-  // a split action happens.
-  explicit SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                       const TreeMergeFunction<T, Q> &merge,
-                       const TreeUpdateLeafFunction<T, Q> &updateLeaf,
-                       const TreeSplitFunction<T, Q> &split)
-  : merge(merge), updateLeaf(updateLeaf), split(split),
-  defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
-    root = addNode(minIndex, maxIndex);
-  }
-  
-  // The second way to specify a segment tree:
-  // a merge function
-  // an init function (v, l, r) that initilize the query based on
-  // the value of the node and the node interval
-  SegmentTree(int minIndex, int maxIndex, T defaultValue,
-              const TreeMergeFunction<T, Q> &merge,
-              const function<Q(T, int, int)> &init)
-  : merge(merge), defaultValue(defaultValue), minIndex(minIndex),
-  maxIndex(maxIndex), init(init) {
-    updateLeaf = [&](const Q &cur, T oldV, T curV, int l, int r) {
-      return this->init(curV, l, r);
-    };
-    split = [&](Q &cur, Q &lQ, Q &rQ, T v, int l, int m, int r) {
-      lQ = this->init(v, l, m);
-      rQ = this->init(v, m + 1, r);
-    };
-    root = addNode(minIndex, maxIndex);
-  }
-  
-  // Set all elements in [i, j] to be v
-  void update(int i, int j, T v) { update(root, minIndex, maxIndex, i, j, v); }
-  
-  // Query augmented data in [i, j]
-  Q query(int i, int j) { return query(root, minIndex, maxIndex, i, j); }
-  
-  // Query augmented data in the whole range
-  Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
-};
-
-/******* PREDEFINE SOME COMMON SEG TREES ******* */
-
-template <class T> struct MaxTreeQ;
-
-// A segment tree with two queries:
-// add(i, j, v): add all elements in range [i, j] by V
-// queryMax(i, j)
-// all 0 initially.
-template <class T> class MaxAddTree : public SegmentTree<T, MaxTreeQ<T>> {
-public:
-  MaxAddTree(int minIndex, int maxIndex)
-  : SegmentTree<T, MaxTreeQ<T>>(
-                                minIndex, maxIndex, 0,
-                                [](const MaxTreeQ<T> &l, const MaxTreeQ<T> &r) {
-                                  return MaxTreeQ<T>(max(l.queryMax, r.queryMax), 0);
-                                },
-                                [](const MaxTreeQ<T> &cur, T oldV, T newV, int l, int r) {
-                                  return MaxTreeQ<T>(cur.queryMax + newV, cur.lazy + newV);
-                                },
-                                [](MaxTreeQ<T> &cur, MaxTreeQ<T> & lChild, MaxTreeQ<T> & rChild,
-                                   T curV, int l, int m, int r) {
-                                  lChild.lazy += cur.lazy;
-                                  rChild.lazy += cur.lazy;
-                                  lChild.queryMax += cur.lazy;
-                                  rChild.queryMax += cur.lazy;
-                                  cur.lazy = 0;
-                                }) {}
-  
-  T queryMax(int l, int r) {
-    return SegmentTree<T, MaxTreeQ<T>>::query(l, r).queryMax;
-  }
-  
-  T queryMax() { return SegmentTree<T, MaxTreeQ<T>>::query().queryMax; }
-  
-  void add(int l, int r, T v) { SegmentTree<T, MaxTreeQ<T>>::update(l, r, v); }
-};
-
 // A segment tree with two queries:
 // update(i, j, v): set Element[k] = max(Element[k], v) for all i <= k <= j
 // queryMax(i, j)
 // all 0 initially.
-template <class T> class MaxMaxTree : public SegmentTree<T, MaxTreeQ<T>> {
+template<class T> struct TreeNode {
+  int l, r;
+  T v;
 public:
-  MaxMaxTree(int minIndex, int maxIndex)
-  : SegmentTree<T, MaxTreeQ<T>>(
-                                minIndex, maxIndex, 0,
-                                [](const MaxTreeQ<T> &l, const MaxTreeQ<T> &r) {
-                                  return MaxTreeQ<T>(max(l.queryMax, r.queryMax), 0);
-                                },
-                                [](const MaxTreeQ<T> &cur, T newV, int l, int r) {
-                                  return MaxTreeQ<T>(max(cur.queryMax, newV), max(cur.lazy, newV));
-                                },
-                                [](MaxTreeQ<T> &cur, MaxTreeQ<T> & lChild, MaxTreeQ<T> & rChild,
-                                   int l, int m, int r) {
-                                  lChild.lazy = max(lChild.lazy, cur.lazy);
-                                  rChild.lazy = max(rChild.lazy, cur.lazy);
-                                  lChild.queryMax = max(lChild.queryMax, cur.lazy);
-                                  rChild.queryMax = max(rChild.queryMax, cur.lazy);
-                                  cur.lazy = 0;
-                                }) {}
+  TreeNode(int l, int r, T v): l(l), r(r), v(v){}
+};
+
+template <class T> class MaxMaxTree {
+  vector<TreeNode<T>> node;
+  int minIndex, maxIndex;
+  int root;
+  
+  int addNode(T v) {
+    node.push_back(TreeNode<T>(-1, -1, v));
+    return (int)node.size() - 1;
+  }
+  
+  T queryMax(int l, int r, int curNodeId, int curNodeL, int curNodeR) {
+    int mid = (curNodeL + curNodeR) / 2;
+    T ret = node[curNodeId].v;
+    if (l <= mid) {
+      if (node[curNodeId].l != -1) {
+        ret = max(ret, queryMax(l, r, node[curNodeId].l, curNodeL, mid));
+      }
+    }
+    if (mid < r) {
+      if (node[curNodeId].r != -1) {
+        ret = max(ret, queryMax(l, r, node[curNodeId].r, mid + 1, curNodeR));
+      }
+    }
+    return ret;
+  }
+  
+  void update(int l, int r, T v, int curNodeId, int curNodeL, int curNodeR) {
+    if (l <= curNodeL && curNodeR <= r) {
+      node[curNodeId].v = max(node[curNodeId].v, v);
+      return;
+    }
+    
+    int m = (curNodeL + curNodeR) / 2;
+    if (l <= m) {
+      if (node[curNodeId].l == -1) {
+        int tmp;
+        tmp = addNode(node[curNodeId].v);
+        node[curNodeId].l = tmp;
+      }
+      update(l, r, v, node[curNodeId].l, curNodeL, m);
+    }
+    
+    if (r > m) {
+      if (node[curNodeId].r == -1) {
+        int tmp;
+        tmp = addNode(node[curNodeId].v);
+        node[curNodeId].r = tmp;
+      }
+      update(l, r, v, node[curNodeId].r, m + 1, curNodeR);
+    }
+    
+    //merge(curNodeId);
+  }
+  
+  void merge(int nodeId) {
+    if (node[nodeId].l == -1 && node[nodeId].r == -1) {
+      return;
+    }
+    if (node[nodeId].l == -1) {
+      node[nodeId].v = node[node[nodeId].r].v;
+    }
+    if (node[nodeId].r == -1 ) {
+      node[nodeId].v = node[node[nodeId].l].v;
+    }
+    node[nodeId].v = max(node[node[nodeId].r].v, node[node[nodeId].l].v);
+  }
+  
+public:
+  MaxMaxTree(int minIndex, int maxIndex) {
+    root = addNode(0);
+    this->minIndex = minIndex;
+    this->maxIndex = maxIndex;
+  }
   
   T queryMax(int l, int r) {
-    return SegmentTree<T, MaxTreeQ<T>>::query(l, r).queryMax;
+    return queryMax(l, r, 0, minIndex, maxIndex);
   }
   
-  T queryMax() { return SegmentTree<T, MaxTreeQ<T>>::query().queryMax; }
-  
-  void add(int l, int r, T v) { SegmentTree<T, MaxTreeQ<T>>::update(l, r, v); }
-};
-
-
-template <class T> struct MaxTreeQ {
-  T queryMax = 0;
-  T lazy = 0;
-  MaxTreeQ(){};
-  MaxTreeQ(T queryMax, T lazy) {
-    this->queryMax = queryMax;
-    this->lazy = lazy;
+  void update(int l, int r, T v) {
+    update(l, r, v, 0, minIndex, maxIndex);
   }
 };
-
 
 void testGen() {
   freopen("biginput1.txt", "w", stdout);
   fclose(stdout);
 }
-
-template <class T> class MaxTreeNaive {
-  vector<T> a;
-public:
-  MaxTreeNaive(int minIndex, int maxIndex) {
-    a.resize(maxIndex - minIndex + 1);
-  }
-  
-  T queryMax(int l, int r) {
-    T best = a[l];
-    for_inc_range(i, l, r) {
-      best = max(best, a[i]);
-    }
-    return best;
-  }
-  
-  void update(int l, int r, T v) {
-    for_inc_range(i, l, r) {
-      a[i] = max(a[i], v);
-    }
-  }
-};
 
 int n, q;
 
@@ -320,7 +166,7 @@ int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
-  freopen("input2.txt", "r", stdin);
+  freopen("input1.txt", "r", stdin);
 #endif
   cin >> n >> q;
   
@@ -335,6 +181,7 @@ int main() {
     if (isUp) {
       if (!usedX.count(x)) {
         int maxy = maxCol.queryMax(x, x);
+        LOG(1, "Query" << x << " " << x << " " << maxy);
         ret = y - maxy;
         maxRow.update(maxy + 1, y, x);
         usedX.insert(x);
@@ -342,7 +189,9 @@ int main() {
     } else {
       if (!usedY.count(y)) {
         int maxx = maxRow.queryMax(y, y);
+        
         ret = x - maxx;
+        LOG(1, " Update " << maxx + 1 << " " << x << " " << y);
         maxCol.update(maxx + 1, x, y);
         usedY.insert(y);
       }
