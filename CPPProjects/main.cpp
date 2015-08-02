@@ -126,19 +126,6 @@ template <class T> class MaxMaxTree {
     //merge(curNodeId);
   }
   
-  void merge(int nodeId) {
-    if (node[nodeId].l == -1 && node[nodeId].r == -1) {
-      return;
-    }
-    if (node[nodeId].l == -1) {
-      node[nodeId].v = node[node[nodeId].r].v;
-    }
-    if (node[nodeId].r == -1 ) {
-      node[nodeId].v = node[node[nodeId].l].v;
-    }
-    node[nodeId].v = max(node[node[nodeId].r].v, node[node[nodeId].l].v);
-  }
-  
 public:
   MaxMaxTree(int minIndex, int maxIndex) {
     root = addNode(0);
