@@ -66,11 +66,127 @@ void testGen() {
   fclose(stdout);
 }
 
+class NumberTheory {
+public:
+  // O(sqrt(n))
+  static bool isPrime(int64 n) {
+    for (int64 i = 2; i * i <= n; ++i) {
+      if (n % i == 0) {
+        return false;
+      }
+    }
+    return true;
+  }
+  
+  // O(sqrtn*logn)
+  static set<int64> findDivisors(int64 n) {
+    set<int64> ret;
+    ret.insert(1);
+    ret.insert(n);
+    for (int64 i = 2; i * i <= n; ++i) {
+      if (n % i == 0) {
+        ret.insert(i);
+        ret.insert(n / i);
+      }
+    }
+    return ret;
+  }
+};
+
+class PrimeGenerator {
+  vector<bool> prime;
+  vector<int> primeList;
+  int upper;
+public:
+  // Generate all primes between 2 and upper
+  PrimeGenerator(int upper) {
+    assert(upper >= 2);
+    this->upper = upper;
+    
+    prime.resize(upper + 1);
+    for_inc_range(i, 0, upper) {
+      prime[i] = true;
+    }
+    prime[0] = prime[1] = false;
+    for (int i = 2; i * i <= upper; ++i) {
+      if (prime[i]) {
+        for (int j = i * i; j <= upper; j += i) {
+          prime[j] = false;
+        }
+      }
+    }
+    
+    for_inc_range(i, 2, upper) {
+      if (prime[i]) {
+        primeList.push_back(i);
+      }
+    }
+  }
+  
+  // O(1)
+  bool isPrime(int n) const {
+    assert(n <= upper);
+    if (n < 2) {
+      return false;
+    }
+    return prime[n];
+  }
+  
+  // Get 1-based prime, e.g. getPrime(1) = 2, getPrime(2) = 3,...
+  int getPrime(int id) const {
+    assert(id >=1 && id <= primeList.size());
+    return primeList[id - 1];
+  }
+  
+  const vector<int> &getPrimeList() const {
+    return primeList;
+  }
+};
+
+char d[10];
+bool isPalin(int x) {
+  int n = x;
+  int rev = 0;
+  while (n > 0)
+  {
+    int d = n % 10;
+    rev = rev * 10 + d;
+    n /= 10;
+  }
+  return x == rev;
+}
+
+
 int main() {
   ios::sync_with_stdio(false);
 #ifndef SUBMIT
   //testGen();
   freopen("input1.txt", "r", stdin);
 #endif
+  
+  const int BOUND = 2000000;
+  PrimeGenerator pg(BOUND);
+  
+  int p, q;
+  cin >> p >> q;
+  
+  int nPrime = 0;
+  int nPalin = 0;
+  vector<double> ratio(BOUND + 1);
+  for_inc_range(x, 1, BOUND) {
+    if (pg.isPrime(x)) {
+      nPrime++;
+    }
+    if (isPalin(x)) {
+      nPalin++;
+    }
+    ratio[x] = (double) (nPrime * 1.0) / nPalin;
+  }
+  for_dec_range(x, BOUND, 1) {
+    if (ratio[x] * q <= p) {
+      cout << x << endl;
+      return 0;
+    }
+  }
   return 0;
 }
