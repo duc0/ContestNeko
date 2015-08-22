@@ -45,24 +45,38 @@ using namespace std;
 #define INT64_INF ((int64)1E18L)
 #define MOD 1000000007
 
+map<pair<int64, int64>, int64> res;
+
 class BallsInBoxes {
 public:
   int64 maxTurns(int64 n, int64 k ) {
+    res.clear();
+    return help(n, k);
+  }
+  int64 help(int64 n, int64 k ) {
+    auto key = make_pair(n, k);
+    if (res.count(key)) {
+      return res[key];
+    }
+    int64 r;
     if (k == 1) {
-      return n - 1;
+      r = n - 1;
     } else if (k == n) {
-      return 0;
-    }
-    int64 l = n - k + 1;
-    if (l % 2 == 0) {
-      int64 t = l / 2;
-      int64 newN = k + t - 1;
-      return 1 + maxTurns(newN, k);
+      r = 0;
     } else {
-      int64 t = l / 2;
-      int64 newN = k + t - 1;
-      return 1 + max(maxTurns(newN, k), maxTurns(newN + 1, k));
+      int64 l = n - k + 1;
+      if (l % 2 == 0) {
+        int64 t = l / 2;
+        int64 newN = k + t - 1;
+        r = 1 + maxTurns(newN, k);
+      } else {
+        int64 t = l / 2;
+        int64 newN = k + t - 1;
+        r = 1 + maxTurns(newN + 1, k);
+      }
     }
+    res[key] = r;
+    return r;
   }
 };
 
@@ -181,25 +195,35 @@ namespace moj_harness {
 		}
 
 		// custom cases
+      case 4: {
+        long long N               = 999999999;
+        long long K               = 99999;
+        long long expected__      = 30;
+        
+        std::clock_t start__      = std::clock();
+        long long received__      = BallsInBoxes().maxTurns(N, K);
+        return verify_case(casenum__, expected__, received__, clock()-start__);
+      }
 
-/*      case 4: {
-			long long N               = ;
-			long long K               = ;
-			long long expected__      = ;
+
+     case 5: {
+			long long N               = 999999999999999999;
+			long long K               = 999999999999;
+			long long expected__      = 60;
 
 			std::clock_t start__      = std::clock();
 			long long received__      = BallsInBoxes().maxTurns(N, K);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
-/*      case 5: {
-			long long N               = ;
-			long long K               = ;
-			long long expected__      = ;
+		}
+      case 6: {
+			long long N               = 999999999999999999;
+			long long K               = 3324;
+			long long expected__      = 60;
 
 			std::clock_t start__      = std::clock();
 			long long received__      = BallsInBoxes().maxTurns(N, K);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
+		}
 /*      case 6: {
 			long long N               = ;
 			long long K               = ;
