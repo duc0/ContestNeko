@@ -1,5 +1,5 @@
 #define LOGLEVEL 0
-#define NDEBUG
+//#define NDEBUG
 
 // BEGIN CUT HERE
 #define LOGLEVEL 1
@@ -54,6 +54,7 @@ public:
     return help(n, k);
   }
   int64 help(int64 n, int64 k ) {
+    assert(k >= 1 && k <= n);
     auto key = make_pair(n, k);
     if (res.count(key)) {
       return res[key];
@@ -224,15 +225,15 @@ namespace moj_harness {
 			long long received__      = BallsInBoxes().maxTurns(N, K);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
 		}
-/*      case 6: {
-			long long N               = ;
-			long long K               = ;
-			long long expected__      = ;
+      case 7: {
+			long long N               = 3443223432213;
+			long long K               = 4232123;
+			long long expected__      = 42;
 
 			std::clock_t start__      = std::clock();
 			long long received__      = BallsInBoxes().maxTurns(N, K);
 			return verify_case(casenum__, expected__, received__, clock()-start__);
-		}*/
+		}
 		default:
 			return -1;
 		}
