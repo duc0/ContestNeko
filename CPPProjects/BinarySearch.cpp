@@ -215,12 +215,12 @@ int main() {
       s.add(i, curH - 1, 1);
     } else {
       int x = s[i];
-      int ret = binarySearchMin<int>(i, curH - 1, [&](int midIndex){return s[midIndex] < x;});
+      int ret = BinarySearch::binarySearchMin<int>(i, curH - 1, [&](int midIndex){return s[midIndex] < x;});
       if (ret != curH) {
         s.add(ret, curH - 1, 1);
         k -= (curH - ret);
       }
-      ret = binarySearchMin<int>(0, i, [&](int midIndex){return s[midIndex] == x;});
+      ret = BinarySearch::binarySearchMin<int>(0, i, [&](int midIndex){return s[midIndex] == x;});
       s.add(ret, ret + k - 1, 1);
     }
   }

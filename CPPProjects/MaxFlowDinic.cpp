@@ -299,7 +299,7 @@ int main() {
       }
     }
     
-    int bestMatch = Dinic<int, (int)INT_INF>(g, source, sink).run();
+    int bestMatch = Dinic<int>(g, source, sink).run();
     if (bestMatch == nMale) {
       ret = mid;
       right = mid - 1;
