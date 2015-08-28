@@ -2,9 +2,9 @@
 5 TaskB
 55 tasks/CodeForces/R315/B - Symmetric and Transitive.task
 8 STANDARD
--1
+9 input.txt
 8 STANDARD
--1
+10 output.txt
 6 SINGLE
 3
 0
