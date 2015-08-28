@@ -1,5 +1,5 @@
-#include "../../../library/Number/ModInt.hpp"
-#include "../../../library/Combinatorics/ComboUtils.hpp"
+#include "ModInt.hpp"
+#include "ComboUtils.hpp"
 
 class TaskB {
 public:

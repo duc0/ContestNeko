@@ -1,4 +1,4 @@
-#include "../global.hpp"
+#include "global.hpp"
 
 // Usage:
 // Construct comboUtils(n): Compute some combo numbers with up to n objects.

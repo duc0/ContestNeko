@@ -1,4 +1,4 @@
-#include "../global.hpp"
+#include "global.hpp"
 #include "NumberTheory.hpp"
 
 class PrimeGenerator {

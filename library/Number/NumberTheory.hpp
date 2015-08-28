@@ -1,4 +1,4 @@
-#include "../global.hpp"
+#include "global.hpp"
 
 // O(sqrt(n))
 bool isPrime(int64 n) {

@@ -5,9 +5,12 @@ add_executable(output output/main.cpp)
 add_executable(testrunner testrunner/main.cpp)
 file(GLOB TASKS "tasks/*.cpp")
 file(GLOB_RECURSE HEADERS "library/*.hpp" )
+file(GLOB_RECURSE HEADERS "library/Number/*.hpp" )
+file(GLOB_RECURSE HEADERS "library/Combinatorics/*.hpp" )
 
 include_directories(library)
 include_directories(library/Number)
+include_directories(library/Combinatorics)
 
 ADD_DEFINITIONS(-std=c++11)
 

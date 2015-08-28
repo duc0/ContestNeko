@@ -3,9 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/library/Number/NumberTheory.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/library/Number/PrimeGenerator.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/library/global.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/output/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/testrunner/main.cpp" isTestSource="false" />
     </content>
@@ -340,9 +338,7 @@
           <root url="file://$MODULE_DIR$/library" />
         </SOURCES>
         <excluded>
-          <root url="file://$MODULE_DIR$/library/Number/NumberTheory.hpp" />
-          <root url="file://$MODULE_DIR$/library/global.hpp" />
-          <root url="file://$MODULE_DIR$/library/Number/PrimeGenerator.hpp" />
+          <root url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" />
         </excluded>
       </library>
     </orderEntry>

@@ -1,4 +1,4 @@
-#include "../../../library/Number/PrimeGenerator.hpp"
+#include "PrimeGenerator.hpp"
 
 class TaskA {
 public:
