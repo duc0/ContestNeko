@@ -1,0 +1,5 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Task" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" task_path="tasks/Task.task">
+    <method />
+  </configuration>
+</component>
