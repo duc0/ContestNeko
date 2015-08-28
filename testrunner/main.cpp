@@ -1,4 +1,4 @@
-#include "/Users/duc.ngo/ProgrammingContest/tasks/CodeForces/R315/TaskA.cpp"
+#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/R315/TaskA.cpp"
 
 #include <iostream>
 #include <fstream>

@@ -6,6 +6,9 @@ add_executable(testrunner testrunner/main.cpp)
 file(GLOB TASKS "tasks/*.cpp")
 file(GLOB_RECURSE HEADERS "library/*.hpp" )
 
+include_directories(library)
+include_directories(library/Number)
+
 ADD_DEFINITIONS(-std=c++11)
 
 add_executable(test ${TASKS} ${HEADERS})
