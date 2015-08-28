@@ -65,29 +65,34 @@
 
 using namespace std;
 
-class TaskC {
+class TaskB {
 public:
     void solve(std::istream &in, std::ostream &out) {
         int n;
         in >> n;
-        map<string, int> m;
+        map<string, string> m;
         repeat(n) {
-            string s;
-            in >> s;
-            if (m.count(s)) {
-                out << s << m[s] + 1 << endl;
-                m[s]++;
+            string old, new_;
+            in >> old >> new_;
+
+            if (!m.count(old)) {
+                m[new_] = old;
             } else {
-                out << "OK" << endl;
-                m[s] = 0;
+                m[new_] = m[old];
+                m.erase(old);
             }
+        }
+
+        out << m.size() << endl;
+        for (auto &e : m) {
+            out << e.second << " " << e.first << endl;
         }
     }
 };
 
 
 int main() {
-    TaskC solver;
+    TaskB solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);
