@@ -24,6 +24,30 @@ set<int64> findDivisors(int64 n) {
     return ret;
 }
 
+template <class T> void extendedEuclid(T a, T b, T &x, T &y) {
+    if (b == 0) {
+        x = 1;
+        y = 0;
+        return;
+    }
+    T x2;
+    extendedEuclid(b, a % b, x2, x);
+    y = x2 - (a / b) * x;
+}
+
+template <class T> T modulo(int64 a, T b) {
+    T r = a % b;
+    if (r < 0)
+        r += b;
+    return r;
+}
+
+template <class T> T modularInverse(T a, T m) {
+    T x, y;
+    extendedEuclid(a, m, x, y);
+    return modulo(x, m);
+}
+
 template <class T> bool isPalindromic(T x) {
     int n = x;
     int rev = 0;

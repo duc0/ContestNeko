@@ -13,6 +13,7 @@
 #define LOGLEVEL 0
 #define NDEBUG
 #else
+#define LOGLEVEL 1
 #endif
 
 #include <cstdio>
@@ -44,10 +45,77 @@
 
 #endif
 
+#define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl
+
+#define int64 long long
+#define repeat(x) for (auto repeat_var = 0; repeat_var < x; ++repeat_var)
+
+#define for_inc(i, x) for (auto i = 0; i < x; ++i)
+#define for_dec(i, x) for (auto i = x - 1; i >= 0; --i)
 #define for_inc_range(i, x, y) for (auto i = x; i <= y; ++i)
+#define for_dec_range(i, x, y) for (auto i = x; i >= y; --i)
+
+#define countBit __builtin_popcount
+#define countBit64 __builtin_popcountl
+
+#define fill0(x) memset(x, 0, sizeof(x))
+#define INT_INF ((int)2E9L)
+#define INT64_INF ((int64)1E18L)
+#define MOD 1000000007
 
 using namespace std;
 
+
+// O(sqrt(n))
+bool isPrime(int64 n) {
+    for (int64 i = 2; i * i <= n; ++i) {
+        if (n % i == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// O(sqrtn*logn)
+set<int64> findDivisors(int64 n) {
+    set<int64> ret;
+    ret.insert(1);
+    ret.insert(n);
+    for (int64 i = 2; i * i <= n; ++i) {
+        if (n % i == 0) {
+            ret.insert(i);
+            ret.insert(n / i);
+        }
+    }
+    return ret;
+}
+
+template<class T>
+void extendedEuclid(T a, T b, T &x, T &y) {
+    if (b == 0) {
+        x = 1;
+        y = 0;
+        return;
+    }
+    T x2;
+    extendedEuclid(b, a % b, x2, x);
+    y = x2 - (a / b) * x;
+}
+
+template<class T>
+T modulo(int64 a, T b) {
+    T r = a % b;
+    if (r < 0)
+        r += b;
+    return r;
+}
+
+template<class T>
+T modularInverse(T a, T m) {
+    T x, y;
+    extendedEuclid(a, m, x, y);
+    return modulo(x, m);
+}
 
 template<class T>
 bool isPalindromic(T x) {
@@ -62,81 +130,213 @@ bool isPalindromic(T x) {
 }
 
 
-class PrimeGenerator {
-    vector<bool> prime;
-    vector<int> primeList;
-    int upper;
+template<class T, T M>
+class ModInt {
+    T x = 0;
+
+    static inline T get(ModInt x) { return x.get(); }
+
+    static inline T get(T x) { return x; }
+
 public:
-    // Generate all primes between 2 and upper
-    PrimeGenerator(int upper) {
-        assert(upper >= 2);
-        this->upper = upper;
+    ModInt() : ModInt(0) { }
 
-        prime.resize(upper + 1);
-        for_inc_range(i, 0, upper) {
-            prime[i] = true;
-        }
-        prime[0] = prime[1] = false;
-        for (int i = 2; i * i <= upper; ++i) {
-            if (prime[i]) {
-                for (int j = i * i; j <= upper; j += i) {
-                    prime[j] = false;
-                }
-            }
-        }
+    ModInt(int64 y) { x = modulo(y, M); }
 
-        for_inc_range(i, 2, upper) {
-            if (prime[i]) {
-                primeList.push_back(i);
-            }
-        }
+    T get() const { return x; }
+
+    template<class Q>
+    ModInt operator+(const Q &y) const {
+        return ModInt(x + get(y));
     }
 
-    // O(1)
-    bool isPrime(int n) const {
-        assert(n <= upper);
-        if (n < 2) {
-            return false;
-        }
-        return prime[n];
+    template<class Q>
+    ModInt &operator+=(const Q &y) {
+        x = modulo(x + get(y), M);
+        return *this;
     }
 
+    template<class Q>
+    ModInt operator-(const Q &y) const {
+        return ModInt(x - get(y));
+    }
+
+    template<class Q>
+    ModInt &operator-=(const Q &y) {
+        x = modulo(x - get(y), M);
+        return *this;
+    }
+
+    template<class Q>
+    bool operator!=(const Q &y) const {
+        return x != get(y);
+    }
+
+    template<class Q>
+    ModInt operator*(const Q &y) const {
+        return ModInt((int64) x * get(y));
+    }
+
+    template<class Q>
+    ModInt &operator*=(const Q &y) {
+        x = modulo((int64) x * get(y), M);
+        return *this;
+    }
+
+    template<class Q>
+    ModInt operator/(const Q &y) const {
+        return ModInt(
+                (int64) x * modularInverse(get(y), MOD));
+    }
+
+    template<class Q>
+    ModInt &operator/=(const Q &y) {
+        x = modulo((int64) x * modularInverse(get(y), MOD), M);
+        return *this;
+    }
+
+    ModInt &operator=(const T &y) {
+        x = modulo(y, M);
+        return *this;
+    }
+
+    ModInt &operator=(const ModInt &y) {
+        x = y.x;
+        return *this;
+    }
+
+    template<class Q>
+    bool operator==(const Q &y) const {
+        return x == get(y);
+    }
+
+    template<class Q>
+    bool operator>(const Q &y) const {
+        return x > get(y);
+    }
+
+    template<class Q>
+    bool operator>=(const Q &y) const {
+        return x >= get(y);
+    }
+
+    template<class Q>
+    bool operator<(const Q &y) const {
+        return x < get(y);
+    }
+
+    template<class Q>
+    bool operator<=(const Q &y) const {
+        return x <= get(y);
+    }
+
+    friend std::ostream &operator<<(std::ostream &stream, const ModInt &y) {
+        stream << get(y);
+        return stream;
+    }
 };
 
-class TaskA {
+
+// Usage:
+// Construct comboUtils(n): Compute some combo numbers with up to n objects.
+
+template<class T>
+class ComboUtils {
+    vector<T> factorial;
+    int maxN;
+public:
+    int getMaxN() const {
+        return maxN;
+    }
+
+    ComboUtils(int n) {
+        this->maxN = n;
+        factorial.resize(n + 1);
+        factorial[0] = 1;
+        for_inc_range(i, 1, n) {
+            factorial[i] = factorial[i - 1] * i;
+        }
+    }
+
+    // Number of ways to choose k objects from n objects
+    T C(int n, int k) const {
+        assert (0 <= n && n <= maxN);
+        if (k < 0 || k > n) return 0;
+        return factorial[n] / factorial[k] / factorial[n - k];
+    }
+
+    // Number of ways to choose k objects from n objects and ordering is important
+    T A(int n, int k) const {
+        assert (0 <= n && n <= maxN);
+        if (k < 0 || k > n) return 0;
+        return factorial[n] / factorial[n - k];
+    }
+
+    // Number of ways to arrange n objects
+    T P(int n) const {
+        assert (0 <= n && n <= maxN);
+        return factorial[n];
+    }
+
+    // Number of ways to choose k objects from n objects, with repetition
+    T repeatC(int n, int k) const {
+        return C(n + k - 1, k);
+    }
+
+    // Return a vector c[i] = C(i, k) for i <= n, O(n)
+    static vector<T> getCombByK(int n, int k) {
+        vector<T> c(n + 1);
+        c[k] = 1;
+        for_inc_range(i, k + 1, n) {
+            c[i] = c[i - 1] * i / (i - k);
+        }
+        return c;
+    }
+
+    // Return a vector c[i] = C(n, i) for i <= n, O(n)
+    static vector<T> getCombByN(int n) {
+        vector<T> c(n + 1);
+        c[0] = 1;
+        for_inc_range(i, 1, n) {
+            c[i] = c[i - 1] * (n - i + 1) / i;
+        }
+        return c;
+    }
+
+    // Return a vector p[i] = a^i for i <= n, O(n)
+    static vector<T> getPower(int n, T a) {
+        vector<T> p(n + 1);
+        p[0] = 1;
+        for_inc_range(i, 1, n) {
+            p[i] = p[i - 1] * a;
+        }
+        return p;
+    }
+};
+
+class TaskB {
 public:
     void solve(std::istream &in, std::ostream &out) {
-        const int BOUND = 2000000;
-        PrimeGenerator pg(BOUND);
-
-        int p, q;
-        in >> p >> q;
-
-        int nPrime = 0;
-        int nPalin = 0;
-        vector<double> ratio(BOUND + 1);
-        for (int x = 1; x <= BOUND; x++) {
-            if (pg.isPrime(x)) {
-                nPrime++;
-            }
-            if (isPalindromic(x)) {
-                nPalin++;
-            }
-            ratio[x] = (double) (nPrime * 1.0) / nPalin;
-        }
-        for (int x = BOUND; x >= 1; x--) {
-            if (ratio[x] * q <= p) {
-                out << x << endl;
-                return;
+        int n;
+        in >> n;
+        n++;
+        vector<ModInt<int, MOD>> bell(n + 1);
+        bell[0] = 1;
+        ComboUtils<ModInt<int, MOD>> combo(n);
+        for_inc_range(i, 0, n - 1) {
+            bell[i + 1] = 0;
+            vector<ModInt<int, MOD>> c = combo.getCombByN(i);
+            for_inc_range(k, 0, i) {
+                bell[i + 1] = bell[i + 1] + c[k] * bell[k];
             }
         }
-        return;
+        out << bell[n] - bell[n - 1] << endl;
     }
 };
 
 
 int main() {
-    TaskA solver;
+    TaskB solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);
