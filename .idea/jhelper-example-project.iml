@@ -3,7 +3,7 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/library/Iterable/Iterator.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/output/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/testrunner/main.cpp" isTestSource="false" />
     </content>
@@ -338,7 +338,7 @@
           <root url="file://$MODULE_DIR$/library" />
         </SOURCES>
         <excluded>
-          <root url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" />
+          <root url="file://$MODULE_DIR$/library/Iterable/Iterator.hpp" />
         </excluded>
       </library>
     </orderEntry>

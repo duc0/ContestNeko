@@ -1,4 +1,5 @@
 #include "global.hpp"
+#include "Iterator.hpp"
 
 // O(sqrt(n))
 bool isPrime(int64 n) {
@@ -23,6 +24,56 @@ set<int64> findDivisors(int64 n) {
     }
     return ret;
 }
+
+template <class T> class DivisorIterator : public Iterator<T> {
+    T cur, next_, n;
+
+public:
+    DivisorIterator(T n) {
+        assert(n > 0);
+        this->n = n;
+        cur = 0;
+        next_ = 1;
+    }
+
+    virtual bool hasNext() const {
+        return next_ != -1;
+    }
+
+    virtual T next() {
+        cur = next_;
+        if (next_ * next_ < n) {
+            next_ = n / next_;
+        } else if (next_ * next_ == n) {
+            next_ = -1;
+        } else {
+            next_ = n / next_ + 1;
+            bool found = false;
+            while (next_ * next_ <= n) {
+                if (n % next_ == 0) {
+                    found = true;
+                    break;
+                }
+                next_++;
+            }
+            if (!found) {
+                next_ = -1;
+            }
+        }
+        return cur;
+    }
+};
+
+template <class T> class DivisorIterable : public Iterable<T> {
+    T n;
+public:
+    DivisorIterable(T n) {
+        this->n = n;
+    }
+    virtual Iterator<T>* iterator() const {
+        return new DivisorIterator<T>(n);
+    }
+};
 
 template <class T> void extendedEuclid(T a, T b, T &x, T &y) {
     if (b == 0) {
