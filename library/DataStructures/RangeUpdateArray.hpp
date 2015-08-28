@@ -22,14 +22,18 @@ public:
         tree.init(minIndex, maxIndex);
     }
 
-    // Do a[k] = a[k] + v for i <= k <= j
-    // O(logn)
-    void add(int i, int j, T v) {
-        assert(minIndex <= i && i <= j && j <= maxIndex);
-        if (j < maxIndex) {
-            tree.add(j + 1, -v);
+    /**
+     *  Add toAdd to every element in the range [from, to]. Complexity: O(logn)
+     *  @param from The from index
+     *  @param to The to index (inclusive)
+     *  @param toAdd The quantity to add
+     */
+    void add(int from, int to, T toAdd) {
+        assert(minIndex <= from && from <= to && to <= maxIndex);
+        if (to < maxIndex) {
+            tree.add(to + 1, -toAdd);
         }
-        tree.add(i, v);
+        tree.add(from, toAdd);
     }
 
     // Return a[i] in O(logn)
