@@ -76,223 +76,259 @@ string toYesNo(bool b) {
 
 
 template<class T>
-class Iterator {
-public:
-    virtual bool hasNext() const = 0;
+class BinaryIndexedTree {
+    vector<T> val;
+    int n, minIndex, maxIndex;
 
-    virtual T next() = 0;
+public:
+    BinaryIndexedTree() { }
+
+    BinaryIndexedTree(int n) : BinaryIndexedTree(1, n) { }
+
+    BinaryIndexedTree(int minIndex, int maxIndex) {
+        init(minIndex, maxIndex);
+    }
+
+    void init(int minIndex, int maxIndex) {
+        this->minIndex = minIndex;
+        this->maxIndex = maxIndex;
+        this->n = maxIndex - minIndex + 1;
+        val.resize(n + 1);
+    }
+
+    void add(int i, int v) {
+        i = i - minIndex + 1;
+        for (; i <= n; i += i & -i) {
+            val[i] += v;
+        }
+    }
+
+    T sum(int i) {
+        i = i - minIndex + 1;
+        if (i <= 0) return 0;
+        if (i > n) i = n;
+        T s = 0;
+        for (; i > 0; i -= i & -i)
+            s += val[i];
+        return s;
+    }
+
+    T sum(int i1, int i2) { return sum(i2) - sum(i1 - 1); }
 };
 
 template<class T>
-class Iterable {
-public:
-    virtual Iterator<T> *iterator() const = 0;
-};
-
-
-template<class T, class UnaryPredicate>
-bool any(const Iterable<T> &iterable, const UnaryPredicate &pred) {
-    auto it = iterable.iterator();
-    while (it->hasNext()) {
-        if (pred(it->next())) {
-            return true;
-        }
-    }
-    return false;
-}
-
-template<class T, class UnaryPredicate>
-bool all(const Iterable<T> &iterable, const UnaryPredicate &pred) {
-    auto it = iterable.iterator();
-    while (it->hasNext()) {
-        if (!pred(it->next())) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// O(sqrt(n))
-bool isPrime(int64 n) {
-    for (int64 i = 2; i * i <= n; ++i) {
-        if (n % i == 0) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// O(sqrtn*logn)
-set<int64> findDivisors(int64 n) {
-    set<int64> ret;
-    ret.insert(1);
-    ret.insert(n);
-    for (int64 i = 2; i * i <= n; ++i) {
-        if (n % i == 0) {
-            ret.insert(i);
-            ret.insert(n / i);
-        }
-    }
-    return ret;
-}
-
-template<class T>
-class DivisorIterator : public Iterator<T> {
-    T cur, next_, n;
+class BinaryIndexedTree3D {
+    vector<vector<vector<T>>> val;
+    int n, minIndex, maxIndex;
 
 public:
-    DivisorIterator(T n) {
-        assert(n > 0);
-        this->n = n;
-        cur = 0;
-        next_ = 1;
+    BinaryIndexedTree3D(int n) : BinaryIndexedTree3D(1, n) { }
+
+    BinaryIndexedTree3D(int minIndex, int maxIndex) {
+        this->minIndex = minIndex;
+        this->maxIndex = maxIndex;
+        this->n = maxIndex - minIndex + 1;
+        val.resize(n + 1);
+        for_inc_range(i, 1, n) {
+            val[i].resize(n + 1);
+            for_inc_range(j, 1, n) {
+                val[i][j].resize(n + 1);
+            }
+        }
     }
 
-    virtual bool hasNext() const {
-        return next_ != -1;
-    }
-
-    virtual T next() {
-        cur = next_;
-        if (next_ * next_ < n) {
-            next_ = n / next_;
-        } else if (next_ * next_ == n) {
-            next_ = -1;
-        } else {
-            next_ = n / next_ + 1;
-            bool found = false;
-            while (next_ * next_ <= n) {
-                if (n % next_ == 0) {
-                    found = true;
-                    break;
+    void add(int x0, int y0, int z0, int v) {
+        x0 = x0 - minIndex + 1;
+        y0 = y0 - minIndex + 1;
+        z0 = z0 - minIndex + 1;
+        for (int x = x0; x <= n; x += x & -x)
+            for (int y = y0; y <= n; y += y & -y)
+                for (int z = z0; z <= n; z += z & -z) {
+                    val[x][y][z] += v;
                 }
-                next_++;
-            }
-            if (!found) {
-                next_ = -1;
-            }
+    }
+
+    T sum(int x0, int y0, int z0) {
+        x0 = x0 - minIndex + 1;
+        y0 = y0 - minIndex + 1;
+        z0 = z0 - minIndex + 1;
+        if (x0 <= 0 || y0 <= 0 || z0 <= 0) return 0;
+        if (x0 > n) x0 = n;
+        if (y0 > n) y0 = n;
+        if (z0 > n) z0 = n;
+        T s = 0;
+        for (int x = x0; x > 0; x -= x & -x)
+            for (int y = y0; y > 0; y -= y & -y)
+                for (int z = z0; z > 0; z -= z & -z)
+                    s += val[x][y][z];
+        return s;
+    }
+
+    T sum(int x1, int y1, int z1, int x2, int y2, int z2) {
+        return sum(x2, y2, z2) - sum(x1 - 1, y2, z2) - sum(x2, y1 - 1, z2) - sum(x2, y2, z1 - 1)
+               + sum(x1 - 1, y1 - 1, z2) + sum(x2, y1 - 1, z1 - 1) + sum(x1 - 1, y2, z1 - 1) -
+               sum(x1 - 1, y1 - 1, z1 - 1);
+    }
+};
+
+template<class T>
+class RangeUpdateArray {
+    BinaryIndexedTree<T> tree;
+    int minIndex, maxIndex;
+
+public:
+    RangeUpdateArray() { }
+
+    RangeUpdateArray(int n) {
+        init(1, n);
+    }
+
+    RangeUpdateArray(int minIndex, int maxIndex) {
+        init(minIndex, maxIndex);
+    }
+
+    void init(int minIndex, int maxIndex) {
+        this->minIndex = minIndex;
+        this->maxIndex = maxIndex;
+        tree.init(minIndex, maxIndex);
+    }
+
+    // Do a[k] = a[k] + v for i <= k <= j
+    // O(logn)
+    void add(int i, int j, T v) {
+        assert(minIndex <= i && i <= j && j <= maxIndex);
+        if (j < maxIndex) {
+            tree.add(j + 1, -v);
         }
-        return cur;
+        tree.add(i, v);
+    }
+
+    // Return a[i] in O(logn)
+    T get(int i) {
+        assert (minIndex <= i && i <= maxIndex);
+        return tree.sum(i);
+    }
+
+    const T operator[](int i) {
+        return get(i);
     }
 };
 
-template<class T>
-class DivisorIterable : public Iterable<T> {
-    T n;
-public:
-    DivisorIterable(T n) {
-        this->n = n;
-    }
-
-    virtual Iterator<T> *iterator() const {
-        return new DivisorIterator<T>(n);
-    }
-};
 
 template<class T>
-DivisorIterable<T> divisors(T n) {
-    return DivisorIterable<T>(n);
+bool binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+    while (leftIndex <= rightIndex) {
+        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+        if (predicate(midIndex)) {
+            ret = midIndex;
+            rightIndex = midIndex - 1;
+        } else {
+            leftIndex = midIndex + 1;
+        }
+    }
+    result = ret;
+    return ret != maxIndex + 1;
 }
 
 template<class T>
-class DigitIterator : public Iterator<T> {
-    T n;
-
-public:
-    DigitIterator(T n) {
-        assert(n > 0);
-        this->n = n;
+bool binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+    while (leftIndex <= rightIndex) {
+        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+        if (predicate(midIndex)) {
+            ret = midIndex;
+            leftIndex = midIndex + 1;
+        } else {
+            rightIndex = midIndex - 1;
+        }
     }
-
-    virtual bool hasNext() const {
-        return n > 0;
-    }
-
-    virtual T next() {
-        T ret = n % 10;
-        n /= 10;
-        return ret;
-    }
-};
-
-template<class T>
-class DigitIterable : public Iterable<T> {
-    T n;
-public:
-    DigitIterable(T n) {
-        this->n = n;
-    }
-
-    virtual Iterator<T> *iterator() const {
-        return new DigitIterator<T>(n);
-    }
-};
-
-template<class T>
-DigitIterable<T> digits(T n) {
-    return DigitIterable<T>(n);
+    result = ret;
+    return ret != minIndex - 1;
 }
 
-template<class T>
-void extendedEuclid(T a, T b, T &x, T &y) {
-    if (b == 0) {
-        x = 1;
-        y = 0;
-        return;
+bool binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
+                         double &result) {
+    double l = minRange, r = maxRange, m, ret = minRange - 1;
+    while (r - l > epsilon) {
+        m = l + (r - l) / 2;
+        if (predicate(m)) {
+            ret = m;
+            l = m;
+        } else {
+            r = m;
+        }
     }
-    T x2;
-    extendedEuclid(b, a % b, x2, x);
-    y = x2 - (a / b) * x;
+    result = ret;
+    return ret != minRange - 1;
 }
 
-template<class T>
-T modulo(int64 a, T b) {
-    T r = a % b;
-    if (r < 0)
-        r += b;
-    return r;
-}
-
-template<class T>
-T modularInverse(T a, T m) {
-    T x, y;
-    extendedEuclid(a, m, x, y);
-    return modulo(x, m);
-}
-
-template<class T>
-bool isPalindromic(T x) {
-    int n = x;
-    int rev = 0;
-    while (n > 0) {
-        int d = n % 10;
-        rev = rev * 10 + d;
-        n /= 10;
+bool binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
+                         double &result) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+        m = l + (r - l) / 2;
+        if (predicate(m)) {
+            l = m;
+            ret = m;
+        } else {
+            r = m;
+        }
     }
-    return x == rev;
+    result = ret;
+    return ret != maxRange + 1;
 }
 
-
-bool isLuckyDigit(int d) {
-    return d == 4 || d == 7;
-}
-
-bool isLucky(int n) {
-    return all(digits(n), isLuckyDigit);
-}
-
-class TaskA {
+class IOI07Sails {
 public:
     void solve(std::istream &in, std::ostream &out) {
         int n;
+        vector<pair<int, int>> a;
         in >> n;
-        out << toYesNo(any(divisors(n), isLucky));
+        int maxH = 0;
+        repeat(n) {
+            int h, k;
+            in >> h >> k;
+            a.push_back(make_pair(h, k));
+            maxH = max(maxH, h);
+        }
+
+        sort(a.begin(), a.end());
+
+        int curH = 0;
+        RangeUpdateArray<int> s(0, maxH - 1);
+        for (auto &p: a) {
+            int h = p.first, k = p.second;
+            curH = h;
+            int i = curH - k;
+            if (i == 0 || s[i] != s[i - 1]) {
+                s.add(i, curH - 1, 1);
+            } else {
+                int x = s[i];
+                int ret;
+                if (binarySearchMin<int>(i, curH - 1, [&](midIndex) { return s[midIndex] < x; }, ret)) {
+                    s.add(ret, curH - 1, 1);
+                    k -= (curH - ret);
+                }
+                if (binarySearchMin<int>(0, i, [&](int midIndex) { return s[midIndex] == x; }, ret)) {
+                    s.add(ret, ret + k - 1, 1);
+                }
+            }
+        }
+
+        int64 ret = 0;
+        for (int i = 0; i < maxH; ++i) {
+            int x = s[i];
+            ret += (int64) x * (x - 1) / 2;
+        }
+
+        out << ret << endl;
     }
 };
 
 
 int main() {
-    TaskA solver;
+    IOI07Sails solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);

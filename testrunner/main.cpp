@@ -1,4 +1,4 @@
-#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/R91/TaskA.cpp"
+#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/SPOJ/IOI07Sails.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -28,7 +28,7 @@ bool check(std::string expected, std::string actual) {
 
 int main() {
     std::vector<jhelper::Test> tests = {
-        {"47\n", "YES\n", false},{"16\n", "YES\n", false},{"78\n", "NO\n", false},{"2", "NO", true},
+        {"6 \n3 2 \n5 3 \n4 1 \n2 1 \n4 3 \n3 2", "10", true},
     };
     bool allOK = true;
     int testID = 0;
@@ -42,7 +42,7 @@ int main() {
             std::stringstream in(test.input);
             std::ostringstream out;
             std::clock_t start = std::clock();
-            TaskA solver;
+            IOI07Sails solver;
             solver.solve(in, out);
             std::clock_t finish = std::clock();
             double currentTime = double(finish - start) / CLOCKS_PER_SEC;
