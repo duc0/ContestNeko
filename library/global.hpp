@@ -53,3 +53,12 @@
 #define MOD 1000000007
 
 using namespace std;
+
+#ifndef GLOBAL_H
+#define GLOBAL_H
+
+string toYesNo(bool b) {
+    return b ? "YES" : "NO";
+}
+
+#endif

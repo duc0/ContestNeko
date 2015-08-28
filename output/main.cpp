@@ -65,6 +65,15 @@
 
 using namespace std;
 
+#ifndef GLOBAL_H
+#define GLOBAL_H
+
+string toYesNo(bool b) {
+    return b ? "YES" : "NO";
+}
+
+#endif
+
 
 template<class T>
 class Iterator {
@@ -90,6 +99,17 @@ bool any(const Iterable<T> &iterable, const UnaryPredicate &pred) {
         }
     }
     return false;
+}
+
+template<class T, class UnaryPredicate>
+bool all(const Iterable<T> &iterable, const UnaryPredicate &pred) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        if (!pred(it->next())) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // O(sqrt(n))
@@ -170,6 +190,50 @@ public:
 };
 
 template<class T>
+DivisorIterable<T> divisors(T n) {
+    return DivisorIterable<T>(n);
+}
+
+template<class T>
+class DigitIterator : public Iterator<T> {
+    T n;
+
+public:
+    DigitIterator(T n) {
+        assert(n > 0);
+        this->n = n;
+    }
+
+    virtual bool hasNext() const {
+        return n > 0;
+    }
+
+    virtual T next() {
+        T ret = n % 10;
+        n /= 10;
+        return ret;
+    }
+};
+
+template<class T>
+class DigitIterable : public Iterable<T> {
+    T n;
+public:
+    DigitIterable(T n) {
+        this->n = n;
+    }
+
+    virtual Iterator<T> *iterator() const {
+        return new DigitIterator<T>(n);
+    }
+};
+
+template<class T>
+DigitIterable<T> digits(T n) {
+    return DigitIterable<T>(n);
+}
+
+template<class T>
 void extendedEuclid(T a, T b, T &x, T &y) {
     if (b == 0) {
         x = 1;
@@ -209,15 +273,12 @@ bool isPalindromic(T x) {
 }
 
 
+bool isLuckyDigit(int d) {
+    return d == 4 || d == 7;
+}
+
 bool isLucky(int n) {
-    while (n > 0) {
-        int d = n % 10;
-        if (d != 4 && d != 7) {
-            return false;
-        }
-        n /= 10;
-    }
-    return true;
+    return all(digits(n), isLuckyDigit);
 }
 
 class TaskA {
@@ -225,13 +286,7 @@ public:
     void solve(std::istream &in, std::ostream &out) {
         int n;
         in >> n;
-
-        if (any(DivisorIterable<int>(n), isLucky)) {
-            out << "YES";
-        } else {
-            out << "NO";
-        }
-
+        out << toYesNo(any(divisors(n), isLucky));
     }
 };
 

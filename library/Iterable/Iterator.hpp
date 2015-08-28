@@ -21,3 +21,13 @@ template <class T, class UnaryPredicate> bool any(const Iterable<T> &iterable, c
     }
     return false;
 }
+
+template <class T, class UnaryPredicate> bool all(const Iterable<T> &iterable, const UnaryPredicate &pred) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        if (!pred(it->next())) {
+            return false;
+        }
+    }
+    return true;
+}
