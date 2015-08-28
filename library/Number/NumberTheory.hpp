@@ -24,4 +24,15 @@ set<int64> findDivisors(int64 n) {
     return ret;
 }
 
+template <class T> bool isPalindromic(T x) {
+    int n = x;
+    int rev = 0;
+    while (n > 0)
+    {
+        int d = n % 10;
+        rev = rev * 10 + d;
+        n /= 10;
+    }
+    return x == rev;
+}
 

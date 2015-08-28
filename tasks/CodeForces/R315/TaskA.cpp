@@ -1,18 +1,5 @@
 #include "../../../library/Number/PrimeGenerator.hpp"
 
-char d[10];
-bool isPalin(int x) {
-	int n = x;
-	int rev = 0;
-	while (n > 0)
-	{
-		int d = n % 10;
-		rev = rev * 10 + d;
-		n /= 10;
-	}
-	return x == rev;
-}
-
 class TaskA {
 public:
 	void solve(std::istream& in, std::ostream& out) {
@@ -29,7 +16,7 @@ public:
 			if (pg.isPrime(x)) {
 				nPrime++;
 			}
-			if (isPalin(x)) {
+			if (isPalindromic(x)) {
 				nPalin++;
 			}
 			ratio[x] = (double) (nPrime * 1.0) / nPalin;
