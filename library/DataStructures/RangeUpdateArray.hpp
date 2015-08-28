@@ -1,6 +1,10 @@
 #include "global.hpp"
 #include "BinaryIndexedTree.hpp"
 
+/**
+ * A data structure that allows adding all elements in a range by the same quantity, and retrieve an element
+ * in logarithmic time.
+ */
 template <class T> class RangeUpdateArray {
     BinaryIndexedTree<T> tree;
     int minIndex, maxIndex;
