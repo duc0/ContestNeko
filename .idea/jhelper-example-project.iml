@@ -8,6 +8,7 @@
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/BinaryIndexedTree.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/RangeUpdateArray.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Graph/UndirectedGraph.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/library/IO/InputIterables.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Iterable/Iterator.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Number/ModInt.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Number/NumberTheory.hpp" isTestSource="false" />
@@ -354,6 +355,7 @@
           <root url="file://$MODULE_DIR$/library/DataStructures/BinaryIndexedTree.hpp" />
           <root url="file://$MODULE_DIR$/library/String/StringHasher.hpp" />
           <root url="file://$MODULE_DIR$/library/Number/PrimeGenerator.hpp" />
+          <root url="file://$MODULE_DIR$/library/IO/InputIterables.hpp" />
           <root url="file://$MODULE_DIR$/library/Iterable/Iterator.hpp" />
           <root url="file://$MODULE_DIR$/library/Number/NumberTheory.hpp" />
           <root url="file://$MODULE_DIR$/library/Number/ModInt.hpp" />

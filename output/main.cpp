@@ -74,101 +74,162 @@ string toYesNo(bool b) {
 
 #endif
 
-#define MAXN 100100
 
-int n;
-vector<vector<int>> adj;
+#ifndef ITERATOR_H
+#define ITERATOR_H
 
-int nLeaf[MAXN];
-int totalLeaf;
+template<class T>
+class Iterator {
+public:
+    virtual bool hasNext() const = 0;
 
-vector<pair<int, int>> edge;
+    virtual T next() = 0;
+};
 
-bool check() {
-    if (edge.empty()) {
-        return true;
-    }
+template<class T>
+class Iterable {
+public:
+    virtual Iterator<T> *iterator() const = 0;
+};
 
-    map<int, int> deg;
-    for (auto &e: edge) {
-        deg[e.first]++;
-    }
-    int c = 0;
-    for (auto &d: deg) {
-        if (d.second == 1) {
-            ++c;
+
+template<class T, class UnaryPredicate>
+bool any(const Iterable<T> &iterable, const UnaryPredicate &pred) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        if (pred(it->next())) {
+            return true;
         }
     }
-    return c == 2;
+    return false;
 }
 
-void dfs(int u) {
-    nLeaf[u] = 0;
-    for (int v : adj[u]) {
-        if (nLeaf[v] == -1) {
-            dfs(v);
-            nLeaf[u] += nLeaf[v];
+template<class T, class UnaryPredicate>
+bool all(const Iterable<T> &iterable, const UnaryPredicate &pred) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        if (!pred(it->next())) {
+            return false;
+        }
+    }
+    return true;
+}
 
-            int thisSub = nLeaf[v];
-            int other = totalLeaf - thisSub;
-
-            if (adj[v].size() == 2) {
-                thisSub++;
-            }
-            if (adj[u].size() == 2) {
-                other++;
-            }
-
-            if (thisSub > 2 && other > 2) {
-                edge.emplace_back(u, v);
-                edge.emplace_back(v, u);
+template<class T>
+bool unique(const Iterable<T> &iterable) {
+    auto it = iterable.iterator();
+    bool first = true;
+    T val;
+    while (it->hasNext()) {
+        T x = it->next();
+        if (first) {
+            val = x;
+            first = false;
+        } else {
+            if (val != x) {
+                return false;
             }
         }
     }
-    if (nLeaf[u] == 0) {
-        nLeaf[u] = 1;
-    }
+    return true;
 }
 
-class TaskC {
+template<class IN, class OUT>
+class MapIterator : public Iterator<OUT> {
+    Iterator<IN> &in;
+    const function<OUT(IN)> &mapper;
+
+public:
+    MapIterator(Iterator<IN> &in, const function<OUT(IN)> &mapper) : in(in), mapper(mapper) { }
+
+    virtual bool hasNext() const {
+        return in.hasNext();
+    }
+
+    virtual OUT next() {
+        return mapper(in.next());
+    }
+};
+
+template<class IN, class OUT>
+class MapIterable : public Iterable<OUT> {
+    const Iterable<IN> &in;
+    const function<OUT(IN)> &mapper;
+public:
+    MapIterable(const Iterable<IN> &in, const function<OUT(IN)> &mapper) : in(in), mapper(mapper) { }
+
+    virtual Iterator<OUT> *iterator() const {
+        return new MapIterator<IN, OUT>(*in.iterator(), mapper);
+    }
+};
+
+template<class IN, class OUT>
+MapIterable<IN, OUT> mapIterable(const Iterable<IN> &iterable, const function<OUT(IN)> &mapper) {
+    return MapIterable<IN, OUT>(iterable, mapper);
+}
+
+#endif
+
+
+template<class T>
+class InputIterator : public Iterator<T> {
+    int size;
+    std::istream &in;
+
+public:
+    InputIterator(std::istream &in, int size) : in(in), size(size) { }
+
+    virtual bool hasNext() const {
+        return size > 0;
+    }
+
+    virtual T next() {
+        T x;
+        in >> x;
+        size--;
+        return x;
+    }
+};
+
+template<class T>
+class InputIterable : public Iterable<T> {
+    int size;
+    std::istream &in;
+public:
+    InputIterable(std::istream &in, int size) : in(in), size(size) { }
+
+    virtual Iterator<T> *iterator() const {
+        return new InputIterator<T>(in, size);
+    }
+};
+
+template<class T>
+InputIterable<T> inputIterable(std::istream &in, int size) {
+    return InputIterable<T>(in, size);
+}
+
+int mapNumber(int x) {
+    while (x % 2 == 0) x /= 2;
+    while (x % 3 == 0) x /= 3;
+    return x;
+}
+
+class TaskA {
 public:
     void solve(std::istream &in, std::ostream &out) {
         int n;
         in >> n;
-        adj.clear();
-        adj.resize(n + 1);
-        repeat(n - 1) {
-            int u, v;
-            in >> u >> v;
-            adj[u].push_back(v);
-            adj[v].push_back(u);
-        }
-
-        totalLeaf = 0;
-        for_inc_range(u, 1, n) {
-            if (adj[u].size() == 1) {
-                totalLeaf++;
-            }
-        }
-        memset(nLeaf, -1, sizeof(nLeaf));
-        edge.clear();
-        for_inc_range(u, 1, n) {
-            if (adj[u].size() != 1) {
-                dfs(u);
-                break;
-            }
-        }
-        if (check()) {
-            out << "Yes" << endl;
+        if (unique(mapIterable(inputIterable<int>(in, n), (function<int(int)>) mapNumber))) {
+            out << "Yes";
         } else {
-            out << "No" << endl;
+            out << "No";
         }
     }
 };
 
 
 int main() {
-    TaskC solver;
+    TaskA solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);

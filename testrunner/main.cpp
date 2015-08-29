@@ -1,4 +1,4 @@
-#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/R318/TaskC.cpp"
+#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/R318/TaskA.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -28,7 +28,7 @@ bool check(std::string expected, std::string actual) {
 
 int main() {
     std::vector<jhelper::Test> tests = {
-        {"8\n1 2\n1 3\n1 6\n6 4\n6 7\n6 5\n7 8\n", "Yes\n", true},{"13\n1 2\n1 3\n1 4\n2 5\n2 6\n2 7\n3 8\n3 9\n3 10\n4 11\n4 12\n4 13\n", "No\n", true},{"1", "Yes", true},{"2\n1 2", "Yes", true},{"3\n1 2\n1 3", "Yes", true},{"3\n1 2\n3 2", "Yes", true},{"5\n1 2\n2 3\n3 4\n4 5", "Yes", true},
+        {"4\n75 150 75 50\n", "Yes\n", true},{"3\n100 150 250\n", "No\n", true},
     };
     bool allOK = true;
     int testID = 0;
@@ -42,7 +42,7 @@ int main() {
             std::stringstream in(test.input);
             std::ostringstream out;
             std::clock_t start = std::clock();
-            TaskC solver;
+            TaskA solver;
             solver.solve(in, out);
             std::clock_t finish = std::clock();
             double currentTime = double(finish - start) / CLOCKS_PER_SEC;

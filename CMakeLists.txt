@@ -14,6 +14,7 @@ include_directories(library/DataStructures)
 include_directories(library/Algorithms)
 include_directories(library/String)
 include_directories(library/Graph)
+include_directories(library/IO)
 
 ADD_DEFINITIONS(-std=c++11)
 
