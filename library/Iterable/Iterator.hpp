@@ -82,4 +82,63 @@ public:
 template <class IN, class OUT> MapIterable<IN, OUT> mapIterable(const Iterable<IN> &iterable, const function<OUT(IN)> &mapper) {
     return MapIterable<IN, OUT>(iterable, mapper);
 }
+
+template <class T, class ITERATOR> class StdIterator : public Iterator<T> {
+    const ITERATOR &begin, &end;
+    ITERATOR it;
+
+public:
+    StdIterator(const ITERATOR &begin, const ITERATOR &end): begin(begin), end(end), it(begin) {}
+
+    virtual bool hasNext() const {
+        return it != end;
+    }
+
+    virtual T next() {
+        T ret = *it;
+        it++;
+        return ret;
+    }
+};
+
+template <class T, class ITERATOR> class StdIterable : public Iterable<T> {
+    const ITERATOR &begin, &end;
+public:
+    StdIterable(const ITERATOR &begin, const ITERATOR &end): begin(begin), end(end) {}
+    virtual Iterator<T>* iterator() const {
+        return new StdIterator<T, ITERATOR>(begin, end);
+    }
+};
+
+template <class T, class ITERATOR> StdIterable<T, ITERATOR> stdIterable(const ITERATOR &begin, const ITERATOR &end) {
+    return StdIterable<T, ITERATOR>(begin, end);
+};
+
+template <class T> T aggregate(const Iterable<T> &iterable, const function<T(T, T)> &aggregator) {
+    auto it = iterable.iterator();
+    bool first = true;
+    T ret;
+    while (it->hasNext()) {
+        if (first) {
+            ret = it->next();
+            first = false;
+        } else {
+            ret = aggregator(ret, it->next());
+        }
+    }
+    return ret;
+}
+
+template <class T> vector<T> collect(const Iterable<T> &iterable) {
+    auto it = iterable.iterator();
+    vector<T> vec;
+    while (it->hasNext()) {
+        vec.push_back(it->next());
+    }
+    return vec;
+}
+
+template <class T> T aggregateMax(const Iterable<T> &iterable) {
+    return aggregate<T>(iterable, [](const T &a, const T &b) {return max(a, b);});
+}
 #endif
