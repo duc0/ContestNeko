@@ -13,6 +13,7 @@ include_directories(library/Iterable)
 include_directories(library/DataStructures)
 include_directories(library/Algorithms)
 include_directories(library/String)
+include_directories(library/Graph)
 
 ADD_DEFINITIONS(-std=c++11)
 
