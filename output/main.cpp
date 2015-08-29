@@ -75,260 +75,258 @@ string toYesNo(bool b) {
 #endif
 
 
-template<class T>
-class BinaryIndexedTree {
-    vector<T> val;
-    int n, minIndex, maxIndex;
+template<int BASE, int MODULO>
+class BasePowerUtils {
 
 public:
-    BinaryIndexedTree() { }
-
-    BinaryIndexedTree(int n) : BinaryIndexedTree(1, n) { }
-
-    BinaryIndexedTree(int minIndex, int maxIndex) {
-        init(minIndex, maxIndex);
-    }
-
-    void init(int minIndex, int maxIndex) {
-        this->minIndex = minIndex;
-        this->maxIndex = maxIndex;
-        this->n = maxIndex - minIndex + 1;
-        val.resize(n + 1);
-    }
-
-    void add(int i, int v) {
-        i = i - minIndex + 1;
-        for (; i <= n; i += i & -i) {
-            val[i] += v;
-        }
-    }
-
-    T sum(int i) {
-        i = i - minIndex + 1;
-        if (i <= 0) return 0;
-        if (i > n) i = n;
-        T s = 0;
-        for (; i > 0; i -= i & -i)
-            s += val[i];
-        return s;
-    }
-
-    T sum(int i1, int i2) { return sum(i2) - sum(i1 - 1); }
-};
-
-template<class T>
-class BinaryIndexedTree3D {
-    vector<vector<vector<T>>> val;
-    int n, minIndex, maxIndex;
-
-public:
-    BinaryIndexedTree3D(int n) : BinaryIndexedTree3D(1, n) { }
-
-    BinaryIndexedTree3D(int minIndex, int maxIndex) {
-        this->minIndex = minIndex;
-        this->maxIndex = maxIndex;
-        this->n = maxIndex - minIndex + 1;
-        val.resize(n + 1);
-        for_inc_range(i, 1, n) {
-            val[i].resize(n + 1);
-            for_inc_range(j, 1, n) {
-                val[i][j].resize(n + 1);
+    static int getBasePower(int n) {
+        static vector<int> power; // cache
+        if (n > (int) power.size() - 1) {
+            int cur = (int) power.size() - 1;
+            power.resize(n + 1);
+            for_inc_range(i, cur + 1, n) {
+                if (i == 0) {
+                    power[i] = 1;
+                } else {
+                    power[i] = ((int64) power[i - 1] * BASE) % MODULO;
+                }
             }
         }
-    }
-
-    void add(int x0, int y0, int z0, int v) {
-        x0 = x0 - minIndex + 1;
-        y0 = y0 - minIndex + 1;
-        z0 = z0 - minIndex + 1;
-        for (int x = x0; x <= n; x += x & -x)
-            for (int y = y0; y <= n; y += y & -y)
-                for (int z = z0; z <= n; z += z & -z) {
-                    val[x][y][z] += v;
-                }
-    }
-
-    T sum(int x0, int y0, int z0) {
-        x0 = x0 - minIndex + 1;
-        y0 = y0 - minIndex + 1;
-        z0 = z0 - minIndex + 1;
-        if (x0 <= 0 || y0 <= 0 || z0 <= 0) return 0;
-        if (x0 > n) x0 = n;
-        if (y0 > n) y0 = n;
-        if (z0 > n) z0 = n;
-        T s = 0;
-        for (int x = x0; x > 0; x -= x & -x)
-            for (int y = y0; y > 0; y -= y & -y)
-                for (int z = z0; z > 0; z -= z & -z)
-                    s += val[x][y][z];
-        return s;
-    }
-
-    T sum(int x1, int y1, int z1, int x2, int y2, int z2) {
-        return sum(x2, y2, z2) - sum(x1 - 1, y2, z2) - sum(x2, y1 - 1, z2) - sum(x2, y2, z1 - 1)
-               + sum(x1 - 1, y1 - 1, z2) + sum(x2, y1 - 1, z1 - 1) + sum(x1 - 1, y2, z1 - 1) -
-               sum(x1 - 1, y1 - 1, z1 - 1);
+        return power[n];
     }
 };
 
-template<class T>
-class RangeUpdateArray {
-    BinaryIndexedTree<T> tree;
-    int minIndex, maxIndex;
+
+template<int BASE, int MODULO>
+class StringHash {
+    int length;
+    int hash;
+public:
+    int getLength() const {
+        return length;
+    }
+
+    int getHash() const {
+        return hash;
+    }
+
+    StringHash(int hash, int length) : hash(hash), length(length) { }
+
+    template<class Iterator>
+    StringHash(Iterator begin, Iterator end) {
+        hash = 0;
+        for (auto it = begin; it != end; ++it) {
+            hash = ((int64) hash * BASE + *it) % MODULO;
+        }
+        length = (int) (end - begin);
+    }
+
+    static StringHash<BASE, MODULO> fromSingleChar(int singleChar) {
+        return StringHash<BASE, MODULO>(singleChar % MODULO, 1);
+    }
+
+    StringHash<BASE, MODULO> concat(const StringHash<BASE, MODULO> &sh) const {
+        return StringHash<BASE, MODULO>(
+                ((int64) getHash() * BasePowerUtils<BASE, MODULO>::getBasePower(sh.getLength()) +
+                 sh.getHash()) % MODULO, getLength() + sh.getLength());
+    }
+};
+
+template<int BASE, int MODULO>
+class StringPrefixHash {
+    vector<int> hash;
 
 public:
-    RangeUpdateArray() { }
+    StringPrefixHash() { }
 
-    RangeUpdateArray(int n) {
-        init(1, n);
-    }
-
-    RangeUpdateArray(int minIndex, int maxIndex) {
-        init(minIndex, maxIndex);
-    }
-
-    void init(int minIndex, int maxIndex) {
-        this->minIndex = minIndex;
-        this->maxIndex = maxIndex;
-        tree.init(minIndex, maxIndex);
-    }
-
-    // Do a[k] = a[k] + v for i <= k <= j
-    // O(logn)
-    void add(int i, int j, T v) {
-        assert(minIndex <= i && i <= j && j <= maxIndex);
-        if (j < maxIndex) {
-            tree.add(j + 1, -v);
+    template<class Iterator>
+    StringPrefixHash(Iterator begin, Iterator end) {
+        int n = (int) (end - begin);
+        hash.resize(n);
+        int idx = 0;
+        int last = 0;
+        for (auto it = begin; it != end; ++it) {
+            hash[idx] = ((int64) last * BASE + *it) % MODULO;
+            last = hash[idx];
+            idx++;
         }
-        tree.add(i, v);
     }
 
-    // Return a[i] in O(logn)
-    T get(int i) {
-        assert (minIndex <= i && i <= maxIndex);
-        return tree.sum(i);
+    size_t getSize() const { return hash.size(); }
+
+    StringHash<BASE, MODULO> getPrefixHash(int i) const {
+        assert(i < getSize());
+        return StringHash<BASE, MODULO>(hash[i], i);
     }
 
-    const T operator[](int i) {
-        return get(i);
+    StringHash<BASE, MODULO> getStringHash() const {
+        return getPrefixHash(hash.size() - 1);
+    }
+
+    StringHash<BASE, MODULO> getSubstringHash(int first, int len) const {
+        if (len == 0) return StringHash<BASE, MODULO>(0, 0);
+        assert(0 <= first && first < getSize());
+        assert(len >= 1);
+        assert(first + len - 1 < getSize());
+        int last = first + len - 1;
+        if (first == 0) {
+            return StringHash<BASE, MODULO>(hash[last], len);
+        }
+        int ret = (hash[last] - (int64) hash[first - 1] * BasePowerUtils<BASE, MODULO>::getBasePower(len)) % MODULO;
+        if (ret < 0)
+            ret += MODULO;
+        return StringHash<BASE, MODULO>(ret, len);
+    }
+
+    // Range is inclusive
+    StringHash<BASE, MODULO> getSubstringHashByRange(int first, int last) const {
+        return getSubstringHash(first, last - first + 1);
+    }
+};
+
+template<int BASE1, int MODULO1, int BASE2, int MODULO2>
+class StringDoubleHash {
+    int length;
+    int hash1;
+    int hash2;
+public:
+    int getLength() const {
+        return length;
+    }
+
+    int64 getHashValue() const {
+        return (int64) hash1 * MODULO2 + hash2;
+    }
+
+    StringHash<BASE1, MODULO1> getHash1() const {
+        return StringHash<BASE1, MODULO1>(hash1, length);
+    }
+
+    StringHash<BASE2, MODULO2> getHash2() const {
+        return StringHash<BASE2, MODULO2>(hash2, length);
+    }
+
+    StringDoubleHash(int hash1, int hash2, int length) : hash1(hash1), hash2(hash2), length(length) { }
+
+    StringDoubleHash(const StringHash<BASE1, MODULO1> &h1, const StringHash<BASE2, MODULO2> &h2) : hash1(h1.getHash()),
+                                                                                                   hash2(h2.getHash()),
+                                                                                                   length(h1.getLength()) {
+        assert(h1.getLength() == h2.getLength());
+    }
+
+    template<class Iterator>
+    StringDoubleHash(Iterator begin, Iterator end) {
+        hash1 = StringHash<BASE1, MODULO1>(begin, end).getHash();
+        hash2 = StringHash<BASE2, MODULO2>(begin, end).getHash();
+        length = (int) (end - begin);
+    }
+
+    static StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> fromSingleChar(int singleChar) {
+        return StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2>(singleChar % MODULO1, singleChar % MODULO2, 1);
+    }
+
+    StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> concat(
+            const StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> &sh) const {
+        return StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2>(
+                getHash1().concat(sh.getHash1()),
+                getHash2().concat(sh.getHash2())
+        );
     }
 };
 
 
-template<class T>
-bool binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
-    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
-    while (leftIndex <= rightIndex) {
-        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
-        if (predicate(midIndex)) {
-            ret = midIndex;
-            rightIndex = midIndex - 1;
-        } else {
-            leftIndex = midIndex + 1;
-        }
+template<int BASE1, int MODULO1, int BASE2, int MODULO2>
+class StringPrefixDoubleHash {
+    StringPrefixHash<BASE1, MODULO1> hash1;
+    StringPrefixHash<BASE2, MODULO2> hash2;
+
+public:
+    StringPrefixDoubleHash() { }
+
+    template<class Iterator>
+    StringPrefixDoubleHash(Iterator begin, Iterator end) : hash1(StringPrefixHash<BASE1, MODULO1>(begin, end)),
+                                                           hash2(StringPrefixHash<BASE2, MODULO2>(begin, end)) { }
+
+    size_t getSize() const { return hash1.getSize(); }
+
+    StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> getPrefixHash(int i) const {
+        return StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2>(hash1.getPrefixHash(i), hash2.getPrefixHash(i));
     }
-    result = ret;
-    return ret != maxIndex + 1;
+
+    StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> getStringHash() const {
+        return getPrefixHash((int) getSize() - 1);
+    }
+
+    StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> getSubstringHash(int first, int len) const {
+        return StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2>(hash1.getSubstringHash(first, len),
+                                                                hash2.getSubstringHash(first, len));
+    }
+
+    // Range is inclusive
+    StringDoubleHash<BASE1, MODULO1, BASE2, MODULO2> getSubstringHashByRange(int first, int last) const {
+        return getSubstringHash(first, last - first + 1);
+    }
+};
+
+vector<int> lowercaseStringToVector(const string &s) {
+    vector<int> a;
+    for (char c : s) {
+        a.push_back(c - 'a');
+    }
+    return a;
 }
 
-template<class T>
-bool binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
-    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
-    while (leftIndex <= rightIndex) {
-        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
-        if (predicate(midIndex)) {
-            ret = midIndex;
-            leftIndex = midIndex + 1;
-        } else {
-            rightIndex = midIndex - 1;
+#define B1 31
+#define B2 37
+#define HMOD1 1000001927
+#define HMOD2 1000001963
+#define SH StringDoubleHash<B1, HMOD1, B2, HMOD2>
+#define SPH StringPrefixDoubleHash<B1, HMOD1, B2, HMOD2>
+
+vector<int64> getAll(const vector<int> &s, int n) {
+    SPH h(s.begin(), s.end());
+
+    vector<int64> ans;
+    for_inc_range(i, 0, n) {
+        for_inc(c, 26) {
+            auto dh = h.getSubstringHashByRange(0, i - 1);
+            dh = dh.concat(SH::fromSingleChar(c));
+            dh = dh.concat(h.getSubstringHashByRange(i, n - 1));
+            ans.push_back(dh.getHashValue());
         }
     }
-    result = ret;
-    return ret != minIndex - 1;
+    sort(ans.begin(), ans.end());
+    return ans;
 }
 
-bool binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
-                         double &result) {
-    double l = minRange, r = maxRange, m, ret = minRange - 1;
-    while (r - l > epsilon) {
-        m = l + (r - l) / 2;
-        if (predicate(m)) {
-            ret = m;
-            l = m;
-        } else {
-            r = m;
-        }
-    }
-    result = ret;
-    return ret != minRange - 1;
-}
-
-bool binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
-                         double &result) {
-    double l = minRange, r = maxRange, m, ret = maxRange + 1;
-    while (r - l > epsilon) {
-        m = l + (r - l) / 2;
-        if (predicate(m)) {
-            l = m;
-            ret = m;
-        } else {
-            r = m;
-        }
-    }
-    result = ret;
-    return ret != maxRange + 1;
-}
-
-class IOI07Sails {
+class TaskE {
 public:
     void solve(std::istream &in, std::ostream &out) {
         int n;
-        vector<pair<int, int>> a;
         in >> n;
-        int maxH = 0;
-        repeat(n) {
-            int h, k;
-            in >> h >> k;
-            a.push_back(make_pair(h, k));
-            maxH = max(maxH, h);
-        }
+        string ss1, ss2;
+        in >> ss1 >> ss2;
 
-        sort(a.begin(), a.end());
+        vector<int> s1(n);
+        for_inc(i, n) s1[i] = ss1[i] - 'a';
+        vector<int> s2(n);
+        for_inc(i, n) s2[i] = ss2[i] - 'a';
 
-        int curH = 0;
-        RangeUpdateArray<int> s(0, maxH - 1);
-        for (auto &p: a) {
-            int h = p.first, k = p.second;
-            curH = h;
-            int i = curH - k;
-            if (i == 0 || s[i] != s[i - 1]) {
-                s.add(i, curH - 1, 1);
-            } else {
-                int x = s[i];
-                int ret;
-                if (binarySearchMin<int>(i, curH - 1, [&](midIndex) { return s[midIndex] < x; }, ret)) {
-                    s.add(ret, curH - 1, 1);
-                    k -= (curH - ret);
-                }
-                if (binarySearchMin<int>(0, i, [&](int midIndex) { return s[midIndex] == x; }, ret)) {
-                    s.add(ret, ret + k - 1, 1);
-                }
-            }
-        }
+        vector<int64> all1 = getAll(s1, n);
+        vector<int64> all2 = getAll(s2, n);
 
-        int64 ret = 0;
-        for (int i = 0; i < maxH; ++i) {
-            int x = s[i];
-            ret += (int64) x * (x - 1) / 2;
-        }
+        unique(all1.begin(), all1.end());
+        unique(all2.begin(), all2.end());
 
-        out << ret << endl;
+        vector<int64> inter(max(all1.size(), all2.size()));
+        auto it = set_intersection(all1.begin(), all1.end(), all2.begin(), all2.end(), inter.begin());
+        out << (it - inter.begin());
     }
 };
 
 
 int main() {
-    IOI07Sails solver;
+    TaskE solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);

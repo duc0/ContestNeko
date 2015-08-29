@@ -12,6 +12,7 @@ include_directories(library/Combinatorics)
 include_directories(library/Iterable)
 include_directories(library/DataStructures)
 include_directories(library/Algorithms)
+include_directories(library/String)
 
 ADD_DEFINITIONS(-std=c++11)
 
