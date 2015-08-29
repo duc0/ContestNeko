@@ -15,22 +15,14 @@ public:
         vector<int> timeTake(n);
         for_inc(i, n) {
             timeTake[i] = h[i];
-            timeTake[i] = min(timeTake[i], i + 1);
-            timeTake[i] = min(timeTake[i], n - i);
         }
-
-        while (true) {
-            bool found = false;
-            for_inc(i, n) {
-                if (i > 0 && i < n - 1) {
-                    int neigh = min(timeTake[i - 1], timeTake[i + 1]);
-                    if (neigh + 1 < timeTake[i]) {
-                        found = true;
-                        timeTake[i] = neigh + 1;
-                    }
-                }
-            }
-            if (!found) break;
+        timeTake[0] = 1;
+        timeTake[n - 1] = 1;
+        for_inc_range(i, 1, n - 1) {
+            timeTake[i] = min(timeTake[i], timeTake[i - 1] + 1);
+        }
+        for_dec_range(i, n - 2, 0) {
+            timeTake[i] = min(timeTake[i], timeTake[i + 1] + 1);
         }
 
         int require = 0;
