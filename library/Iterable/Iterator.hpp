@@ -75,12 +75,58 @@ template <class IN, class OUT> class MapIterable : public Iterable<OUT> {
 public:
     MapIterable(const Iterable<IN> &in, const function<OUT(IN)> &mapper):in(in), mapper(mapper) {}
     virtual unique_ptr<Iterator<OUT>> iterator() const {
-        return new MapIterator<IN, OUT>(*in.iterator(), mapper);
+        return unique_ptr<Iterator<OUT>>(new MapIterator<IN, OUT>(*in.iterator(), mapper));
     }
 };
 
 template <class IN, class OUT> MapIterable<IN, OUT> mapIterable(const Iterable<IN> &iterable, const function<OUT(IN)> &mapper) {
     return MapIterable<IN, OUT>(iterable, mapper);
+}
+
+template <class T> class FilterIterator : public Iterator<T> {
+    Iterator<T> &in;
+    const function<bool(T)> &pred;
+    T nextElement;
+    bool hasNextElement;
+
+    void findNext() {
+        hasNextElement = false;
+        while (in.hasNext()) {
+            nextElement = in.next();
+            if (pred(nextElement)) {
+                hasNextElement = true;
+                break;
+            }
+        }
+    }
+public:
+    FilterIterator(Iterator<T> &in, const function<bool(T)> &pred):in(in), pred(pred) {
+       findNext();
+    }
+
+    virtual bool hasNext() const {
+        return hasNextElement;
+    }
+
+    virtual T next() {
+        T ret = nextElement;
+        findNext();
+        return ret;
+    }
+};
+
+template <class T> class FilterIterable : public Iterable<T> {
+    const Iterable<T> &in;
+    const function<bool(T)> &pred;
+public:
+    FilterIterable(const Iterable<T> &in, const function<bool(T)> &pred):in(in), pred(pred) {}
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new FilterIterator<T>(*in.iterator(), pred));
+    }
+};
+
+template <class T> FilterIterable<T> filter(const Iterable<T> &iterable, const function<bool(T)> &filter) {
+    return FilterIterable<T>(iterable, filter);
 }
 
 template <class T, class ITERATOR> class StdIterator : public Iterator<T> {
@@ -141,4 +187,11 @@ template <class T> vector<T> collect(const Iterable<T> &iterable) {
 template <class T> T aggregateMax(const Iterable<T> &iterable) {
     return aggregate<T>(iterable, [](const T &a, const T &b) {return max(a, b);});
 }
+
+template <class T> T aggregateSum(const Iterable<T> &iterable) {
+    return aggregate<T>(iterable, [](const T &a, const T &b) {return a + b;});
+}
+
+template<class T> using predicate = function<bool(T)>;
+
 #endif

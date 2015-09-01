@@ -114,6 +114,46 @@ template <class T> DigitIterable<T> digits(T n) {
     return DigitIterable<T>(n);
 }
 
+template <class T> class RangeIterator : public Iterator<T> {
+    T begin, end, step, cur;
+    bool goUp;
+
+public:
+    RangeIterator(T begin, T end, T step): begin(begin), end(end), step(step), cur(begin), goUp(begin <= end) {}
+
+    virtual bool hasNext() const {
+        return goUp? (cur + step <= end) : (cur - step >= end);
+    }
+
+    virtual T next() {
+        T ret = cur;
+        if (goUp) {
+            cur += step;
+        } else {
+            cur -= step;
+        }
+        return ret;
+    }
+};
+
+template <class T> class RangeIterable : public Iterable<T> {
+    T begin, end, step;
+public:
+    RangeIterable(T begin, T end, T step): begin(begin), end(end), step(step) {}
+
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new RangeIterator<T>(begin, end, step));
+    }
+};
+
+template <class T> RangeIterable<T> range(T begin, T end, T step) {
+    return RangeIterable<T>(begin, end, step);
+}
+
+template <class T> RangeIterable<T> range(T begin, T end) {
+    return RangeIterable<T>(begin, end, 1);
+}
+
 template <class T> void extendedEuclid(T a, T b, T &x, T &y) {
     if (b == 0) {
         x = 1;
