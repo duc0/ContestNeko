@@ -122,7 +122,7 @@ public:
     RangeIterator(T begin, T end, T step): begin(begin), end(end), step(step), cur(begin), goUp(begin <= end) {}
 
     virtual bool hasNext() const {
-        return goUp? (cur + step <= end) : (cur - step >= end);
+        return goUp? (cur <= end) : (cur >= end);
     }
 
     virtual T next() {

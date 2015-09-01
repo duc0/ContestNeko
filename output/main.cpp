@@ -171,15 +171,15 @@ MapIterable<IN, OUT> mapIterable(const Iterable<IN> &iterable, const function<OU
 
 template<class T>
 class FilterIterator : public Iterator<T> {
-    Iterator<T> &in;
+    unique_ptr<Iterator<T>> in;
     const function<bool(T)> &pred;
     T nextElement;
     bool hasNextElement;
 
     void findNext() {
         hasNextElement = false;
-        while (in.hasNext()) {
-            nextElement = in.next();
+        while (in->hasNext()) {
+            nextElement = in->next();
             if (pred(nextElement)) {
                 hasNextElement = true;
                 break;
@@ -188,7 +188,7 @@ class FilterIterator : public Iterator<T> {
     }
 
 public:
-    FilterIterator(Iterator<T> &in, const function<bool(T)> &pred) : in(in), pred(pred) {
+    FilterIterator(unique_ptr<Iterator<T>> in, const function<bool(T)> &pred) : in(move(in)), pred(pred) {
         findNext();
     }
 
@@ -211,13 +211,86 @@ public:
     FilterIterable(const Iterable<T> &in, const function<bool(T)> &pred) : in(in), pred(pred) { }
 
     virtual unique_ptr<Iterator<T>> iterator() const {
-        return unique_ptr<Iterator<T>>(new FilterIterator<T>(*in.iterator(), pred));
+        return unique_ptr<Iterator<T>>(new FilterIterator<T>(in.iterator(), pred));
     }
 };
 
 template<class T>
 FilterIterable<T> filter(const Iterable<T> &iterable, const function<bool(T)> &filter) {
     return FilterIterable<T>(iterable, filter);
+}
+
+template<class IN1, class IN2, class OUT>
+class ProductIterator : public Iterator<OUT> {
+    const Iterable<IN1> &in1;
+    const Iterable<IN2> &in2;
+
+    unique_ptr<Iterator<IN1>> in1Iter;
+    unique_ptr<Iterator<IN2>> in2Iter;
+    const function<OUT(IN1, IN2)> &mapper;
+    IN1 cur1;
+    IN2 cur2;
+    OUT nextElement;
+    bool hasNextElement;
+
+    void findNext() {
+        if (in2Iter->hasNext()) {
+            cur2 = in2Iter->next();
+            nextElement = mapper(cur1, cur2);
+            hasNextElement = true;
+        } else {
+            if (in1Iter->hasNext()) {
+                cur1 = in1Iter->next();
+                in2Iter = in2.iterator();
+                findNext();
+            } else {
+                hasNextElement = false;
+            }
+        }
+    }
+
+public:
+    ProductIterator(const Iterable<IN1> &in1, const Iterable<IN2> &in2, const function<OUT(IN1, IN2)> &mapper) : in1(
+            in1), in2(in2), mapper(mapper) {
+        in1Iter = in1.iterator();
+        if (in1Iter->hasNext()) {
+            cur1 = in1Iter->next();
+            in2Iter = in2.iterator();
+            findNext();
+        } else {
+            hasNextElement = false;
+        }
+    }
+
+    virtual bool hasNext() const {
+        return hasNextElement;
+    }
+
+    virtual OUT next() {
+        OUT ret = nextElement;
+        findNext();
+        return ret;
+    }
+};
+
+template<class IN1, class IN2, class OUT>
+class ProductIterable : public Iterable<OUT> {
+    const Iterable<IN1> &in1;
+    const Iterable<IN2> &in2;
+    const function<OUT(IN1, IN2)> &mapper;
+public:
+    ProductIterable(const Iterable<IN1> &in1, const Iterable<IN2> &in2, const function<OUT(IN1, IN2)> &mapper) : in1(
+            in1), in2(in2), mapper(mapper) { }
+
+    virtual unique_ptr<Iterator<OUT>> iterator() const {
+        return unique_ptr<Iterator<OUT>>(new ProductIterator<IN1, IN2, OUT>(in1, in2, mapper));
+    }
+};
+
+template<class IN1, class IN2, class OUT>
+ProductIterable<IN1, IN2, OUT> product(const Iterable<IN1> &in1, const Iterable<IN2> &in2,
+                                       const function<OUT(IN1, IN2)> &mapper) {
+    return ProductIterable<IN1, IN2, OUT>(in1, in2, mapper);
 }
 
 template<class T, class ITERATOR>
@@ -426,7 +499,7 @@ public:
     RangeIterator(T begin, T end, T step) : begin(begin), end(end), step(step), cur(begin), goUp(begin <= end) { }
 
     virtual bool hasNext() const {
-        return goUp ? (cur + step <= end) : (cur - step >= end);
+        return goUp ? (cur <= end) : (cur >= end);
     }
 
     virtual T next() {
@@ -501,20 +574,20 @@ bool isPalindromic(T x) {
 }
 
 
-bool mult35(int x) { return x % 3 == 0 || x % 5 == 0; }
+int mult(int a, int b) { return a * b; }
 
-class P1 {
+class P4 {
 public:
     void solve(std::istream &in, std::ostream &out) {
-        int n;
-        in >> n;
-        out << aggregateSum(filter(range(1, n), predicate < int > (mult35)));
+        auto all3DigitsProduct = product(range(100, 999), range(100, 999), function<int(int, int)>(mult));
+        out << aggregateMax(filter(all3DigitsProduct, predicate < int > (isPalindromic<int>)));
+
     }
 };
 
 
 int main() {
-    P1 solver;
+    P4 solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);

@@ -84,15 +84,15 @@ template <class IN, class OUT> MapIterable<IN, OUT> mapIterable(const Iterable<I
 }
 
 template <class T> class FilterIterator : public Iterator<T> {
-    Iterator<T> &in;
+    unique_ptr<Iterator<T>> in;
     const function<bool(T)> &pred;
     T nextElement;
     bool hasNextElement;
 
     void findNext() {
         hasNextElement = false;
-        while (in.hasNext()) {
-            nextElement = in.next();
+        while (in->hasNext()) {
+            nextElement = in->next();
             if (pred(nextElement)) {
                 hasNextElement = true;
                 break;
@@ -100,7 +100,7 @@ template <class T> class FilterIterator : public Iterator<T> {
         }
     }
 public:
-    FilterIterator(Iterator<T> &in, const function<bool(T)> &pred):in(in), pred(pred) {
+    FilterIterator(unique_ptr<Iterator<T>> in, const function<bool(T)> &pred):in(move(in)), pred(pred) {
        findNext();
     }
 
@@ -121,12 +121,77 @@ template <class T> class FilterIterable : public Iterable<T> {
 public:
     FilterIterable(const Iterable<T> &in, const function<bool(T)> &pred):in(in), pred(pred) {}
     virtual unique_ptr<Iterator<T>> iterator() const {
-        return unique_ptr<Iterator<T>>(new FilterIterator<T>(*in.iterator(), pred));
+        return unique_ptr<Iterator<T>>(new FilterIterator<T>(in.iterator(), pred));
     }
 };
 
 template <class T> FilterIterable<T> filter(const Iterable<T> &iterable, const function<bool(T)> &filter) {
     return FilterIterable<T>(iterable, filter);
+}
+
+template <class IN1, class IN2, class OUT> class ProductIterator : public Iterator<OUT> {
+    const Iterable<IN1> &in1;
+    const Iterable<IN2> &in2;
+
+    unique_ptr<Iterator<IN1>> in1Iter;
+    unique_ptr<Iterator<IN2>> in2Iter;
+    const function<OUT(IN1, IN2)> &mapper;
+    IN1 cur1;
+    IN2 cur2;
+    OUT nextElement;
+    bool hasNextElement;
+
+    void findNext() {
+        if (in2Iter->hasNext()) {
+            cur2 = in2Iter->next();
+            nextElement = mapper(cur1, cur2);
+            hasNextElement = true;
+        } else {
+            if (in1Iter->hasNext()) {
+                cur1 = in1Iter->next();
+                in2Iter = in2.iterator();
+                findNext();
+            } else {
+                hasNextElement = false;
+            }
+        }
+    }
+public:
+    ProductIterator(const Iterable<IN1> &in1, const Iterable<IN2> &in2, const function<OUT(IN1, IN2)> &mapper):in1(in1), in2(in2), mapper(mapper) {
+        in1Iter = in1.iterator();
+        if (in1Iter->hasNext()) {
+            cur1 = in1Iter->next();
+            in2Iter = in2.iterator();
+            findNext();
+        } else {
+            hasNextElement = false;
+        }
+    }
+
+    virtual bool hasNext() const {
+        return hasNextElement;
+    }
+
+    virtual OUT next() {
+        OUT ret = nextElement;
+        findNext();
+        return ret;
+    }
+};
+
+template <class IN1, class IN2, class OUT> class ProductIterable : public Iterable<OUT> {
+    const Iterable<IN1> &in1;
+    const Iterable<IN2> &in2;
+    const function<OUT(IN1, IN2)> &mapper;
+public:
+    ProductIterable(const Iterable<IN1> &in1, const Iterable<IN2> &in2, const function<OUT(IN1, IN2)> &mapper):in1(in1), in2(in2), mapper(mapper) {}
+    virtual unique_ptr<Iterator<OUT>> iterator() const {
+        return unique_ptr<Iterator<OUT>>(new ProductIterator<IN1, IN2, OUT>(in1, in2, mapper));
+    }
+};
+
+template <class IN1, class IN2, class OUT> ProductIterable<IN1, IN2, OUT> product(const Iterable<IN1> &in1, const Iterable<IN2> &in2, const function<OUT(IN1, IN2)> &mapper) {
+    return ProductIterable<IN1, IN2, OUT>(in1, in2, mapper);
 }
 
 template <class T, class ITERATOR> class StdIterator : public Iterator<T> {

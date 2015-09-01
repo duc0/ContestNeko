@@ -1,4 +1,4 @@
-#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/ProjectEuler/P1.cpp"
+#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/ProjectEuler/P4.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -28,7 +28,7 @@ bool check(std::string expected, std::string actual) {
 
 int main() {
     std::vector<jhelper::Test> tests = {
-        {"1000", "233168", true},
+        {"1000", "1", true},
     };
     bool allOK = true;
     int testID = 0;
@@ -42,7 +42,7 @@ int main() {
             std::stringstream in(test.input);
             std::ostringstream out;
             std::clock_t start = std::clock();
-            P1 solver;
+            P4 solver;
             solver.solve(in, out);
             std::clock_t finish = std::clock();
             double currentTime = double(finish - start) / CLOCKS_PER_SEC;
