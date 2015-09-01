@@ -70,8 +70,8 @@ public:
     DivisorIterable(T n) {
         this->n = n;
     }
-    virtual Iterator<T>* iterator() const {
-        return new DivisorIterator<T>(n);
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new DivisorIterator<T>(n));
     }
 };
 
@@ -105,8 +105,8 @@ public:
     DigitIterable(T n) {
         this->n = n;
     }
-    virtual Iterator<T>* iterator() const {
-        return new DigitIterator<T>(n);
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new DigitIterator<T>(n));
     }
 };
 

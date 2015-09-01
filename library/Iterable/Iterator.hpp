@@ -11,7 +11,7 @@ public:
 
 template <class T> class Iterable {
 public:
-    virtual Iterator<T>* iterator() const = 0;
+    virtual unique_ptr<Iterator<T>> iterator() const = 0;
 };
 
 
@@ -74,7 +74,7 @@ template <class IN, class OUT> class MapIterable : public Iterable<OUT> {
     const function<OUT(IN)> &mapper;
 public:
     MapIterable(const Iterable<IN> &in, const function<OUT(IN)> &mapper):in(in), mapper(mapper) {}
-    virtual Iterator<OUT>* iterator() const {
+    virtual unique_ptr<Iterator<OUT>> iterator() const {
         return new MapIterator<IN, OUT>(*in.iterator(), mapper);
     }
 };
@@ -105,8 +105,8 @@ template <class T, class ITERATOR> class StdIterable : public Iterable<T> {
     const ITERATOR &begin, &end;
 public:
     StdIterable(const ITERATOR &begin, const ITERATOR &end): begin(begin), end(end) {}
-    virtual Iterator<T>* iterator() const {
-        return new StdIterator<T, ITERATOR>(begin, end);
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new StdIterator<T, ITERATOR>(begin, end));
     }
 };
 

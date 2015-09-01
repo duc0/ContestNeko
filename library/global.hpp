@@ -32,6 +32,7 @@
 #include <random>
 #include <unordered_set>
 #include <unordered_map>
+#include <memory>
 #endif
 
 #define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl

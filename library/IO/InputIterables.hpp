@@ -25,8 +25,8 @@ template <class T> class InputIterable : public Iterable<T> {
     std::istream& in;
 public:
     InputIterable(std::istream& in, int size):in(in), size(size) {}
-    virtual Iterator<T>* iterator() const {
-        return new InputIterator<T>(in, size);
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new InputIterator<T>(in, size));
     }
 };
 

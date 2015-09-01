@@ -42,6 +42,7 @@
 #include <random>
 #include <unordered_set>
 #include <unordered_map>
+#include <memory>
 
 #endif
 
@@ -89,7 +90,7 @@ public:
 template<class T>
 class Iterable {
 public:
-    virtual Iterator<T> *iterator() const = 0;
+    virtual unique_ptr<Iterator<T>> iterator() const = 0;
 };
 
 
@@ -158,7 +159,7 @@ class MapIterable : public Iterable<OUT> {
 public:
     MapIterable(const Iterable<IN> &in, const function<OUT(IN)> &mapper) : in(in), mapper(mapper) { }
 
-    virtual Iterator<OUT> *iterator() const {
+    virtual unique_ptr<Iterator<OUT>> iterator() const {
         return new MapIterator<IN, OUT>(*in.iterator(), mapper);
     }
 };
@@ -193,8 +194,8 @@ class StdIterable : public Iterable<T> {
 public:
     StdIterable(const ITERATOR &begin, const ITERATOR &end) : begin(begin), end(end) { }
 
-    virtual Iterator<T> *iterator() const {
-        return new StdIterator<T, ITERATOR>(begin, end);
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new StdIterator<T, ITERATOR>(begin, end));
     }
 };
 
@@ -263,8 +264,8 @@ class InputIterable : public Iterable<T> {
 public:
     InputIterable(std::istream &in, int size) : in(in), size(size) { }
 
-    virtual Iterator<T> *iterator() const {
-        return new InputIterator<T>(in, size);
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new InputIterator<T>(in, size));
     }
 };
 
