@@ -1,0 +1,31 @@
+14 F - Mirror Box
+5 TaskF
+41 tasks/CodeForces/R320/F - Mirror Box.task
+8 STANDARD
+-1
+8 STANDARD
+-1
+6 SINGLE
+3
+0
+21 2 2 1000000007
+*/
+/*
+
+2 1
+
+1
+1
+20 2 2 1000000007
+**
+\\
+1 1
+1
+2
+12 2 2 3
+**
+**
+
+2 2
+
+1

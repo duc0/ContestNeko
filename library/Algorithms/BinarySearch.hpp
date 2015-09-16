@@ -50,10 +50,10 @@ bool binarySearchMinReal(double minRange, double maxRange, double epsilon, const
     while (r - l > epsilon) {
         m = l + (r - l) / 2;
         if (predicate(m)) {
-            l = m;
+            r = m;
             ret = m;
         } else {
-            r = m;
+            l = m;
         }
     }
     result = ret;

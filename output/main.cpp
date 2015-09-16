@@ -26,6 +26,7 @@
 #include <set>
 #include <cmath>
 #include <cstdlib>
+#include <iomanip>
 #include <queue>
 #include <stack>
 #include <functional>
@@ -76,235 +77,122 @@ string toYesNo(bool b) {
 #endif
 
 
-#ifndef SEGMENTTREE_H
-#define SEGMENTTREE_H
-
-template<class T, class Q>
-using TreeUpdateLeafFunction =
-function<Q(const Q &, const T &, const T &, int, int)>;
-template<class T, class Q>
-using TreeSplitFunction = function<void(Q &, Q &, Q &, T, int, int, int)>;
-template<class T, class Q>
-using TreeInitFunction = function<Q(const T &, int, int)>;
-
-template<class T, class Q>
-struct SegmentTree {
-    struct TreeNode {
-        bool leaf = true; // All elements in the leaf node's segment are the same
-        T value;
-        Q query;
-        int leftChild = -1,
-                rightChild =
-                -1; // index of the left and right children, -1 for no child
-    };
-
-protected:
-    vector<TreeNode> node;
-    TreeUpdateLeafFunction<T, Q> updateLeaf;
-    TreeSplitFunction<T, Q> split;
-    TreeInitFunction<T, Q> init;
-    const T defaultValue;
-
-    int addNode(int l, int r) {
-        TreeNode newNode;
-        newNode.value = defaultValue;
-        node.push_back(newNode);
-        return (int) node.size() - 1;
-    }
-
-    void splitNode(int p, int l, int r) {
-        assert(node[p].leaf);
-        int m = (l + r) / 2;
-        node[p].leaf = false;
-        if (node[p].leftChild == -1) {
-            int c = addNode(l, m);
-            node[p].leftChild = c;
-            c = addNode(m + 1, r);
-            node[p].rightChild = c;
-        }
-        int lc = node[p].leftChild;
-        int rc = node[p].rightChild;
-        node[lc].leaf = true;
-        node[rc].leaf = true;
-        node[lc].value = node[p].value;
-        node[rc].value = node[p].value;
-        split(node[p].query, node[lc].query, node[rc].query, node[p].value, l, m,
-              r);
-    }
-
-    void update(int p, int l, int r, int i, int j, const T &v) {
-        if (j < l || i > r)
-            return;
-        int m = (l + r) / 2;
-        if (i <= l && r <= j) { // [i,j] covers [l,r]
-            if (node[p].leaf) {
-                node[p].query = updateLeaf(node[p].query, node[p].value, v, l, r);
-                node[p].value = v;
-                return;
-            } else {
-                node[p].leaf = true;
-                node[p].value = v;
-            }
-        } else if (node[p].leaf) { // [i,j] intersects [l, r]
-            splitNode(p, l, r);
-        }
-        update(node[p].leftChild, l, m, i, j, v);
-        update(node[p].rightChild, m + 1, r, i, j, v);
-        node[p].query =
-                merge(node[node[p].leftChild].query, node[node[p].rightChild].query);
-    }
-
-    Q query(int p, int l, int r, int i, int j) {
-        if (i <= l && r <= j) { // [i,j] contains [l,r]
-            return node[p].query;
-        }
-        if (node[p].leaf) { // [i,j] intersects [l, r]
-            splitNode(p, l, r);
-        }
-        int m = (l + r) / 2;
-        Q ret;
-        if (j <= m) {
-            ret = query(node[p].leftChild, l, m, i, j);
-        } else if (i >= m + 1) {
-            ret = query(node[p].rightChild, m + 1, r, i, j);
+template<class T>
+bool binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+    while (leftIndex <= rightIndex) {
+        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+        if (predicate(midIndex)) {
+            ret = midIndex;
+            rightIndex = midIndex - 1;
         } else {
-            ret = merge(query(node[p].leftChild, l, m, i, j),
-                        query(node[p].rightChild, m + 1, r, i, j));
+            leftIndex = midIndex + 1;
         }
-        node[p].query =
-                merge(node[node[p].leftChild].query, node[node[p].rightChild].query);
-        return ret;
     }
+    result = ret;
+    return ret != maxIndex + 1;
+}
 
-    int minIndex, maxIndex;
-    int root;
-
-public:
-    virtual Q merge(const Q &leftSide, const Q &rightSide) = 0;
-
-    // First way to specify a segment tree, usually use when lazy propagation is
-    // needed.
-    // Q merge(Q, Q) that merges the query from left and right children
-    // Q updateLeaf(Q cur, T oldV, T curV, int l, int r) return the updated
-    //   query in a leaf node if its old value is oldV and new value is curV
-    // split(Q& cur, Q &lChild, Q &rChild, int curV, int l, int m, int r)
-    //   modify the query in the current node and it's left and right children
-    //   when
-    // a split action happens.
-    explicit SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                         const TreeUpdateLeafFunction<T, Q> &updateLeaf,
-                         const TreeSplitFunction<T, Q> &split)
-            : updateLeaf(updateLeaf), split(split),
-              defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
-        root = addNode(minIndex, maxIndex);
-    }
-
-    // The second way to specify a segment tree:
-    // a merge function
-    // an init function (v, l, r) that initilize the query based on
-    // the value of the node and the node interval
-    SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                const function<Q(T, int, int)> &init)
-            : defaultValue(defaultValue), minIndex(minIndex),
-              maxIndex(maxIndex), init(init) {
-        updateLeaf = [&](const Q &cur, T oldV, T curV, int l, int r) {
-            return this->init(curV, l, r);
-        };
-        split = [&](Q &cur, Q &lQ, Q &rQ, T v, int l, int m, int r) {
-            lQ = this->init(v, l, m);
-            rQ = this->init(v, m + 1, r);
-        };
-        root = addNode(minIndex, maxIndex);
-    }
-
-    // Set all elements in [i, j] to be v
-    void update(int i, int j, T v) { update(root, minIndex, maxIndex, i, j, v); }
-
-    // Query augmented data in [i, j]
-    Q query(int i, int j) { return query(root, minIndex, maxIndex, i, j); }
-
-    // Query augmented data in the whole range
-    Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
-};
-
-#endif
-
-struct ColorsQuery {
-    // Sum of colourfulness
-    int64 sum;
-
-    // Lazy propagation of colourfulness
-    int64 delta;
-
-    ColorsQuery() {
-        sum = 0;
-        delta = 0;
-    }
-
-    ColorsQuery(int64 sum, int64 delta) {
-        this->sum = sum;
-        this->delta = delta;
-    }
-};
-
-
-class ColorTree : public SegmentTree<int64, ColorsQuery> {
-public:
-    virtual ColorsQuery merge(const ColorsQuery &lNode, const ColorsQuery &rNode) {
-        return ColorsQuery(lNode.sum + rNode.sum, 0);
-    }
-
-    explicit ColorTree(int minIndex, int maxIndex, int64 defaultValue,
-                       const TreeUpdateLeafFunction<int64, ColorsQuery> &updateLeaf,
-                       const TreeSplitFunction<int64, ColorsQuery> &split) : SegmentTree<int64, ColorsQuery>(minIndex,
-                                                                                                             maxIndex,
-                                                                                                             defaultValue,
-                                                                                                             updateLeaf,
-                                                                                                             split) {
-
-    }
-};
-
-class C {
-public:
-    void solve(std::istream &cin, std::ostream &cout) {
-        int n, q, t, l, r, x;
-        cin >> n >> q;
-
-        auto leaf = [](const ColorsQuery &cur, const int &oldV, const int &newV,
-                       int lIndex, int rIndex) {
-            return ColorsQuery(cur.sum + 1LL * abs(newV - oldV) * (rIndex - lIndex + 1),
-                               cur.delta + 1LL * abs(newV - oldV));
-        };
-
-        auto split = [](ColorsQuery &cur, ColorsQuery &lNode, ColorsQuery &rNode,
-                        int v, int leftIndex, int midIndex, int rightIndex) {
-            lNode.sum += cur.delta * (midIndex - leftIndex + 1);
-            lNode.delta += cur.delta;
-            rNode.sum += cur.delta * (rightIndex - midIndex);
-            rNode.delta += cur.delta;
-            cur.delta = 0;
-        };
-
-        ColorTree tree(1, n, 0, leaf, split);
-        for_inc_range(i, 1, n) { tree.update(i, i, i); }
-        repeat(q) {
-            cin >> t;
-            if (t == 1) {
-                cin >> l >> r >> x;
-                tree.update(l, r, x);
-            } else {
-                cin >> l >> r;
-                int64 exclude = (int64) (r - l + 1) * (r + l) / 2;
-                cout << tree.query(l, r).sum - exclude << endl;
-            }
+template<class T>
+bool binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+    while (leftIndex <= rightIndex) {
+        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+        if (predicate(midIndex)) {
+            ret = midIndex;
+            leftIndex = midIndex + 1;
+        } else {
+            rightIndex = midIndex - 1;
         }
+    }
+    result = ret;
+    return ret != minIndex - 1;
+}
+
+bool binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
+                         double &result) {
+    double l = minRange, r = maxRange, m, ret = minRange - 1;
+    while (r - l > epsilon) {
+        m = l + (r - l) / 2;
+        if (predicate(m)) {
+            ret = m;
+            l = m;
+        } else {
+            r = m;
+        }
+    }
+    result = ret;
+    return ret != minRange - 1;
+}
+
+bool binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
+                         double &result) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+        m = l + (r - l) / 2;
+        if (predicate(m)) {
+            r = m;
+            ret = m;
+        } else {
+            l = m;
+        }
+    }
+    result = ret;
+    return ret != maxRange + 1;
+}
+
+#define MAXN 200200
+
+int n;
+int a[MAXN];
+pair<int, int> p[MAXN];
+
+#define INF 1E18
+
+bool ok(double ret) {
+    double bMin = INF, bMax = -INF;
+    LOG(1, "Ret " << ret);
+    for_inc_range(i, 0, n - 1) {
+        pair<int, int> p1 = p[i];
+        pair<int, int> p2 = p[i + 1];
+        if (p1.second < p2.second) {
+            swap(p1, p2);
+        }
+        double l = p1.second - p2.second;
+        double slope = (p2.first - p1.first) / l;
+        bMin = min(bMin, slope + ret / l);
+        bMax = max(bMax, slope - ret / l);
+        LOG(1, "Slope " << i << " " << slope);
+    }
+    LOG(1, "Bmax " << bMax << " bMin " << bMin);
+    return bMax <= bMin;
+}
+
+class TaskC {
+public:
+    void solve(std::istream &in, std::ostream &out) {
+        in >> n;
+        for_inc_range(i, 1, n) {
+            in >> a[i];
+        }
+        a[0] = 0;
+        p[0] = make_pair(0, 0);
+        for_inc_range(i, 1, n) {
+            a[i] = a[i - 1] + a[i];
+            p[i] = make_pair(a[i], i);
+        }
+        sort(p, p + n + 1);
+
+        double ret;
+        binarySearchMinReal(0, 3e4, 1e-7, (function<bool(double)>) ok, ret);
+
+        out << setiosflags(ios::fixed) << std::setprecision(12) << ret << endl;
     }
 };
 
 
 int main() {
-    C solver;
+    TaskC solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);
