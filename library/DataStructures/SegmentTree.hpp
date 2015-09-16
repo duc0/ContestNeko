@@ -4,8 +4,6 @@
 #define SEGMENTTREE_H
 
 template <class T, class Q>
-using TreeMergeFunction = function<Q(const Q &, const Q &)>;
-template <class T, class Q>
 using TreeUpdateLeafFunction =
 function<Q(const Q &, const T &, const T &, int, int)>;
 template <class T, class Q>
@@ -25,7 +23,6 @@ template <class T, class Q> struct SegmentTree {
 
 protected:
     vector<TreeNode> node;
-    TreeMergeFunction<T, Q> merge;
     TreeUpdateLeafFunction<T, Q> updateLeaf;
     TreeSplitFunction<T, Q> split;
     TreeInitFunction<T, Q> init;
@@ -106,6 +103,8 @@ protected:
     int root;
 
 public:
+    virtual Q merge(const Q& leftSide, const Q& rightSide) = 0;
+
     // First way to specify a segment tree, usually use when lazy propagation is
     // needed.
     // Q merge(Q, Q) that merges the query from left and right children
@@ -116,10 +115,9 @@ public:
     //   when
     // a split action happens.
     explicit SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                         const TreeMergeFunction<T, Q> &merge,
                          const TreeUpdateLeafFunction<T, Q> &updateLeaf,
                          const TreeSplitFunction<T, Q> &split)
-            : merge(merge), updateLeaf(updateLeaf), split(split),
+            : updateLeaf(updateLeaf), split(split),
               defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
         root = addNode(minIndex, maxIndex);
     }
@@ -129,9 +127,8 @@ public:
     // an init function (v, l, r) that initilize the query based on
     // the value of the node and the node interval
     SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                const TreeMergeFunction<T, Q> &merge,
                 const function<Q(T, int, int)> &init)
-            : merge(merge), defaultValue(defaultValue), minIndex(minIndex),
+            : defaultValue(defaultValue), minIndex(minIndex),
               maxIndex(maxIndex), init(init) {
         updateLeaf = [&](const Q &cur, T oldV, T curV, int l, int r) {
             return this->init(curV, l, r);

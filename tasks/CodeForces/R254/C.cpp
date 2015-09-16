@@ -19,14 +19,25 @@ struct ColorsQuery {
     }
 };
 
+
+class ColorTree : public SegmentTree<int64, ColorsQuery> {
+public:
+    virtual ColorsQuery merge(const ColorsQuery& lNode, const ColorsQuery& rNode) {
+        return ColorsQuery(lNode.sum + rNode.sum, 0);
+    }
+
+    explicit ColorTree(int minIndex, int maxIndex, int64 defaultValue,
+                         const TreeUpdateLeafFunction<int64, ColorsQuery> &updateLeaf,
+                         const TreeSplitFunction<int64, ColorsQuery> &split) : SegmentTree<int64, ColorsQuery>(minIndex, maxIndex, defaultValue, updateLeaf, split) {
+
+    }
+};
+
 class C {
 public:
     void solve(std::istream& cin, std::ostream& cout) {
         int n, q, t, l, r, x;
         cin >> n >> q;
-        auto merge = [](const ColorsQuery &lNode, const ColorsQuery &rNode) {
-            return ColorsQuery(lNode.sum + rNode.sum, 0);
-        };
 
         auto leaf = [](const ColorsQuery &cur, const int &oldV, const int &newV,
                        int lIndex, int rIndex) {
@@ -43,7 +54,7 @@ public:
             cur.delta = 0;
         };
 
-        SegmentTree<int64, ColorsQuery> tree(1, n, 0, merge, leaf, split);
+        ColorTree tree(1, n, 0, leaf, split);
         for_inc_range(i, 1, n) { tree.update(i, i, i); }
         repeat(q) {
             cin >> t;

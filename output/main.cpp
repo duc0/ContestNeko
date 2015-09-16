@@ -76,8 +76,9 @@ string toYesNo(bool b) {
 #endif
 
 
-template<class T, class Q>
-using TreeMergeFunction = function<Q(const Q &, const Q &)>;
+#ifndef SEGMENTTREE_H
+#define SEGMENTTREE_H
+
 template<class T, class Q>
 using TreeUpdateLeafFunction =
 function<Q(const Q &, const T &, const T &, int, int)>;
@@ -99,7 +100,6 @@ struct SegmentTree {
 
 protected:
     vector<TreeNode> node;
-    TreeMergeFunction<T, Q> merge;
     TreeUpdateLeafFunction<T, Q> updateLeaf;
     TreeSplitFunction<T, Q> split;
     TreeInitFunction<T, Q> init;
@@ -180,6 +180,8 @@ protected:
     int root;
 
 public:
+    virtual Q merge(const Q &leftSide, const Q &rightSide) = 0;
+
     // First way to specify a segment tree, usually use when lazy propagation is
     // needed.
     // Q merge(Q, Q) that merges the query from left and right children
@@ -190,10 +192,9 @@ public:
     //   when
     // a split action happens.
     explicit SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                         const TreeMergeFunction<T, Q> &merge,
                          const TreeUpdateLeafFunction<T, Q> &updateLeaf,
                          const TreeSplitFunction<T, Q> &split)
-            : merge(merge), updateLeaf(updateLeaf), split(split),
+            : updateLeaf(updateLeaf), split(split),
               defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
         root = addNode(minIndex, maxIndex);
     }
@@ -203,9 +204,8 @@ public:
     // an init function (v, l, r) that initilize the query based on
     // the value of the node and the node interval
     SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                const TreeMergeFunction<T, Q> &merge,
                 const function<Q(T, int, int)> &init)
-            : merge(merge), defaultValue(defaultValue), minIndex(minIndex),
+            : defaultValue(defaultValue), minIndex(minIndex),
               maxIndex(maxIndex), init(init) {
         updateLeaf = [&](const Q &cur, T oldV, T curV, int l, int r) {
             return this->init(curV, l, r);
@@ -227,6 +227,7 @@ public:
     Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
 };
 
+#endif
 
 struct ColorsQuery {
     // Sum of colourfulness
@@ -246,14 +247,29 @@ struct ColorsQuery {
     }
 };
 
+
+class ColorTree : public SegmentTree<int64, ColorsQuery> {
+public:
+    virtual ColorsQuery merge(const ColorsQuery &lNode, const ColorsQuery &rNode) {
+        return ColorsQuery(lNode.sum + rNode.sum, 0);
+    }
+
+    explicit ColorTree(int minIndex, int maxIndex, int64 defaultValue,
+                       const TreeUpdateLeafFunction<int64, ColorsQuery> &updateLeaf,
+                       const TreeSplitFunction<int64, ColorsQuery> &split) : SegmentTree<int64, ColorsQuery>(minIndex,
+                                                                                                             maxIndex,
+                                                                                                             defaultValue,
+                                                                                                             updateLeaf,
+                                                                                                             split) {
+
+    }
+};
+
 class C {
 public:
     void solve(std::istream &cin, std::ostream &cout) {
         int n, q, t, l, r, x;
         cin >> n >> q;
-        auto merge = [](const ColorsQuery &lNode, const ColorsQuery &rNode) {
-            return ColorsQuery(lNode.sum + rNode.sum, 0);
-        };
 
         auto leaf = [](const ColorsQuery &cur, const int &oldV, const int &newV,
                        int lIndex, int rIndex) {
@@ -270,7 +286,7 @@ public:
             cur.delta = 0;
         };
 
-        SegmentTree<int64, ColorsQuery> tree(1, n, 0, merge, leaf, split);
+        ColorTree tree(1, n, 0, leaf, split);
         for_inc_range(i, 1, n) { tree.update(i, i, i); }
         repeat(q) {
             cin >> t;
