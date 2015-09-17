@@ -22,13 +22,28 @@ struct ColorsQuery {
 
 class ColorTree : public SegmentTree<int64, ColorsQuery> {
 public:
-    virtual ColorsQuery merge(const ColorsQuery& lNode, const ColorsQuery& rNode) {
+    virtual ColorsQuery merge(const ColorsQuery& lNode, const ColorsQuery& rNode) override {
         return ColorsQuery(lNode.sum + rNode.sum, 0);
     }
 
-    explicit ColorTree(int minIndex, int maxIndex, int64 defaultValue,
-                         const TreeUpdateLeafFunction<int64, ColorsQuery> &updateLeaf,
-                         const TreeSplitFunction<int64, ColorsQuery> &split) : SegmentTree<int64, ColorsQuery>(minIndex, maxIndex, defaultValue, updateLeaf, split) {
+
+    virtual ColorsQuery updateLeaf(const ColorsQuery &current, const long long int &oldValue,
+                                   const long long int &currentValue, int leftIndex, int rightIndex) override {
+        return ColorsQuery(current.sum + 1LL * abs(currentValue - oldValue) * (rightIndex - leftIndex + 1),
+                           current.delta + 1LL * abs(currentValue - oldValue));
+    }
+
+
+    virtual ColorsQuery split(ColorsQuery &current, ColorsQuery &leftChild, ColorsQuery &rightChild,
+                              const long long int &currentValue, int leftIndex, int midIndex, int rightIndex) override {
+        leftChild.sum += current.delta * (midIndex - leftIndex + 1);
+        leftChild.delta += current.delta;
+        rightChild.sum += current.delta * (rightIndex - midIndex);
+        rightChild.delta += current.delta;
+        current.delta = 0;
+    }
+
+    explicit ColorTree(int minIndex, int maxIndex, int64 defaultValue) : SegmentTree<int64, ColorsQuery>(minIndex, maxIndex, defaultValue) {
 
     }
 };
@@ -39,22 +54,7 @@ public:
         int n, q, t, l, r, x;
         cin >> n >> q;
 
-        auto leaf = [](const ColorsQuery &cur, const int &oldV, const int &newV,
-                       int lIndex, int rIndex) {
-            return ColorsQuery(cur.sum + 1LL * abs(newV - oldV) * (rIndex - lIndex + 1),
-                               cur.delta + 1LL * abs(newV - oldV));
-        };
-
-        auto split = [](ColorsQuery &cur, ColorsQuery &lNode, ColorsQuery &rNode,
-                        int v, int leftIndex, int midIndex, int rightIndex) {
-            lNode.sum += cur.delta * (midIndex - leftIndex + 1);
-            lNode.delta += cur.delta;
-            rNode.sum += cur.delta * (rightIndex - midIndex);
-            rNode.delta += cur.delta;
-            cur.delta = 0;
-        };
-
-        ColorTree tree(1, n, 0, leaf, split);
+        ColorTree tree(1, n, 0);
         for_inc_range(i, 1, n) { tree.update(i, i, i); }
         repeat(q) {
             cin >> t;

@@ -18,6 +18,28 @@
       <sourceFolder url="file://$MODULE_DIR$/library/String/StringHasher.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/global.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/output/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R254/C.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R263/TaskD.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R285Div2/TaskB.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R315/TaskA.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R315/TaskB.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R318/TaskA.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R318/TaskB.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R318/TaskC.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R318/TaskD.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R318/TaskE.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R320/TaskA.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R320/TaskB.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R320/TaskC.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R320/TaskD.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R320/TaskE.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R320/TaskF.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R4/TaskC.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R91/TaskA.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/VK2015R2/TaskE.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/ProjectEuler/P1.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/ProjectEuler/P4.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/SPOJ/IOI07Sails.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/testrunner/main.cpp" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />

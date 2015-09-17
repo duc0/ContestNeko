@@ -4,14 +4,9 @@
 #define SEGMENTTREE_H
 
 template <class T, class Q>
-using TreeUpdateLeafFunction =
-function<Q(const Q &, const T &, const T &, int, int)>;
-template <class T, class Q>
-using TreeSplitFunction = function<void(Q &, Q &, Q &, T, int, int, int)>;
-template <class T, class Q>
 using TreeInitFunction = function<Q(const T &, int, int)>;
 
-template <class T, class Q> struct SegmentTree {
+template <class T, class Q> class SegmentTree {
     struct TreeNode {
         bool leaf = true; // All elements in the leaf node's segment are the same
         T value;
@@ -23,8 +18,6 @@ template <class T, class Q> struct SegmentTree {
 
 protected:
     vector<TreeNode> node;
-    TreeUpdateLeafFunction<T, Q> updateLeaf;
-    TreeSplitFunction<T, Q> split;
     TreeInitFunction<T, Q> init;
     const T defaultValue;
 
@@ -103,26 +96,21 @@ protected:
     int root;
 
 public:
+    // Merges the query from left and right children
     virtual Q merge(const Q& leftSide, const Q& rightSide) = 0;
 
-    // First way to specify a segment tree, usually use when lazy propagation is
-    // needed.
-    // Q merge(Q, Q) that merges the query from left and right children
-    // Q updateLeaf(Q cur, T oldV, T curV, int l, int r) return the updated
-    //   query in a leaf node if its old value is oldV and new value is curV
-    // split(Q& cur, Q &lChild, Q &rChild, int curV, int l, int m, int r)
-    //   modify the query in the current node and it's left and right children
-    //   when
-    // a split action happens.
-    explicit SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                         const TreeUpdateLeafFunction<T, Q> &updateLeaf,
-                         const TreeSplitFunction<T, Q> &split)
-            : updateLeaf(updateLeaf), split(split),
-              defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
+    // Return the updated query in a leaf node if its old value is oldV and new value is curV
+    virtual Q updateLeaf(const Q &current, const T &oldValue, const T &currentValue, int leftIndex, int rightIndex) = 0;
+
+    // Modify the query in the current node and it's left and right children when a split action happens.
+    virtual Q split(Q & current, Q &leftChild, Q &rightChild, const T &currentValue, int leftIndex, int midIndex, int rightIndex) = 0;
+
+    explicit SegmentTree(int minIndex, int maxIndex, T defaultValue)
+            : defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
         root = addNode(minIndex, maxIndex);
     }
 
-    // The second way to specify a segment tree:
+ /*   // The second way to specify a segment tree:
     // a merge function
     // an init function (v, l, r) that initilize the query based on
     // the value of the node and the node interval
@@ -138,7 +126,7 @@ public:
             rQ = this->init(v, m + 1, r);
         };
         root = addNode(minIndex, maxIndex);
-    }
+    }*/
 
     // Set all elements in [i, j] to be v
     void update(int i, int j, T v) { update(root, minIndex, maxIndex, i, j, v); }
@@ -149,5 +137,28 @@ public:
     // Query augmented data in the whole range
     Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
 };
+
+
+template <class T, class Q> class SimpleSegmentTree : SegmentTree<T, Q> {
+
+public:
+    virtual Q initLeaf(const T &value, int leftIndex, int rightIndex) = 0;
+
+
+private:
+    virtual Q updateLeaf(const Q &current, const T &oldValue, const T &currentValue, int leftIndex,
+                         int rightIndex) override {
+        return initLeaf(currentValue, leftIndex, rightIndex);
+    }
+
+    virtual Q split(Q &current, Q &leftChild, Q &rightChild, const T &currentValue, int leftIndex, int midIndex,
+                    int rightIndex) override {
+        leftChild = initLeaf(currentValue, leftIndex, midIndex);
+        rightChild = initLeaf(currentValue, midIndex + 1, rightIndex);
+    }
+
+    SimpleSegmentTree(int minIndex, int maxIndex, T defaultValue) : SegmentTree<T, Q>(minIndex, maxIndex, defaultValue) { }
+};
+
 
 #endif
