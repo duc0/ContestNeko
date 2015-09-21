@@ -77,247 +77,481 @@ string toYesNo(bool b) {
 #endif
 
 
-#ifndef SEGMENTTREE_H
-#define SEGMENTTREE_H
+#ifndef ITERATOR_H
+#define ITERATOR_H
 
-template<class T, class Q>
-using TreeInitFunction = function<Q(const T &, int, int)>;
+template<class T>
+class Iterator {
+public:
+    virtual bool hasNext() const = 0;
 
-template<class T, class Q>
-class SegmentTree {
-    struct TreeNode {
-        bool leaf = true; // All elements in the leaf node's segment are the same
-        T value;
-        Q query;
-        int leftChild = -1,
-                rightChild =
-                -1; // index of the left and right children, -1 for no child
-    };
+    virtual T next() = 0;
+};
 
-protected:
-    vector<TreeNode> node;
-    TreeInitFunction<T, Q> init;
-    const T defaultValue;
+template<class T>
+class Iterable {
+public:
+    virtual unique_ptr<Iterator<T>> iterator() const = 0;
+};
 
-    int addNode(int l, int r) {
-        TreeNode newNode;
-        newNode.value = defaultValue;
-        node.push_back(newNode);
-        return (int) node.size() - 1;
+
+template<class T, class UnaryPredicate>
+bool any(const Iterable<T> &iterable, const UnaryPredicate &pred) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        if (pred(it->next())) {
+            return true;
+        }
     }
+    return false;
+}
 
-    void splitNode(int p, int l, int r) {
-        assert(node[p].leaf);
-        int m = (l + r) / 2;
-        node[p].leaf = false;
-        if (node[p].leftChild == -1) {
-            int c = addNode(l, m);
-            node[p].leftChild = c;
-            c = addNode(m + 1, r);
-            node[p].rightChild = c;
+template<class T, class UnaryPredicate>
+bool all(const Iterable<T> &iterable, const UnaryPredicate &pred) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        if (!pred(it->next())) {
+            return false;
         }
-        int lc = node[p].leftChild;
-        int rc = node[p].rightChild;
-        node[lc].leaf = true;
-        node[rc].leaf = true;
-        node[lc].value = node[p].value;
-        node[rc].value = node[p].value;
-        split(node[p].query, node[lc].query, node[rc].query, node[p].value, l, m,
-              r);
     }
+    return true;
+}
 
-    void update(int p, int l, int r, int i, int j, const T &v) {
-        if (j < l || i > r)
-            return;
-        int m = (l + r) / 2;
-        if (i <= l && r <= j) { // [i,j] covers [l,r]
-            if (node[p].leaf) {
-                node[p].query = updateLeaf(node[p].query, node[p].value, v, l, r);
-                node[p].value = v;
-                return;
-            } else {
-                node[p].leaf = true;
-                node[p].value = v;
-            }
-        } else if (node[p].leaf) { // [i,j] intersects [l, r]
-            splitNode(p, l, r);
-        }
-        update(node[p].leftChild, l, m, i, j, v);
-        update(node[p].rightChild, m + 1, r, i, j, v);
-        node[p].query =
-                merge(node[node[p].leftChild].query, node[node[p].rightChild].query);
-    }
-
-    Q query(int p, int l, int r, int i, int j) {
-        if (i <= l && r <= j) { // [i,j] contains [l,r]
-            return node[p].query;
-        }
-        if (node[p].leaf) { // [i,j] intersects [l, r]
-            splitNode(p, l, r);
-        }
-        int m = (l + r) / 2;
-        Q ret;
-        if (j <= m) {
-            ret = query(node[p].leftChild, l, m, i, j);
-        } else if (i >= m + 1) {
-            ret = query(node[p].rightChild, m + 1, r, i, j);
+template<class T>
+bool unique(const Iterable<T> &iterable) {
+    auto it = iterable.iterator();
+    bool first = true;
+    T val;
+    while (it->hasNext()) {
+        T x = it->next();
+        if (first) {
+            val = x;
+            first = false;
         } else {
-            ret = merge(query(node[p].leftChild, l, m, i, j),
-                        query(node[p].rightChild, m + 1, r, i, j));
+            if (val != x) {
+                return false;
+            }
         }
-        node[p].query =
-                merge(node[node[p].leftChild].query, node[node[p].rightChild].query);
+    }
+    return true;
+}
+
+template<class IN, class OUT>
+class MapIterator : public Iterator<OUT> {
+    unique_ptr<Iterator<IN>> in;
+    const function<OUT(IN)> &mapper;
+
+public:
+    MapIterator(unique_ptr<Iterator<IN>> in, const function<OUT(IN)> &mapper) : in(move(in)), mapper(mapper) { }
+
+    virtual bool hasNext() const {
+        return in->hasNext();
+    }
+
+    virtual OUT next() {
+        return mapper(in->next());
+    }
+};
+
+template<class IN, class OUT>
+class MapIterable : public Iterable<OUT> {
+    const Iterable<IN> &in;
+    const function<OUT(IN)> &mapper;
+public:
+    MapIterable(const Iterable<IN> &in, const function<OUT(IN)> &mapper) : in(in), mapper(mapper) { }
+
+    virtual unique_ptr<Iterator<OUT>> iterator() const {
+        return unique_ptr<Iterator<OUT>>(new MapIterator<IN, OUT>(in.iterator(), mapper));
+    }
+};
+
+template<class IN, class OUT>
+MapIterable<IN, OUT> mapIterable(const Iterable<IN> &iterable, const function<OUT(IN)> &mapper) {
+    return MapIterable<IN, OUT>(iterable, mapper);
+}
+
+template<class T>
+class FilterIterator : public Iterator<T> {
+    unique_ptr<Iterator<T>> in;
+    const function<bool(T)> &pred;
+    T nextElement;
+    bool hasNextElement;
+
+    void findNext() {
+        hasNextElement = false;
+        while (in->hasNext()) {
+            nextElement = in->next();
+            if (pred(nextElement)) {
+                hasNextElement = true;
+                break;
+            }
+        }
+    }
+
+public:
+    FilterIterator(unique_ptr<Iterator<T>> in, const function<bool(T)> &pred) : in(move(in)), pred(pred) {
+        findNext();
+    }
+
+    virtual bool hasNext() const {
+        return hasNextElement;
+    }
+
+    virtual T next() {
+        T ret = nextElement;
+        findNext();
         return ret;
     }
-
-    int minIndex, maxIndex;
-    int root;
-
-public:
-    // Merges the query from left and right children
-    virtual Q merge(const Q &leftSide, const Q &rightSide) = 0;
-
-    // Return the updated query in a leaf node if its old value is oldV and new value is curV
-    virtual Q updateLeaf(const Q &current, const T &oldValue, const T &currentValue, int leftIndex, int rightIndex) = 0;
-
-    // Modify the query in the current node and it's left and right children when a split action happens.
-    virtual Q split(Q &current, Q &leftChild, Q &rightChild, const T &currentValue, int leftIndex, int midIndex,
-                    int rightIndex) = 0;
-
-    explicit SegmentTree(int minIndex, int maxIndex, T defaultValue)
-            : defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
-        root = addNode(minIndex, maxIndex);
-    }
-
-    /*   // The second way to specify a segment tree:
-       // a merge function
-       // an init function (v, l, r) that initilize the query based on
-       // the value of the node and the node interval
-       SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                   const function<Q(T, int, int)> &init)
-               : defaultValue(defaultValue), minIndex(minIndex),
-                 maxIndex(maxIndex), init(init) {
-           updateLeaf = [&](const Q &cur, T oldV, T curV, int l, int r) {
-               return this->init(curV, l, r);
-           };
-           split = [&](Q &cur, Q &lQ, Q &rQ, T v, int l, int m, int r) {
-               lQ = this->init(v, l, m);
-               rQ = this->init(v, m + 1, r);
-           };
-           root = addNode(minIndex, maxIndex);
-       }*/
-
-    // Set all elements in [i, j] to be v
-    void update(int i, int j, T v) { update(root, minIndex, maxIndex, i, j, v); }
-
-    // Query augmented data in [i, j]
-    Q query(int i, int j) { return query(root, minIndex, maxIndex, i, j); }
-
-    // Query augmented data in the whole range
-    Q query() { return query(root, minIndex, maxIndex, minIndex, maxIndex); }
 };
 
-
-template<class T, class Q>
-class SimpleSegmentTree : SegmentTree<T, Q> {
-
+template<class T>
+class FilterIterable : public Iterable<T> {
+    const Iterable<T> &in;
+    const function<bool(T)> &pred;
 public:
-    virtual Q initLeaf(const T &value, int leftIndex, int rightIndex) = 0;
+    FilterIterable(const Iterable<T> &in, const function<bool(T)> &pred) : in(in), pred(pred) { }
 
-
-private:
-    virtual Q updateLeaf(const Q &current, const T &oldValue, const T &currentValue, int leftIndex,
-                         int rightIndex) override {
-        return initLeaf(currentValue, leftIndex, rightIndex);
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new FilterIterator<T>(in.iterator(), pred));
     }
-
-    virtual Q split(Q &current, Q &leftChild, Q &rightChild, const T &currentValue, int leftIndex, int midIndex,
-                    int rightIndex) override {
-        leftChild = initLeaf(currentValue, leftIndex, midIndex);
-        rightChild = initLeaf(currentValue, midIndex + 1, rightIndex);
-    }
-
-    SimpleSegmentTree(int minIndex, int maxIndex, T defaultValue) : SegmentTree<T, Q>(minIndex, maxIndex,
-                                                                                      defaultValue) { }
 };
 
+template<class T>
+FilterIterable<T> filter(const Iterable<T> &iterable, const function<bool(T)> &filter) {
+    return FilterIterable<T>(iterable, filter);
+}
+
+template<class IN1, class IN2, class OUT>
+class ProductIterator : public Iterator<OUT> {
+    const Iterable<IN1> &in1;
+    const Iterable<IN2> &in2;
+
+    unique_ptr<Iterator<IN1>> in1Iter;
+    unique_ptr<Iterator<IN2>> in2Iter;
+    const function<OUT(IN1, IN2)> &mapper;
+    IN1 cur1;
+    IN2 cur2;
+    OUT nextElement;
+    bool hasNextElement;
+
+    void findNext() {
+        if (in2Iter->hasNext()) {
+            cur2 = in2Iter->next();
+            nextElement = mapper(cur1, cur2);
+            hasNextElement = true;
+        } else {
+            if (in1Iter->hasNext()) {
+                cur1 = in1Iter->next();
+                in2Iter = in2.iterator();
+                findNext();
+            } else {
+                hasNextElement = false;
+            }
+        }
+    }
+
+public:
+    ProductIterator(const Iterable<IN1> &in1, const Iterable<IN2> &in2, const function<OUT(IN1, IN2)> &mapper) : in1(
+            in1), in2(in2), mapper(mapper) {
+        in1Iter = in1.iterator();
+        if (in1Iter->hasNext()) {
+            cur1 = in1Iter->next();
+            in2Iter = in2.iterator();
+            findNext();
+        } else {
+            hasNextElement = false;
+        }
+    }
+
+    virtual bool hasNext() const {
+        return hasNextElement;
+    }
+
+    virtual OUT next() {
+        OUT ret = nextElement;
+        findNext();
+        return ret;
+    }
+};
+
+template<class IN1, class IN2, class OUT>
+class ProductIterable : public Iterable<OUT> {
+    const Iterable<IN1> &in1;
+    const Iterable<IN2> &in2;
+    const function<OUT(IN1, IN2)> &mapper;
+public:
+    ProductIterable(const Iterable<IN1> &in1, const Iterable<IN2> &in2, const function<OUT(IN1, IN2)> &mapper) : in1(
+            in1), in2(in2), mapper(mapper) { }
+
+    virtual unique_ptr<Iterator<OUT>> iterator() const {
+        return unique_ptr<Iterator<OUT>>(new ProductIterator<IN1, IN2, OUT>(in1, in2, mapper));
+    }
+};
+
+template<class IN1, class IN2, class OUT>
+ProductIterable<IN1, IN2, OUT> product(const Iterable<IN1> &in1, const Iterable<IN2> &in2,
+                                       const function<OUT(IN1, IN2)> &mapper) {
+    return ProductIterable<IN1, IN2, OUT>(in1, in2, mapper);
+}
+
+template<class T, class ITERATOR>
+class StdIterator : public Iterator<T> {
+    const ITERATOR &begin, &end;
+    ITERATOR it;
+
+public:
+    StdIterator(const ITERATOR &begin, const ITERATOR &end) : begin(begin), end(end), it(begin) { }
+
+    virtual bool hasNext() const {
+        return it != end;
+    }
+
+    virtual T next() {
+        T ret = *it;
+        it++;
+        return ret;
+    }
+};
+
+template<class T, class ITERATOR>
+class StdIterable : public Iterable<T> {
+    const ITERATOR &begin, &end;
+public:
+    StdIterable(const ITERATOR &begin, const ITERATOR &end) : begin(begin), end(end) { }
+
+    virtual unique_ptr<Iterator<T>> iterator() const {
+        return unique_ptr<Iterator<T>>(new StdIterator<T, ITERATOR>(begin, end));
+    }
+};
+
+template<class T, class ITERATOR>
+StdIterable<T, ITERATOR> stdIterable(const ITERATOR &begin, const ITERATOR &end) {
+    return StdIterable<T, ITERATOR>(begin, end);
+};
+
+template<class T>
+T aggregate(const Iterable<T> &iterable, const function<T(T, T)> &aggregator) {
+    auto it = iterable.iterator();
+    bool first = true;
+    T ret;
+    while (it->hasNext()) {
+        if (first) {
+            ret = it->next();
+            first = false;
+        } else {
+            ret = aggregator(ret, it->next());
+        }
+    }
+    return ret;
+}
+
+template<class T>
+vector<T> collect(const Iterable<T> &iterable) {
+    auto it = iterable.iterator();
+    vector<T> vec;
+    while (it->hasNext()) {
+        vec.push_back(it->next());
+    }
+    return vec;
+}
+
+
+template<class T>
+void forEach(const Iterable<T> &iterable, const function<void(T)> &f) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        f(it->next());
+    }
+}
+
+template<class T>
+void printInterable(const Iterable<T> &iterable) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        LOG(1, it->next() << " ");
+    }
+    LOG(1, endl);
+}
+
+template<class T>
+T aggregateMax(const Iterable<T> &iterable) {
+    return aggregate<T>(iterable, [](const T &a, const T &b) { return max(a, b); });
+}
+
+template<class T>
+T aggregateSum(const Iterable<T> &iterable) {
+    return aggregate<T>(iterable, [](const T &a, const T &b) { return a + b; });
+}
+
+template<class T> using predicate = function<bool(T)>;
 
 #endif
 
-struct ColorsQuery {
-    // Sum of colourfulness
-    int64 sum;
 
-    // Lazy propagation of colourfulness
-    int64 delta;
-
-    ColorsQuery() {
-        sum = 0;
-        delta = 0;
-    }
-
-    ColorsQuery(int64 sum, int64 delta) {
-        this->sum = sum;
-        this->delta = delta;
-    }
-};
-
-
-class ColorTree : public SegmentTree<int64, ColorsQuery> {
-public:
-    virtual ColorsQuery merge(const ColorsQuery &lNode, const ColorsQuery &rNode) override {
-        return ColorsQuery(lNode.sum + rNode.sum, 0);
-    }
-
-
-    virtual ColorsQuery updateLeaf(const ColorsQuery &current, const long long int &oldValue,
-                                   const long long int &currentValue, int leftIndex, int rightIndex) override {
-        return ColorsQuery(current.sum + 1LL * abs(currentValue - oldValue) * (rightIndex - leftIndex + 1),
-                           current.delta + 1LL * abs(currentValue - oldValue));
-    }
-
-
-    virtual ColorsQuery split(ColorsQuery &current, ColorsQuery &leftChild, ColorsQuery &rightChild,
-                              const long long int &currentValue, int leftIndex, int midIndex, int rightIndex) override {
-        leftChild.sum += current.delta * (midIndex - leftIndex + 1);
-        leftChild.delta += current.delta;
-        rightChild.sum += current.delta * (rightIndex - midIndex);
-        rightChild.delta += current.delta;
-        current.delta = 0;
-    }
-
-    explicit ColorTree(int minIndex, int maxIndex, int64 defaultValue) : SegmentTree<int64, ColorsQuery>(minIndex,
-                                                                                                         maxIndex,
-                                                                                                         defaultValue) {
-
-    }
-};
-
-class C {
-public:
-    void solve(std::istream &cin, std::ostream &cout) {
-        int n, q, t, l, r, x;
-        cin >> n >> q;
-
-        ColorTree tree(1, n, 0);
-        for_inc_range(i, 1, n) { tree.update(i, i, i); }
-        repeat(q) {
-            cin >> t;
-            if (t == 1) {
-                cin >> l >> r >> x;
-                tree.update(l, r, x);
-            } else {
-                cin >> l >> r;
-                int64 exclude = (int64) (r - l + 1) * (r + l) / 2;
-                cout << tree.query(l, r).sum - exclude << endl;
-            }
+/**
+ * O(N)
+ */
+template<class T>
+void maximumSumContiguousSubsequence(const Iterable<T> &seq, T &result) {
+    auto it = seq.iterator();
+    bool has = false;
+    T sum;
+    while (it->hasNext()) {
+        auto val = it->next();
+        if (!has) {
+            has = true;
+            result = sum = val;
+        } else {
+            sum = ((sum > 0) ? sum : 0) + val;
+            result = max(result, sum);
         }
+    }
+}
+
+template<class T>
+void minimumSumContiguousSubsequence(const Iterable<T> &seq, T &result) {
+    auto it = seq.iterator();
+    bool has = false;
+    T sum;
+    while (it->hasNext()) {
+        auto val = it->next();
+        if (!has) {
+            has = true;
+            result = sum = val;
+        } else {
+            sum = ((sum < 0) ? sum : 0) + val;
+            result = min(result, sum);
+        }
+    }
+}
+
+
+/*
+ * Used to find min(x | predicate(x)), if predicate(x) is .. 0, 0, 0, 1, 1, 1, ...
+ */
+template<class T>
+bool binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+    while (leftIndex <= rightIndex) {
+        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+        if (predicate(midIndex)) {
+            ret = midIndex;
+            rightIndex = midIndex - 1;
+        } else {
+            leftIndex = midIndex + 1;
+        }
+    }
+    result = ret;
+    return ret != maxIndex + 1;
+}
+
+/*
+ * Used to find max(x | predicate(x)), if predicate(x) is .. 1, 1, 1, 0, 0, 0, ...
+ */
+template<class T>
+bool binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+    while (leftIndex <= rightIndex) {
+        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+        if (predicate(midIndex)) {
+            ret = midIndex;
+            leftIndex = midIndex + 1;
+        } else {
+            rightIndex = midIndex - 1;
+        }
+    }
+    result = ret;
+    return ret != minIndex - 1;
+}
+
+/*
+ * Used to find max(x | predicate(x)), if predicate(x) is continuously .. 1, 1, 1, 0, 0, 0, ...
+ */
+bool binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
+                         double &result) {
+    double l = minRange, r = maxRange, m, ret = minRange - 1;
+    while (r - l > epsilon) {
+        m = l + (r - l) / 2;
+        if (predicate(m)) {
+            ret = m;
+            l = m;
+        } else {
+            r = m;
+        }
+    }
+    result = ret;
+    return ret != minRange - 1;
+}
+
+/*
+ * Used to find min(x | predicate(x)), if predicate(x) is continuously .. 0, 0, 0, 1, 1, 1, ...
+ */
+bool binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
+                         double &result) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+        m = l + (r - l) / 2;
+        if (predicate(m)) {
+            r = m;
+            ret = m;
+        } else {
+            l = m;
+        }
+    }
+    result = ret;
+    return ret != maxRange + 1;
+}
+
+/*
+ * Used to find the intersection of an increasing and a deceasing function
+ */
+bool binarySearchIntersection(double minRange, double maxRange, double epsilon,
+                              const function<double(double)> &increasing, const function<double(double)> &decreasing,
+                              double &intersection) {
+    return binarySearchMinReal(minRange, maxRange, epsilon, [&](double x) {
+        //LOG(1, x << " " << increasing(x) << " " << decreasing(x));
+        return increasing(x) >= decreasing(x);
+    }, intersection);
+}
+
+int n;
+vector<double> a;
+
+function<double(double)> addFunction(double x) {
+    return [x](double v) {
+        return v + x;
+    };
+}
+
+double increasing(double x) {
+    double result;
+    maximumSumContiguousSubsequence(mapIterable(stdIterable<double>(a.begin(), a.end()), addFunction(x)), result);
+    return result;
+}
+
+double decreasing(double x) {
+    double result;
+    minimumSumContiguousSubsequence(mapIterable(stdIterable<double>(a.begin(), a.end()), addFunction(x)), result);
+    return -result;
+}
+
+class TaskC {
+public:
+    void solve(std::istream &in, std::ostream &out) {
+        in >> n;
+        a.resize(n);
+        for_inc(i, n) {
+            in >> a[i];
+        }
+        double ret;
+        binarySearchIntersection(-3e4, 3e4, 1e-7, increasing, decreasing, ret);
+        out << setiosflags(ios::fixed) << std::setprecision(12) << min(increasing(ret), decreasing(ret)) << endl;
     }
 };
 
 
 int main() {
-    C solver;
+    TaskC solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);

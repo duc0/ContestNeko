@@ -54,18 +54,18 @@ template <class T> bool unique(const Iterable<T> &iterable) {
 }
 
 template <class IN, class OUT> class MapIterator : public Iterator<OUT> {
-    Iterator<IN> &in;
+    unique_ptr<Iterator<IN>> in;
     const function<OUT(IN)> &mapper;
 
 public:
-    MapIterator(Iterator<IN> &in, const function<OUT(IN)> &mapper):in(in), mapper(mapper) {}
+    MapIterator(unique_ptr<Iterator<IN>> in, const function<OUT(IN)> &mapper):in(move(in)), mapper(mapper) {}
 
     virtual bool hasNext() const {
-        return in.hasNext();
+        return in->hasNext();
     }
 
     virtual OUT next() {
-        return mapper(in.next());
+        return mapper(in->next());
     }
 };
 
@@ -75,7 +75,7 @@ template <class IN, class OUT> class MapIterable : public Iterable<OUT> {
 public:
     MapIterable(const Iterable<IN> &in, const function<OUT(IN)> &mapper):in(in), mapper(mapper) {}
     virtual unique_ptr<Iterator<OUT>> iterator() const {
-        return unique_ptr<Iterator<OUT>>(new MapIterator<IN, OUT>(*in.iterator(), mapper));
+        return unique_ptr<Iterator<OUT>>(new MapIterator<IN, OUT>(in.iterator(), mapper));
     }
 };
 
@@ -247,6 +247,22 @@ template <class T> vector<T> collect(const Iterable<T> &iterable) {
         vec.push_back(it->next());
     }
     return vec;
+}
+
+
+template <class T> void forEach(const Iterable<T> &iterable, const function<void(T)> &f) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        f(it->next());
+    }
+}
+
+template <class T> void printInterable(const Iterable<T> &iterable) {
+    auto it = iterable.iterator();
+    while (it->hasNext()) {
+        LOG(1, it->next() << " ");
+    }
+    LOG(1, endl);
 }
 
 template <class T> T aggregateMax(const Iterable<T> &iterable) {
