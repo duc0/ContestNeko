@@ -49,8 +49,8 @@ public:
             maxVal = max(maxVal, a[i]);
         }
 
-        Matrix<Num> base;
-        base.init(maxVal, maxVal);
+        UpperTriMatrix<Num> base;
+        base.init(maxVal);
 
         for_inc_range(lower, 1, maxVal)
             for_inc_range(upper, lower, maxVal) {
@@ -80,7 +80,7 @@ public:
 
         Num best = 0;
         for_inc_range(lower, 1, maxVal) {
-            for_inc_range(upper, 1, maxVal) {
+            for_inc_range(upper, lower, maxVal) {
                 best = best + base[lower][upper];
             }
         }

@@ -162,6 +162,27 @@ namespace cl {
             return Array<V>::operator[](index - 1);
         }
     };
+
+    /**
+     * Range based array
+     */
+    template<class V> class ArrayR : public Array<V> {
+        int minIndex, maxIndex;
+    public:
+        ArrayR() {}
+        ArrayR(int minIndex, int maxIndex) : minIndex(minIndex), maxIndex(maxIndex), Array<V>(maxIndex - minIndex + 1) {
+            assert(minIndex <= maxIndex);
+            assert(Array<V>::size() == (maxIndex - minIndex + 1));
+        }
+
+        V& operator[] (int index) {
+            return Array<V>::operator[](index - minIndex);
+        }
+
+        const V& operator[] (int index) const {
+            return Array<V>::operator[](index - minIndex);
+        }
+    };
 }
 
 #endif

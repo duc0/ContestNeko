@@ -23,6 +23,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		22158BA21BC0924B0029E646 /* input1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input1.txt; sourceTree = "<group>"; };
 		22161D201A9EEFFA006BA7D5 /* OrderStatisticsMap.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = OrderStatisticsMap.cpp; sourceTree = "<group>"; };
 		22161D231A9F07C6006BA7D5 /* MinCostMaxFlowSSP.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = MinCostMaxFlowSSP.cpp; sourceTree = "<group>"; };
 		22161D241AA4016C006BA7D5 /* Point2D.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = Point2D.cpp; sourceTree = "<group>"; };
@@ -63,7 +64,6 @@
 		228786461AC54066009EA002 /* CentroidDecomposition.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = CentroidDecomposition.cpp; sourceTree = "<group>"; };
 		228786471AC5AE7B009EA002 /* RectangleSum.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = RectangleSum.cpp; sourceTree = "<group>"; };
 		228786481ACD0640009EA002 /* GF2Matrix.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = GF2Matrix.cpp; sourceTree = "<group>"; };
-		228DDB311A8674EF008340D0 /* input1.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input1.txt; sourceTree = "<group>"; };
 		228DDB331A867693008340D0 /* input2.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input2.txt; sourceTree = "<group>"; };
 		228DDB341A867699008340D0 /* input3.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input3.txt; sourceTree = "<group>"; };
 		228DDB351A8676A2008340D0 /* input4.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = input4.txt; sourceTree = "<group>"; };
@@ -167,7 +167,7 @@
 				22161D211A9EF018006BA7D5 /* data_structures */,
 				592559931A98326500A3BBB8 /* algorithms */,
 				225A58411A7B43180084C463 /* main.cpp */,
-				228DDB311A8674EF008340D0 /* input1.txt */,
+				22158BA21BC0924B0029E646 /* input1.txt */,
 				228DDB331A867693008340D0 /* input2.txt */,
 				228DDB341A867699008340D0 /* input3.txt */,
 				228DDB351A8676A2008340D0 /* input4.txt */,

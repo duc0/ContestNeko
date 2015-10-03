@@ -90,4 +90,62 @@ public:
     }
 };
 
+template<class T>
+class UpperTriMatrix {
+    cl::Array1<cl::ArrayR<T>> a;
+    int size;
+
+public:
+    void init(int size) {
+        this->size = size;
+        this->size = size;
+        a.resize(size);
+        for_inc_range(r, 1, size) {
+            a[r] = cl::ArrayR<T>(r, size);
+            for_inc_range(c, r, size) {
+                a[r][c] = zero<T>();
+            }
+        }
+    }
+
+    UpperTriMatrix operator+(const UpperTriMatrix &o) const {
+        assert(size == o.size);
+        UpperTriMatrix ret;
+        ret.init(size);
+        for_inc_range(r, 1, size) for_inc_range(c, r, size) ret.a[r][c] = a[r][c] + o.a[r][c];
+        return ret;
+    }
+
+    UpperTriMatrix operator*(const UpperTriMatrix &o) const {
+        assert(size == o.size);
+        UpperTriMatrix ret;
+        ret.init(size);
+        for_inc_range(r, 1, size) for_inc_range(c2, r, size) if (a[r][c2] != zero<T>())
+                    for_inc_range(c, c2, size) {
+                        ret.a[r][c] = ret.a[r][c] + a[r][c2] * o.a[c2][c];
+                    }
+        return ret;
+    }
+
+    UpperTriMatrix power(int k) const {
+        return math::power(*this, k);
+    }
+
+    cl::ArrayR<T> &operator[](int r) {
+        return a[r];
+    }
+
+    friend std::ostream &operator<<(std::ostream &stream, const UpperTriMatrix &matrix) {
+        stream << "[UpperTriMatrix: size = " << matrix.size << endl;
+        for_inc_range(r, 1, matrix.size) {
+            for_inc_range(c, r, matrix.size) {
+                stream << matrix.a[r][c] << " ";
+            }
+            stream << endl;
+        }
+        stream << "]" << endl;
+        return stream;
+    }
+};
+
 #endif
