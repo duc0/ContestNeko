@@ -1,5 +1,8 @@
 #include "global.hpp"
 
+#ifndef BINARY_SEARCH_H
+#define BINARY_SEARCH_H
+
 /*
  * Used to find min(x | predicate(x)), if predicate(x) is .. 0, 0, 0, 1, 1, 1, ...
  */
@@ -81,3 +84,5 @@ bool binarySearchIntersection(double minRange, double maxRange, double epsilon, 
         return increasing(x) >= decreasing(x);
     }, intersection);
 }
+
+#endif

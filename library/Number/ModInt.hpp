@@ -1,6 +1,9 @@
 #include "global.hpp"
 #include "NumberTheory.hpp"
 
+#ifndef MODINT_H
+#define MODINT_H
+
 template<class T, T M>
 class ModInt {
     T x = 0;
@@ -106,3 +109,5 @@ public:
         return stream;
     }
 };
+
+#endif

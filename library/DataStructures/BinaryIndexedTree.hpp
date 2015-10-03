@@ -1,5 +1,8 @@
 #include "global.hpp"
 
+#ifndef BIT_H
+#define BIT_H
+
 template <class T> class BinaryIndexedTree {
     vector<T> val;
     int n, minIndex, maxIndex;
@@ -87,3 +90,5 @@ public:
                + sum(x1 - 1, y1 - 1, z2) + sum(x2, y1 - 1, z1 - 1) + sum(x1 - 1, y2, z1 - 1) - sum(x1 - 1, y1 - 1, z1 - 1);
     }
 };
+
+#endif

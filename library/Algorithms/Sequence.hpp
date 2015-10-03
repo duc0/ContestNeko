@@ -1,6 +1,9 @@
 #include "global.hpp"
 #include "Iterator.hpp"
 
+#ifndef SEQUENCE_H
+#define SEQUENCE_H
+
 /**
  * O(N)
  */
@@ -35,3 +38,5 @@ template <class T> void minimumSumContiguousSubsequence(const Iterable<T> &seq, 
         }
     }
 }
+
+#endif

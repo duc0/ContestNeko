@@ -1,5 +1,8 @@
 #include "global.hpp"
 
+#ifndef COMBO_H
+#define COMBO_H
+
 // Usage:
 // Construct comboUtils(n): Compute some combo numbers with up to n objects.
 
@@ -75,3 +78,5 @@ public:
     return p;
   }
 };
+
+#endif
