@@ -388,6 +388,9 @@ template<class T> using predicate = function<bool(T)>;
 #endif
 
 
+#ifndef SEQUENCE_H
+#define SEQUENCE_H
+
 /**
  * O(N)
  */
@@ -425,6 +428,11 @@ void minimumSumContiguousSubsequence(const Iterable<T> &seq, T &result) {
     }
 }
 
+#endif
+
+
+#ifndef BINARY_SEARCH_H
+#define BINARY_SEARCH_H
 
 /*
  * Used to find min(x | predicate(x)), if predicate(x) is .. 0, 0, 0, 1, 1, 1, ...
@@ -513,6 +521,8 @@ bool binarySearchIntersection(double minRange, double maxRange, double epsilon,
         return increasing(x) >= decreasing(x);
     }, intersection);
 }
+
+#endif
 
 int n;
 vector<double> a;
