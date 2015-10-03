@@ -12,7 +12,7 @@
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/SegmentTree.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Geometry/ConvexHull.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Geometry/FarthestPoints.hpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/library/Geometry/Point2D.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/library/Geometry/Point.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Graph/UndirectedGraph.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/IO/InputIterables.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Iterable/Iterator.hpp" isTestSource="false" />
@@ -406,7 +406,7 @@
           <root url="file://$MODULE_DIR$/library/global.hpp" />
           <root url="file://$MODULE_DIR$/library/Algorithms/BinarySearch.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/MaxTree.hpp" />
-          <root url="file://$MODULE_DIR$/library/Geometry/Point2D.hpp" />
+          <root url="file://$MODULE_DIR$/library/Geometry/Point.hpp" />
           <root url="file://$MODULE_DIR$/library/Iterable/Iterator.hpp" />
           <root url="file://$MODULE_DIR$/library/Number/PrimeGenerator.hpp" />
           <root url="file://$MODULE_DIR$/library/Algorithms/Sequence.hpp" />

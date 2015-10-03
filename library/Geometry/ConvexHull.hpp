@@ -1,5 +1,5 @@
 #include "global.hpp"
-#include "Point2D.hpp"
+#include "Point.hpp"
 
 #ifndef CONVEXHULL_H
 #define CONVEXHULL_H

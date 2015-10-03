@@ -1,5 +1,5 @@
 #include "global.hpp"
-#include "Point2D.hpp"
+#include "Point.hpp"
 #include "ConvexHull.hpp"
 
 #ifndef FARTHEST_POINTS_H
