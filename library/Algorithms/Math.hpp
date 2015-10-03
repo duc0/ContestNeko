@@ -17,6 +17,25 @@ namespace math {
             return a * power(a, n - 1);
         }
     }
+    template <class T> class DefaultCalculator {
+    public:
+        static T zero() {
+            return 0;
+        }
+        static T plus(const T &a, const T &b) {
+            return a + b;
+        }
+        static T multiply(const T &a, const T &b) {
+            return a * b;
+        }
+        static T subtract(const T &a, const T &b) {
+            return a - b;
+        }
+        static T divide(const T &a, const T &b) {
+            return a / b;
+        }
+    };
+
 }
 
 #endif

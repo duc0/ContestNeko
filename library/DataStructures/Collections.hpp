@@ -170,7 +170,7 @@ namespace cl {
         int minIndex, maxIndex;
     public:
         ArrayR() {}
-        ArrayR(int minIndex, int maxIndex) : minIndex(minIndex), maxIndex(maxIndex), Array<V>(maxIndex - minIndex + 1) {
+        ArrayR(int minIndex, int maxIndex) : Array<V>(maxIndex - minIndex + 1), minIndex(minIndex), maxIndex(maxIndex) {
             assert(minIndex <= maxIndex);
             assert(Array<V>::size() == (maxIndex - minIndex + 1));
         }

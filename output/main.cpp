@@ -267,7 +267,7 @@ namespace cl {
     public:
         ArrayR() { }
 
-        ArrayR(int minIndex, int maxIndex) : minIndex(minIndex), maxIndex(maxIndex), Array<V>(maxIndex - minIndex + 1) {
+        ArrayR(int minIndex, int maxIndex) : Array<V>(maxIndex - minIndex + 1), minIndex(minIndex), maxIndex(maxIndex) {
             assert(minIndex <= maxIndex);
             assert(Array<V>::size() == (maxIndex - minIndex + 1));
         }
@@ -302,6 +302,31 @@ namespace math {
             return a * power(a, n - 1);
         }
     }
+
+    template<class T>
+    class DefaultCalculator {
+    public:
+        static T zero() {
+            return 0;
+        }
+
+        static T plus(const T &a, const T &b) {
+            return a + b;
+        }
+
+        static T multiply(const T &a, const T &b) {
+            return a * b;
+        }
+
+        static T subtract(const T &a, const T &b) {
+            return a - b;
+        }
+
+        static T divide(const T &a, const T &b) {
+            return a / b;
+        }
+    };
+
 }
 
 #endif
@@ -309,18 +334,10 @@ namespace math {
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#define NO_WAY -1E9L
-
-template<class T>
-T zero() {
-    return 0;
-}
-
-template<class T>
+template<class T, class Calc = math::DefaultCalculator<T>>
 class Matrix {
     cl::Array1<cl::Array1<T>> a;
     int nRow, nCol;
-
 public:
     void init(int nRow, int nCol) {
         this->nRow = nRow;
@@ -329,7 +346,7 @@ public:
         for_inc_range(r, 1, nRow) {
             a[r].resize(nCol);
             for_inc_range(c, 1, nCol) {
-                a[r][c] = zero<T>();
+                a[r][c] = Calc::zero();
             }
         }
     }
@@ -359,7 +376,7 @@ public:
         assert(nCol == o.nCol);
         Matrix ret;
         ret.init(nRow, nCol);
-        for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) ret.a[r][c] = a[r][c] + o.a[r][c];
+        for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) ret.a[r][c] = Calc::plus(a[r][c], o.a[r][c]);
         return ret;
     }
 
@@ -367,9 +384,9 @@ public:
         assert(nCol == o.nRow);
         Matrix ret;
         ret.init(nRow, o.nCol);
-        for_inc_range(r, 1, nRow) for_inc_range(c2, 1, nCol) if (a[r][c2] != zero<T>())
+        for_inc_range(r, 1, nRow) for_inc_range(c2, 1, nCol) if (a[r][c2] != Calc::zero())
                     for_inc_range(c, 1, o.nCol) {
-                        ret.a[r][c] = ret.a[r][c] + a[r][c2] * o.a[c2][c];
+                        ret.a[r][c] = Calc::plus(ret.a[r][c], Calc::multiply(a[r][c2], o.a[c2][c]));
                     }
         return ret;
     }
@@ -395,11 +412,10 @@ public:
     }
 };
 
-template<class T>
+template<class T, class Calc = math::DefaultCalculator<T>>
 class UpperTriMatrix {
     cl::Array1<cl::ArrayR<T>> a;
     int size;
-
 public:
     void init(int size) {
         this->size = size;
@@ -408,7 +424,7 @@ public:
         for_inc_range(r, 1, size) {
             a[r] = cl::ArrayR<T>(r, size);
             for_inc_range(c, r, size) {
-                a[r][c] = zero<T>();
+                a[r][c] = Calc::zero();
             }
         }
     }
@@ -417,7 +433,7 @@ public:
         assert(size == o.size);
         UpperTriMatrix ret;
         ret.init(size);
-        for_inc_range(r, 1, size) for_inc_range(c, r, size) ret.a[r][c] = a[r][c] + o.a[r][c];
+        for_inc_range(r, 1, size) for_inc_range(c, r, size) ret.a[r][c] = Calc::plus(a[r][c], o.a[r][c]);
         return ret;
     }
 
@@ -425,9 +441,9 @@ public:
         assert(size == o.size);
         UpperTriMatrix ret;
         ret.init(size);
-        for_inc_range(r, 1, size) for_inc_range(c2, r, size) if (a[r][c2] != zero<T>())
+        for_inc_range(r, 1, size) for_inc_range(c2, r, size) if (a[r][c2] != Calc::zero())
                     for_inc_range(c, c2, size) {
-                        ret.a[r][c] = ret.a[r][c] + a[r][c2] * o.a[c2][c];
+                        ret.a[r][c] = Calc::plus(ret.a[r][c], Calc::multiply(a[r][c2], o.a[c2][c]));
                     }
         return ret;
     }
@@ -456,41 +472,20 @@ public:
 #endif
 
 
-#define ZERO -1E9L
-
-struct Num {
-    int x;
-
-    Num() : x(0) { }
-
-    Num(int x) : x(x) { }
-
-    Num operator+(const Num &other) const {
-        return max(x, other.x);
+class MyCalc {
+public:
+    static inline int zero() {
+        return -1E9L;
     }
 
-    Num operator*(const Num &other) const {
-        if (x == ZERO || other.x == ZERO) {
-            return ZERO;
-        }
-        return x + other.x;
+    static inline int plus(const int &a, const int &b) {
+        return max(a, b);
     }
 
-    bool operator!=(const Num &other) const {
-        return x != other.x;
+    static inline int multiply(const int &a, const int &b) {
+        return a + b;
     }
-
-    friend std::ostream &operator<<(std::ostream &stream, const Num &val) {
-        stream << val.x;
-        return stream;
-    }
-
 };
-
-template<>
-Num zero() {
-    return ZERO;
-}
 
 class TaskB {
 public:
@@ -505,7 +500,7 @@ public:
             maxVal = max(maxVal, a[i]);
         }
 
-        UpperTriMatrix<Num> base;
+        UpperTriMatrix<int, MyCalc> base;
         base.init(maxVal);
 
         for_inc_range(lower, 1, maxVal)
@@ -527,21 +522,21 @@ public:
 
             for_inc_range(i, 1, n) if (a[i] >= lower) {
                     for_inc_range(upper, a[i], maxVal) {
-                        base[lower][upper] = base[lower][upper] + longestEnd[i];
+                        base[lower][upper] = MyCalc::plus(base[lower][upper], longestEnd[i]);
                     }
                 }
         }
 
         base = base.power(nRepeat);
 
-        Num best = 0;
+        int best = 0;
         for_inc_range(lower, 1, maxVal) {
             for_inc_range(upper, lower, maxVal) {
-                best = best + base[lower][upper];
+                best = MyCalc::plus(best, base[lower][upper]);
             }
         }
 
-        out << best.x << endl;
+        out << best << endl;
     }
 };
 

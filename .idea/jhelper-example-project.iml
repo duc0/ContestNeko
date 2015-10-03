@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/CMakeLists.txt" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Algorithms/BinarySearch.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/library/Algorithms/Math.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Algorithms/Sequence.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/BinaryIndexedTree.hpp" isTestSource="false" />
@@ -409,6 +410,7 @@
           <root url="file://$MODULE_DIR$/library/DataStructures/RangeUpdateArray.hpp" />
           <root url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" />
           <root url="file://$MODULE_DIR$/library/Graph/UndirectedGraph.hpp" />
+          <root url="file://$MODULE_DIR$/library/Algorithms/Math.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/Collections.hpp" />
           <root url="file://$MODULE_DIR$/library/global.hpp" />
           <root url="file://$MODULE_DIR$/library/Algorithms/BinarySearch.hpp" />

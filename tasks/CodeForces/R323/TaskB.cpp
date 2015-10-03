@@ -2,39 +2,19 @@
 #include "Matrix.hpp"
 #include "Collections.hpp"
 
-#define ZERO -1E9L
-
-struct Num {
-    int x;
-
-    Num() : x(0) {}
-    Num(int x) : x(x) {}
-
-    Num operator + (const Num &other) const {
-        return max(x, other.x);
+class MyCalc {
+public:
+    static inline int zero() {
+        return -1E9L;
     }
 
-    Num operator * (const Num &other) const {
-        if (x == ZERO || other.x == ZERO) {
-            return ZERO;
-        }
-        return x + other.x;
+    static inline int plus(const int &a, const int &b) {
+        return max(a, b);
     }
-
-    bool operator!=(const Num &other) const {
-        return x != other.x;
+    static inline int multiply(const int &a, const int &b) {
+        return a + b;
     }
-
-    friend std::ostream &operator<<(std::ostream &stream, const Num &val) {
-        stream << val.x;
-        return stream;
-    }
-
 };
-
-template <> Num zero() {
-    return ZERO;
-}
 
 class TaskB {
 public:
@@ -49,7 +29,7 @@ public:
             maxVal = max(maxVal, a[i]);
         }
 
-        UpperTriMatrix<Num> base;
+        UpperTriMatrix<int, MyCalc> base;
         base.init(maxVal);
 
         for_inc_range(lower, 1, maxVal)
@@ -71,20 +51,20 @@ public:
 
             for_inc_range(i, 1, n) if (a[i] >= lower) {
                 for_inc_range(upper, a[i], maxVal) {
-                    base[lower][upper] = base[lower][upper] + longestEnd[i];
+                    base[lower][upper] = MyCalc::plus(base[lower][upper], longestEnd[i]);
                 }
             }
         }
 
         base = base.power(nRepeat);
 
-        Num best = 0;
+        int best = 0;
         for_inc_range(lower, 1, maxVal) {
             for_inc_range(upper, lower, maxVal) {
-                best = best + base[lower][upper];
+                best = MyCalc::plus(best, base[lower][upper]);
             }
         }
 
-        out << best.x << endl;
+        out << best << endl;
     }
 };

@@ -5,17 +5,10 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#define NO_WAY -1E9L
-
-template <class T> T zero() {
-    return 0;
-}
-
-template<class T>
+template<class T, class Calc = math::DefaultCalculator<T>>
 class Matrix {
     cl::Array1<cl::Array1<T>> a;
     int nRow, nCol;
-
 public:
     void init(int nRow, int nCol) {
         this->nRow = nRow;
@@ -24,7 +17,7 @@ public:
         for_inc_range(r, 1, nRow) {
             a[r].resize(nCol);
             for_inc_range(c, 1, nCol) {
-                a[r][c] = zero<T>();
+                a[r][c] = Calc::zero();
             }
         }
     }
@@ -54,7 +47,7 @@ public:
         assert(nCol == o.nCol);
         Matrix ret;
         ret.init(nRow, nCol);
-        for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) ret.a[r][c] = a[r][c] + o.a[r][c];
+        for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) ret.a[r][c] = Calc::plus(a[r][c], o.a[r][c]);
         return ret;
     }
 
@@ -62,9 +55,9 @@ public:
         assert(nCol == o.nRow);
         Matrix ret;
         ret.init(nRow, o.nCol);
-        for_inc_range(r, 1, nRow) for_inc_range(c2, 1, nCol) if (a[r][c2] != zero<T>())
+        for_inc_range(r, 1, nRow) for_inc_range(c2, 1, nCol) if (a[r][c2] != Calc::zero())
                     for_inc_range(c, 1, o.nCol) {
-                        ret.a[r][c] = ret.a[r][c] + a[r][c2] * o.a[c2][c];
+                        ret.a[r][c] = Calc::plus(ret.a[r][c], Calc::multiply(a[r][c2], o.a[c2][c]));
                     }
         return ret;
     }
@@ -90,11 +83,10 @@ public:
     }
 };
 
-template<class T>
+template<class T, class Calc = math::DefaultCalculator<T>>
 class UpperTriMatrix {
     cl::Array1<cl::ArrayR<T>> a;
     int size;
-
 public:
     void init(int size) {
         this->size = size;
@@ -103,7 +95,7 @@ public:
         for_inc_range(r, 1, size) {
             a[r] = cl::ArrayR<T>(r, size);
             for_inc_range(c, r, size) {
-                a[r][c] = zero<T>();
+                a[r][c] = Calc::zero();
             }
         }
     }
@@ -112,7 +104,7 @@ public:
         assert(size == o.size);
         UpperTriMatrix ret;
         ret.init(size);
-        for_inc_range(r, 1, size) for_inc_range(c, r, size) ret.a[r][c] = a[r][c] + o.a[r][c];
+        for_inc_range(r, 1, size) for_inc_range(c, r, size) ret.a[r][c] = Calc::plus(a[r][c], o.a[r][c]);
         return ret;
     }
 
@@ -120,9 +112,9 @@ public:
         assert(size == o.size);
         UpperTriMatrix ret;
         ret.init(size);
-        for_inc_range(r, 1, size) for_inc_range(c2, r, size) if (a[r][c2] != zero<T>())
+        for_inc_range(r, 1, size) for_inc_range(c2, r, size) if (a[r][c2] != Calc::zero())
                     for_inc_range(c, c2, size) {
-                        ret.a[r][c] = ret.a[r][c] + a[r][c2] * o.a[c2][c];
+                        ret.a[r][c] = Calc::plus(ret.a[r][c], Calc::multiply(a[r][c2], o.a[c2][c]));
                     }
         return ret;
     }

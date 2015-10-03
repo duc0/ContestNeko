@@ -20,6 +20,6 @@ include_directories(library/IO)
 
 ADD_DEFINITIONS(-std=c++11)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -fno-elide-constructors -fno-inline")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -Wall")
 
 add_executable(test ${TASKS} ${HEADERS})
