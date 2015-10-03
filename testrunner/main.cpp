@@ -1,4 +1,4 @@
-#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/R323/TaskA.cpp"
+#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/R323/TaskB.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -28,7 +28,7 @@ bool check(std::string expected, std::string actual) {
 
 int main() {
     std::vector<jhelper::Test> tests = {
-        {"4\n2 1 2 3 4 3 2 6 1 1 2 2 1 2 3 2\n", "4 3 6 2", true},{"1\n42\n", "42 ", true},{"2\n1 1 1 1\n", "1 1 ", true},
+        {"4 3\n3 1 4 2\n", "5\n", true},{"9 1\n3 3 3 3 1 2 4 5 7", "7", true},{"9 2\n3 3 3 3 1 2 4 5 7", "11", true},{"9 3\n3 3 3 3 1 2 4 5 7", "15", true},{"100 10000000\n300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300 300", "1000000000", false},
     };
     bool allOK = true;
     int testID = 0;
@@ -42,7 +42,7 @@ int main() {
             std::stringstream in(test.input);
             std::ostringstream out;
             std::clock_t start = std::clock();
-            TaskA solver;
+            TaskB solver;
             solver.solve(in, out);
             std::clock_t finish = std::clock();
             double currentTime = double(finish - start) / CLOCKS_PER_SEC;

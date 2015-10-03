@@ -1,4 +1,5 @@
 #include "global.hpp"
+#include "Collections.hpp"
 
 class TaskA {
 public:
@@ -6,34 +7,30 @@ public:
         int n;
         in >> n;
 
-        map<int, int> cnt;
+        collections::Map<int, int> cnt;
 
-        for_inc(i, n) {
-            for_inc(j, n) {
-                int x;
-                in >> x;
-                cnt[x]++;
-            }
+        repeat(n * n) {
+            int x;
+            in >> x;
+            cnt[x]++;
         }
 
-        vector<int> ret;
+        collections::Array<int> ret;
 
         while (ret.size() < n) {
-            while (cnt.rbegin()->second == 0) {
-                cnt.erase(cnt.rbegin()->first);
+            while (cnt.lastValue() == 0) {
+                cnt.removeLast();
             }
-            int largest = cnt.rbegin()->first;
-
-
+            int largest = cnt.lastKey();
             for (int x : ret) {
                 int g = __gcd(x, largest);
                 cnt[g] -= 2;
             }
-            ret.push_back(largest);
+            ret.add(largest);
             cnt[largest]--;
         }
 
-        for (int x : ret ) {
+        for (int x : ret) {
             out << x << " ";
         }
     }

@@ -70,54 +70,403 @@ using namespace std;
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
+#ifndef NDEBUG
+#   define ASSERT(condition, message) \
+    do { \
+        if (! (condition)) { \
+            std::cerr << "Assertion `" #condition "` failed in " << __FILE__ \
+                      << " line " << __LINE__ << ": " << message << std::endl; \
+            assert(false); \
+        } \
+    } while (false)
+#else
+#   define ASSERT(condition, message) do { } while (false)
+#endif
+
 string toYesNo(bool b) {
     return b ? "YES" : "NO";
 }
 
 #endif
 
-class TaskA {
+
+#ifndef COLLECTIONS_H
+#define COLLECTIONS_H
+
+namespace cl {
+    template<class K, class V>
+    class Map {
+        std::map<K, V> map;
+
+        typedef typename std::map<K, V>::iterator iterator;
+        typedef typename std::map<K, V>::reverse_iterator reverse_iterator;
+    public:
+        bool empty() {
+            return map.empty();
+        }
+
+        iterator begin() {
+            return map.begin();
+        }
+
+        iterator end() {
+            return map.end();
+        }
+
+        reverse_iterator rbegin() {
+            return map.rbegin();
+        }
+
+        reverse_iterator rend() {
+            return map.rend();
+        }
+
+        K firstKey() {
+            assert(!empty());
+            return begin()->first;
+        }
+
+        V firstValue() {
+            assert(!empty());
+            return begin()->second;
+        }
+
+        K lastKey() {
+            assert(!empty());
+            return map.rbegin()->first;
+        }
+
+        V lastValue() {
+            assert(!empty());
+            return map.rbegin()->second;
+        }
+
+        void removeLast() {
+            map.erase(lastKey());
+        }
+
+        void removeFirst() {
+            map.erase(firstKey());
+        }
+
+        V &operator[](const K &k) {
+            return map[k];
+        }
+    };
+
+    template<class V>
+    class Array {
+        std::vector<V> vec;
+
+        typedef typename std::vector<V>::iterator iterator;
+        typedef typename std::vector<V>::const_iterator const_iterator;
+
+    public:
+        Array() { }
+
+        Array(int sz) : vec(vector<V>(sz)) { }
+
+        void resize(int sz) {
+            vec.resize(sz);
+        }
+
+        void assertIndex(int index) const {
+            ASSERT(index >= 0 && index < vec.size(), "Index of out bounds, size = " << size() << ", index = " << index);
+        }
+
+        V &operator[](int index) {
+            assertIndex(index);
+            return vec[index];
+        }
+
+        const V &operator[](int index) const {
+            assertIndex(index);
+            return vec[index];
+        }
+
+        /**
+         * Return the new index
+         */
+        int add(const V &v) {
+            vec.push_back(v);
+            return vec.size() - 1;
+        }
+
+        iterator begin() {
+            return vec.begin();
+        }
+
+        const_iterator begin() const {
+            return vec.begin();
+        }
+
+        iterator end() {
+            return vec.end();
+        }
+
+        const_iterator end() const {
+            return vec.end();
+        }
+
+        int size() const {
+            return vec.size();
+        }
+
+        V &last() {
+            return this[size() - 1];
+        }
+
+        V &first() {
+            return this[0];
+        }
+
+        bool empty() {
+            return size() == 0;
+        }
+
+        friend std::ostream &operator<<(std::ostream &stream, const Array<V> &array) {
+            bool first = true;
+            stream << "Array of " << array.size() << ": [";
+            for (auto &v : array) {
+                if (!first) {
+                    stream << ", ";
+                }
+                first = false;
+                stream << v;
+            }
+            stream << "]";
+            return stream;
+        }
+    };
+
+    /**
+     * 1 based array
+     */
+    template<class V>
+    class Array1 : public Array<V> {
+    public:
+        Array1() { }
+
+        Array1(int sz) : Array<V>(sz) { }
+
+        V &operator[](int index) {
+            return Array<V>::operator[](index - 1);
+        }
+
+        const V &operator[](int index) const {
+            return Array<V>::operator[](index - 1);
+        }
+    };
+}
+
+#endif
+
+
+#ifndef MATH_H
+#define MATH_H
+
+namespace math {
+// Compute a^n in log(n)
+    template<class T>
+    T power(const T &a, int n) {
+        assert(n >= 1);
+        if (n == 1) {
+            return a;
+        } else if (n % 2 == 0) {
+            T tmp = power(a, n / 2);
+            return tmp * tmp;
+        } else {
+            return a * power(a, n - 1);
+        }
+    }
+}
+
+#endif
+
+#ifndef MATRIX_H
+#define MATRIX_H
+
+#define NO_WAY -1E9L
+
+template<class T>
+T zero() {
+    return 0;
+}
+
+template<class T>
+class Matrix {
+    cl::Array1<cl::Array1<T>> a;
+    int nRow, nCol;
+
+public:
+    void init(int nRow, int nCol) {
+        this->nRow = nRow;
+        this->nCol = nCol;
+        a.resize(nRow);
+        for_inc_range(r, 1, nRow) {
+            a[r].resize(nCol);
+            for_inc_range(c, 1, nCol) {
+                a[r][c] = zero<T>();
+            }
+        }
+    }
+
+    void init(int nRow, int nCol, const cl::Array1<cl::Array1<T>> &val) {
+        assert(val.size() == nRow);
+        assert(val[1].size() == nCol);
+        init(nRow, nCol);
+        for_inc_range(r, 1, nRow) {
+            for_inc_range(c, 1, nCol) {
+                a[r][c] = val[r][c];
+            }
+        }
+    }
+
+    void init(const cl::Array1<cl::Array1<T>> &val) {
+        init(val.size(), val[1].size(), val);
+    }
+
+    Matrix &operator=(const cl::Array1<cl::Array1<T>> &val) {
+        init(val);
+        return *this;
+    }
+
+    Matrix operator+(const Matrix &o) const {
+        assert(nRow == o.nRow);
+        assert(nCol == o.nCol);
+        Matrix ret;
+        ret.init(nRow, nCol);
+        for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) ret.a[r][c] = a[r][c] + o.a[r][c];
+        return ret;
+    }
+
+    Matrix operator*(const Matrix &o) const {
+        assert(nCol == o.nRow);
+        Matrix ret;
+        ret.init(nRow, o.nCol);
+        for_inc_range(r, 1, nRow) for_inc_range(c2, 1, nCol) if (a[r][c2] != zero<T>())
+                    for_inc_range(c, 1, o.nCol) {
+                        ret.a[r][c] = ret.a[r][c] + a[r][c2] * o.a[c2][c];
+                    }
+        return ret;
+    }
+
+    Matrix power(int k) const {
+        return math::power(*this, k);
+    }
+
+    cl::Array1<T> &operator[](int r) {
+        return a[r];
+    }
+
+    friend std::ostream &operator<<(std::ostream &stream, const Matrix &matrix) {
+        stream << "[matrix: row = " << matrix.nRow << ", col = " << matrix.nCol << endl;
+        for_inc_range(r, 1, matrix.nRow) {
+            for_inc_range(c, 1, matrix.nCol) {
+                stream << matrix.a[r][c] << " ";
+            }
+            stream << endl;
+        }
+        stream << "]" << endl;
+        return stream;
+    }
+};
+
+#endif
+
+
+#define ZERO -1E9L
+
+struct Num {
+    int x;
+
+    Num() : x(0) { }
+
+    Num(int x) : x(x) { }
+
+    Num operator+(const Num &other) const {
+        return max(x, other.x);
+    }
+
+    Num operator*(const Num &other) const {
+        if (x == ZERO || other.x == ZERO) {
+            return ZERO;
+        }
+        return x + other.x;
+    }
+
+    bool operator!=(const Num &other) const {
+        return x != other.x;
+    }
+
+    friend std::ostream &operator<<(std::ostream &stream, const Num &val) {
+        stream << val.x;
+        return stream;
+    }
+
+};
+
+template<>
+Num zero() {
+    return ZERO;
+}
+
+class TaskB {
 public:
     void solve(std::istream &in, std::ostream &out) {
-        int n;
-        in >> n;
+        int n, nRepeat;
+        in >> n >> nRepeat;
+        cl::Array1<int> a(n);
+        int maxVal = 0;
 
-        map<int, int> cnt;
+        for_inc_range(i, 1, n) {
+            in >> a[i];
+            maxVal = max(maxVal, a[i]);
+        }
 
-        for_inc(i, n) {
-            for_inc(j, n) {
-                int x;
-                in >> x;
-                cnt[x]++;
+        Matrix<Num> base;
+        base.init(maxVal, maxVal);
+
+        for_inc_range(lower, 1, maxVal)
+            for_inc_range(upper, lower, maxVal) {
+                base[lower][upper] = 0;
+            }
+
+        for_inc_range(lower, 1, maxVal) {
+            cl::Array1<int> longestEnd(n);
+
+            for_inc_range(i, 1, n) if (a[i] >= lower) {
+                    longestEnd[i] = 1;
+                    for_inc_range(j, 1, i - 1) {
+                        if (a[j] >= lower && a[j] <= a[i]) {
+                            longestEnd[i] = max(longestEnd[i], longestEnd[j] + 1);
+                        }
+                    }
+                }
+
+            for_inc_range(i, 1, n) if (a[i] >= lower) {
+                    for_inc_range(upper, a[i], maxVal) {
+                        base[lower][upper] = base[lower][upper] + longestEnd[i];
+                    }
+                }
+        }
+
+        base = base.power(nRepeat);
+
+        Num best = 0;
+        for_inc_range(lower, 1, maxVal) {
+            for_inc_range(upper, 1, maxVal) {
+                best = best + base[lower][upper];
             }
         }
 
-        vector<int> ret;
-
-        while (ret.size() < n) {
-            while (cnt.rbegin()->second == 0) {
-                cnt.erase(cnt.rbegin()->first);
-            }
-            int largest = cnt.rbegin()->first;
-
-
-            for (int x : ret) {
-                int g = __gcd(x, largest);
-                cnt[g] -= 2;
-            }
-            ret.push_back(largest);
-            cnt[largest]--;
-        }
-
-        for (int x : ret) {
-            out << x << " ";
-        }
+        out << best.x << endl;
     }
 };
 
 
 int main() {
-    TaskA solver;
+    TaskB solver;
     std::istream &in(std::cin);
     std::ostream &out(std::cout);
     solver.solve(in, out);

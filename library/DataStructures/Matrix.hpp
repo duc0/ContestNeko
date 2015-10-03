@@ -1,12 +1,19 @@
 #include "global.hpp"
+#include "Collections.hpp"
+#include "Math.hpp"
 
 #ifndef MATRIX_H
 #define MATRIX_H
 
 #define NO_WAY -1E9L
 
-template<class T> class Matrix {
-    vector<vector<T>> a;
+template <class T> T zero() {
+    return 0;
+}
+
+template<class T>
+class Matrix {
+    cl::Array1<cl::Array1<T>> a;
     int nRow, nCol;
 
 public:
@@ -14,86 +21,66 @@ public:
         this->nRow = nRow;
         this->nCol = nCol;
         a.resize(nRow);
-        for_inc(r, nRow) {
+        for_inc_range(r, 1, nRow) {
             a[r].resize(nCol);
-            for_inc(c, nCol) {
-                a[r][c] = 0;
+            for_inc_range(c, 1, nCol) {
+                a[r][c] = zero<T>();
             }
         }
     }
 
-    void init(int nRow, int nCol, const vector<vector<T>> &val) {
+    void init(int nRow, int nCol, const cl::Array1<cl::Array1<T>> &val) {
         assert(val.size() == nRow);
-        assert(val[0].size() == nCol);
+        assert(val[1].size() == nCol);
         init(nRow, nCol);
-        for_inc(r, nRow) {
-            for_inc(c, nCol) {
+        for_inc_range(r, 1, nRow) {
+            for_inc_range(c, 1, nCol) {
                 a[r][c] = val[r][c];
             }
         }
     }
 
-    void init(const vector<vector<T>> &val) {
-        init((int)val.size(), (int)val[0].size(), val);
+    void init(const cl::Array1<cl::Array1<T>> &val) {
+        init(val.size(), val[1].size(), val);
     }
 
-    Matrix& operator=(const vector<vector<T>> &val) {
+    Matrix &operator=(const cl::Array1<cl::Array1<T>> &val) {
         init(val);
         return *this;
     }
 
-    Matrix operator + (const Matrix &o) const {
+    Matrix operator+(const Matrix &o) const {
         assert(nRow == o.nRow);
         assert(nCol == o.nCol);
         Matrix ret;
         ret.init(nRow, nCol);
-        for_inc(r, nRow) for_inc(c, nCol) ret.a[r][c] = a[r][c] + o.a[r][c];
+        for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) ret.a[r][c] = a[r][c] + o.a[r][c];
         return ret;
     }
 
-    Matrix operator * (const Matrix &o) const {
+    Matrix operator*(const Matrix &o) const {
         assert(nCol == o.nRow);
         Matrix ret;
         ret.init(nRow, o.nCol);
-        for_inc(r, nRow) {
-            for_inc(c, nCol) {
-                ret.a[r][c] = NO_WAY;
-            }
-        }
-        for_inc(r, nRow) for_inc_range(c2, r, nCol - 1) for_inc_range(c, c2, o.nCol - 1) {
-            ret.a[r][c] = max(ret.a[r][c], a[r][c2] + o.a[c2][c]);
-        }
+        for_inc_range(r, 1, nRow) for_inc_range(c2, 1, nCol) if (a[r][c2] != zero<T>())
+                    for_inc_range(c, 1, o.nCol) {
+                        ret.a[r][c] = ret.a[r][c] + a[r][c2] * o.a[c2][c];
+                    }
         return ret;
     }
 
     Matrix power(int k) const {
-        assert(k >= 0);
-        assert(nRow == nCol);
-        if (k == 1) {
-            Matrix ret(*this);
-            return ret;
-        } else if (k == 0) {
-            Matrix ret;
-            ret.init(nRow, nRow);
-            for_inc(r, nRow) ret.a[r][r] = 1;
-            return ret;
-        } else if (k % 2 == 0) {
-            Matrix tmp = power(k / 2);
-            return tmp * tmp;
-        } else {
-            Matrix tmp = power(k - 1);
-            return *this * tmp;
-        }
+        return math::power(*this, k);
     }
 
-    vector<T>& operator[](int r) {
+    cl::Array1<T> &operator[](int r) {
         return a[r];
     }
 
-    friend std::ostream& operator<< (std::ostream& stream, const Matrix& matrix) {
+    friend std::ostream &operator<<(std::ostream &stream, const Matrix &matrix) {
         stream << "[matrix: row = " << matrix.nRow << ", col = " << matrix.nCol << endl;
-        for_inc(r, matrix.nRow) {
-            for_inc(c, matrix.nCol) {
+        for_inc_range(r, 1, matrix.nRow) {
+            for_inc_range(c, 1, matrix.nCol) {
                 stream << matrix.a[r][c] << " ";
             }
             stream << endl;

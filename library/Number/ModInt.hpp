@@ -104,8 +104,8 @@ public:
         return x <= get(y);
     }
 
-    friend std::ostream &operator<<(std::ostream &stream, const ModInt &y) {
-        stream << get(y);
+    friend std::ostream &operator<<(std::ostream &stream, const ModInt &val) {
+        stream << get(val);
         return stream;
     }
 };
