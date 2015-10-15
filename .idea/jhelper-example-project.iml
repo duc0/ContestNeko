@@ -9,10 +9,12 @@
       <sourceFolder url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/BinaryIndexedTree.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/Collections.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/HeavyLightDecomposition.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/Matrix.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/MaxTree.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/RangeUpdateArray.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/SegmentTree.hpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/library/DataStructures/WeightedTree.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Geometry/ConvexHull.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Geometry/FarthestPoints.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/Geometry/Point.hpp" isTestSource="false" />
@@ -46,6 +48,12 @@
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R323/TaskC.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R323/TaskD.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R323/TaskE.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskA.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskB.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskC.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskD.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskE.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskF.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R4/TaskC.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R91/TaskA.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/VK2015R2/TaskE.cpp" isTestSource="false" />
@@ -408,26 +416,28 @@
         </SOURCES>
         <excluded>
           <root url="file://$MODULE_DIR$/library/DataStructures/RangeUpdateArray.hpp" />
-          <root url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" />
+          <root url="file://$MODULE_DIR$/library/Number/ModInt.hpp" />
           <root url="file://$MODULE_DIR$/library/Graph/UndirectedGraph.hpp" />
-          <root url="file://$MODULE_DIR$/library/Algorithms/Math.hpp" />
+          <root url="file://$MODULE_DIR$/library/DataStructures/BinaryIndexedTree.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/Collections.hpp" />
           <root url="file://$MODULE_DIR$/library/global.hpp" />
-          <root url="file://$MODULE_DIR$/library/Algorithms/BinarySearch.hpp" />
-          <root url="file://$MODULE_DIR$/library/DataStructures/MaxTree.hpp" />
+          <root url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" />
           <root url="file://$MODULE_DIR$/library/Geometry/Point.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/Matrix.hpp" />
           <root url="file://$MODULE_DIR$/library/Iterable/Iterator.hpp" />
-          <root url="file://$MODULE_DIR$/library/Number/PrimeGenerator.hpp" />
+          <root url="file://$MODULE_DIR$/library/DataStructures/HeavyLightDecomposition.hpp" />
+          <root url="file://$MODULE_DIR$/library/DataStructures/WeightedTree.hpp" />
           <root url="file://$MODULE_DIR$/library/Algorithms/Sequence.hpp" />
-          <root url="file://$MODULE_DIR$/library/Number/ModInt.hpp" />
-          <root url="file://$MODULE_DIR$/library/DataStructures/BinaryIndexedTree.hpp" />
+          <root url="file://$MODULE_DIR$/library/Algorithms/BinarySearch.hpp" />
           <root url="file://$MODULE_DIR$/library/Geometry/FarthestPoints.hpp" />
-          <root url="file://$MODULE_DIR$/library/Geometry/ConvexHull.hpp" />
+          <root url="file://$MODULE_DIR$/library/Number/NumberTheory.hpp" />
           <root url="file://$MODULE_DIR$/library/IO/InputIterables.hpp" />
           <root url="file://$MODULE_DIR$/library/String/StringHasher.hpp" />
+          <root url="file://$MODULE_DIR$/library/Number/PrimeGenerator.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/SegmentTree.hpp" />
-          <root url="file://$MODULE_DIR$/library/Number/NumberTheory.hpp" />
+          <root url="file://$MODULE_DIR$/library/DataStructures/MaxTree.hpp" />
+          <root url="file://$MODULE_DIR$/library/Algorithms/Math.hpp" />
+          <root url="file://$MODULE_DIR$/library/Geometry/ConvexHull.hpp" />
         </excluded>
       </library>
     </orderEntry>
