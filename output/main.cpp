@@ -903,35 +903,40 @@ struct NodeStruct {
             a[sz] = x;
             sz++;
         } else {
-            int best = 0;
-            for_inc(i, sz) {
-                if (a[i] > a[best]) {
-                    best = i;
-                }
-            }
-            if (x < a[best]) {
-                a[best] = x;
-            }
+            a[sz - 1] = min(a[sz - 1], x);
         }
-    }
-
-    vector<int> get() {
-        vector<int> ans;
-        for_inc(i, sz) {
-            ans.push_back(a[i]);
-        }
-        sort(ans.begin(), ans.end());
-        return ans;
+        sort(a, a + sz);
     }
 };
 
 NodeStruct mergeNode(const NodeStruct &s1, const NodeStruct &s2) {
     NodeStruct s;
-    for_inc(i, s1.sz) {
-        s.add(s1.a[i]);
-    }
-    for_inc(i, s2.sz) {
-        s.add(s2.a[i]);
+    int i1 = 0, i2 = 0;
+    while (i1 < s1.sz || i2 < s2.sz) {
+        bool use1;
+        if (i2 == s2.sz) {
+            use1 = true;
+        } else if (i1 == s1.sz) {
+            use1 = false;
+        } else {
+            use1 = s1.a[i1] < s2.a[i2];
+        }
+        if (use1) {
+            if (s.sz == 0 || s.a[s.sz - 1] < s1.a[i1]) {
+                s.a[s.sz] = s1.a[i1];
+                s.sz++;
+            }
+            i1++;
+        } else {
+            if (s.sz == 0 || s.a[s.sz - 1] < s2.a[i2]) {
+                s.a[s.sz] = s2.a[i2];
+                s.sz++;
+            }
+            i2++;
+        }
+        if (s.sz == CAP) {
+            break;
+        }
     }
     return s;
 }
@@ -1006,16 +1011,10 @@ public:
 
             NodeStruct q3 = mergeNode(q1, q2);
 
-            vector<int> ans = q3.get();
-            int sz = min(a, (int) ans.size());
+            int sz = min(a, q3.sz);
             out << sz;
-            int cnt = 0;
-            for (int x: ans) {
-                out << " " << x;
-                cnt++;
-                if (cnt == sz) {
-                    break;
-                }
+            for_inc(i, sz) {
+                out << " " << q3.a[i];
             }
             out << endl;
         }
