@@ -65,6 +65,8 @@ public:
 
         LowestCommonAncestor<int, int> lca(tree);
 
+        auto nodeFunc = [&](int u) {return who[u];};
+
         repeat(q) {
             int u, v, a;
             in >> u >> v >> a;
@@ -72,8 +74,9 @@ public:
 
             //LOG(1, u << " " << v << " LCA : " << ancestor);
 
-            NodeStruct q1 = hseg.queryPath(ancestor, u);
-            NodeStruct q2 = hseg.queryPath(ancestor, v);
+
+            NodeStruct q1 = hseg.queryPath(ancestor, u, nodeFunc);
+            NodeStruct q2 = hseg.queryPath(ancestor, v, nodeFunc);
             NodeStruct q3 = cl::merge(q1, q2);
 
             int sz = min(a, q3.size());

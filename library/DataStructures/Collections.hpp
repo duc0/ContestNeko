@@ -218,10 +218,8 @@ namespace cl {
                 return;
             }
             assert(_size == 0 || back[_size - 1] < v);
-            if (_size < CAP) {
-                back[_size] = v;
-                _size++;
-            }
+            back[_size] = v;
+            _size++;
         }
 
         int size() const {

@@ -523,24 +523,6 @@ public:
         root = addNode(minIndex, maxIndex);
     }
 
-    /*   // The second way to specify a segment tree:
-       // a merge function
-       // an init function (v, l, r) that initilize the query based on
-       // the value of the node and the node interval
-       SegmentTree(int minIndex, int maxIndex, T defaultValue,
-                   const function<Q(T, int, int)> &init)
-               : defaultValue(defaultValue), minIndex(minIndex),
-                 maxIndex(maxIndex), init(init) {
-           updateLeaf = [&](const Q &cur, T oldV, T curV, int l, int r) {
-               return this->init(curV, l, r);
-           };
-           split = [&](Q &cur, Q &lQ, Q &rQ, T v, int l, int m, int r) {
-               lQ = this->init(v, l, m);
-               rQ = this->init(v, m + 1, r);
-           };
-           root = addNode(minIndex, maxIndex);
-       }*/
-
     // Set all elements in [i, j] to be v
     void update(int i, int j, T v) { update(root, minIndex, maxIndex, i, j, v); }
 
@@ -995,10 +977,8 @@ namespace cl {
                 return;
             }
             assert(_size == 0 || back[_size - 1] < v);
-            if (_size < CAP) {
-                back[_size] = v;
-                _size++;
-            }
+            back[_size] = v;
+            _size++;
         }
 
         int size() const {
@@ -1093,6 +1073,8 @@ public:
 
         LowestCommonAncestor<int, int> lca(tree);
 
+        auto nodeFunc = [&](int u) { return who[u]; };
+
         repeat(q) {
             int u, v, a;
             in >> u >> v >> a;
@@ -1100,9 +1082,9 @@ public:
 
             //LOG(1, u << " " << v << " LCA : " << ancestor);
 
-            NodeStruct q1 = hseg.queryPath(ancestor, u);
-            NodeStruct q2 = hseg.queryPath(ancestor, v);
 
+            NodeStruct q1 = hseg.queryPath(ancestor, u, nodeFunc);
+            NodeStruct q2 = hseg.queryPath(ancestor, v, nodeFunc);
             NodeStruct q3 = cl::merge(q1, q2);
 
             int sz = min(a, q3.size());

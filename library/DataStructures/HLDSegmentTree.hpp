@@ -37,6 +37,7 @@ public:
 
     // Query the path from ancestor to u. O(logn^2).
     // A queryNodeFunc can be used for fast querying value of a node
+    // Pass a queryNodeFunc can make a different!
     Q queryPath(int ancestor, int u, const function<Q(int)> &queryNodeFunc) {
         assert(hld.getStartTime(ancestor) <= hld.getStartTime(u));
         Q res = queryNodeFunc(u);
