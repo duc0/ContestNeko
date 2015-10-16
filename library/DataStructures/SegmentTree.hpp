@@ -3,9 +3,6 @@
 #ifndef SEGMENTTREE_H
 #define SEGMENTTREE_H
 
-template <class T, class Q>
-using TreeInitFunction = function<Q(const T &, int, int)>;
-
 template <class T, class Q> class SegmentTree {
     struct TreeNode {
         bool leaf = true; // All elements in the leaf node's segment are the same
@@ -18,7 +15,6 @@ template <class T, class Q> class SegmentTree {
 
 protected:
     vector<TreeNode> node;
-    TreeInitFunction<T, Q> init;
     const T defaultValue;
 
     int addNode(int l, int r) {
@@ -95,7 +91,7 @@ protected:
     int minIndex, maxIndex;
     int root;
 
-public:
+protected:
     // Merges the query from left and right children
     virtual Q merge(const Q& leftSide, const Q& rightSide) = 0;
 
@@ -105,6 +101,7 @@ public:
     // Modify the query in the current node and it's left and right children when a split action happens.
     virtual Q split(Q & current, Q &leftChild, Q &rightChild, const T &currentValue, int leftIndex, int midIndex, int rightIndex) = 0;
 
+public:
     explicit SegmentTree(int minIndex, int maxIndex, T defaultValue)
             : defaultValue(defaultValue), minIndex(minIndex), maxIndex(maxIndex) {
         root = addNode(minIndex, maxIndex);

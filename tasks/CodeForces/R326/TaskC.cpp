@@ -6,62 +6,10 @@
 
 #define CAP 10
 
-struct NodeStruct {
-    int sz = 0;
-    int a[CAP];
-    void add(int x) {
-        for_inc(i, sz) {
-            if (a[i] == x) {
-                return;
-            }
-        }
-        if (sz < CAP) {
-            a[sz] = x;
-            sz++;
-        } else {
-            a[sz - 1] = min(a[sz - 1], x);
-        }
-        sort(a, a + sz);
-    }
-};
-
-NodeStruct mergeNode(const NodeStruct &s1, const NodeStruct &s2) {
-    NodeStruct s;
-    int i1 = 0, i2 = 0;
-    while (i1 < s1.sz || i2 < s2.sz) {
-        bool use1;
-        if (i2 == s2.sz) {
-            use1 = true;
-        } else if (i1 == s1.sz) {
-            use1 = false;
-        } else {
-            use1 = s1.a[i1] < s2.a[i2];
-        }
-        if (use1) {
-            if (s.sz == 0 || s.a[s.sz - 1] < s1.a[i1]) {
-                s.a[s.sz] = s1.a[i1];
-                s.sz++;
-            }
-            i1++;
-        } else {
-            if (s.sz == 0 || s.a[s.sz - 1] < s2.a[i2]) {
-                s.a[s.sz] = s2.a[i2];
-                s.sz++;
-            }
-            i2++;
-        }
-        if (s.sz == CAP) {
-            break;
-        }
-    }
-    return s;
-}
+#define NodeStruct cl::BoundedSortedSet<int, CAP>
 
 class HSeg : public SimpleHLDSegmentTree<NodeStruct, NodeStruct, int> {
-
-
 public:
-
     HSeg(int minIndex, int maxIndex, const NodeStruct &defaultValue, const HeavyLightDecomposition<int> &hld)
             : SimpleHLDSegmentTree(minIndex, maxIndex, defaultValue, hld) { }
 
@@ -71,7 +19,7 @@ public:
     }
 
     virtual NodeStruct merge(const NodeStruct &leftSide, const NodeStruct &rightSide) override {
-        return mergeNode(leftSide, rightSide);
+        return cl::merge(leftSide, rightSide);
     }
 };
 
@@ -126,13 +74,12 @@ public:
 
             NodeStruct q1 = hseg.queryPath(ancestor, u);
             NodeStruct q2 = hseg.queryPath(ancestor, v);
+            NodeStruct q3 = cl::merge(q1, q2);
 
-            NodeStruct q3 = mergeNode(q1, q2);
-
-            int sz = min(a, q3.sz);
+            int sz = min(a, q3.size());
             out << sz;
             for_inc(i, sz) {
-                out << " " << q3.a[i];
+                out << " " << q3[i];
             }
             out.newline();
         }

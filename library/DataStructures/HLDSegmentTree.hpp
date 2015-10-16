@@ -1,28 +1,26 @@
 #include "HeavyLightDecomposition.hpp"
 #include "SegmentTree.hpp"
 
-template <class T, class Q, class W> class HLDSegmentTree: SegmentTree<T,Q> {
+template <class T, class Q, class W> class HLDSegmentTree: public SegmentTree<T,Q> {
 private:
     const HeavyLightDecomposition<W> &hld;
 public:
-    virtual Q merge(const Q& leftSide, const Q& rightSide) = 0;
-
-    HLDSegmentTree(int minIndex, int maxIndex, T defaultValue,
+    explicit HLDSegmentTree(int minIndex, int maxIndex, T defaultValue,
                    const HeavyLightDecomposition<W> &hld)
             : SegmentTree<T,Q>(minIndex, maxIndex, defaultValue), hld(hld) {}
 
     void updateNode(int u, T v) {
         int s = hld.getStartTime(u);
-        SegmentTree<T,Q>::update(s, s, v);
+        this->update(s, s, v);
     }
 
     void updateSubtree(int u, T v) {
-        SegmentTree<T,Q>::update(hld.getStartTime(u), hld.getFinishTime(u), v);
+        this->update(hld.getStartTime(u), hld.getFinishTime(u), v);
     }
 
     // Query the range from the start of the heavy path of u to u
     Q queryHeavyPath(int u) {
-        return SegmentTree<T,Q>::query(hld.getHeadTime(u), hld.getStartTime(u));
+        return this->query(hld.getHeadTime(u), hld.getStartTime(u));
     }
 
     // If v and u are in the same heavy path and v is an ancestor of u,
@@ -30,11 +28,11 @@ public:
     Q queryHeavyPath(int ancestor, int u) {
         assert(hld.inSameHeavyPath(u, ancestor));
         assert(hld.getStartTime(ancestor) <= hld.getStartTime(u));
-        return SegmentTree<T,Q>::query(hld.getStartTime(ancestor), hld.getStartTime(u));
+        return this->query(hld.getStartTime(ancestor), hld.getStartTime(u));
     }
 
     Q queryNode(int u) {
-        return SegmentTree<T,Q>::query(hld.getStartTime(u), hld.getStartTime(u));
+        return this->query(hld.getStartTime(u), hld.getStartTime(u));
     }
 
     // Query the path from ancestor to u. O(logn^2).
@@ -43,7 +41,7 @@ public:
         assert(hld.getStartTime(ancestor) <= hld.getStartTime(u));
         Q res = queryNodeFunc(u);
         while (1) {
-            res = merge(res, queryNodeFunc(u));
+            res = this->merge(res, queryNodeFunc(u));
             if (u == ancestor) {
                 break;
             }
@@ -52,11 +50,11 @@ public:
             } else {
                 if (hld.inSameHeavyPath(u, ancestor)) {
                     Q q = queryHeavyPath(ancestor, u);
-                    res = merge(res, q);
+                    res = this->merge(res, q);
                     break;
                 } else {
                     Q q = queryHeavyPath(u);
-                    res = merge(res, q);
+                    res = this->merge(res, q);
                     u = hld.getHead(u);
                 }
             }
@@ -89,6 +87,4 @@ private:
         rightChild = initLeaf(currentValue, midIndex + 1, rightIndex);
         return current;
     }
-
-
 };

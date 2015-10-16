@@ -1,4 +1,4 @@
-#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/R326/TaskA.cpp"
+#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/R326/TaskC.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -32,7 +32,7 @@ int main() {
     cout.precision(10);
     cout << fixed;
     std::vector<jhelper::Test> tests = {
-        {"5\n1 1 2 3 3\n", "2\n", true},{"4\n0 1 2 3\n", "4\n", true},
+        {"5 4 5\n1 3\n1 2\n1 4\n4 5\n2 1 4 3\n4 5 6\n1 5 2\n5 5 10\n2 3 3\n5 3 1\n", "1 3\n2 2 3\n0\n3 1 2 4\n1 2\n", true},
     };
     bool allOK = true;
     int testID = 0;
@@ -46,7 +46,7 @@ int main() {
             std::stringstream in(test.input);
             std::ostringstream out;
             std::clock_t start = std::clock();
-            TaskA solver;
+            TaskC solver;
             solver.solve(in, out);
             std::clock_t finish = std::clock();
             double currentTime = double(finish - start) / CLOCKS_PER_SEC;
