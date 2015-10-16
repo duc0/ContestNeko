@@ -13,12 +13,12 @@ public:
         Writer out(outStream);
 
         int n;
-        in.read(n);
+        in >> n;
 
         memset(a, 0, sizeof(a));
         for_inc(i, n) {
             int w;
-            in.read(w);
+            in >> w;
             a[w]++;
         }
 
@@ -32,6 +32,6 @@ public:
                 }
             }
         }
-        out.write(cnt);
+        out << cnt;
     }
 };
