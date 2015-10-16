@@ -1,3 +1,4 @@
+#include "Scanner.hpp"
 #include "global.hpp"
 #include "HLDSegmentTree.hpp"
 #include "LowestCommonAncestor.hpp"
@@ -77,7 +78,9 @@ public:
 
 class TaskC {
 public:
-    void solve(std::istream& in, std::ostream& out) {
+    void solve(std::istream& inStream, std::ostream& outStream) {
+        Scanner in(inStream);
+        Writer out(outStream);
         int n, nPeople, q;
         in >> n >> nPeople >> q;
 
@@ -131,7 +134,7 @@ public:
             for_inc(i, sz) {
                 out << " " << q3.a[i];
             }
-            out << endl;
+            out.newline();
         }
     }
 };

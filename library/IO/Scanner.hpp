@@ -12,8 +12,9 @@ public:
     Scanner(std::istream &in) : in(in) {
     }
 
-    int read(int &result) {
+    Scanner& operator >> (int &result) {
         scanf("%d", &result);
+        return *this;
     }
 };
 
@@ -24,8 +25,24 @@ public:
     Writer(std::ostream &out) : out(out) {
     }
 
-    void write(int value) {
+    Writer& operator << (int value) {
         printf("%d", value);
+        return *this;
+    }
+
+    Writer& operator << (string &value) {
+        printf("%s", value.c_str());
+        return *this;
+    }
+
+    Writer& operator << (const char *value) {
+        printf("%s", value);
+        return *this;
+    }
+
+    Writer& newline() {
+        printf("\n");
+        return *this;
     }
 };
 
@@ -38,8 +55,9 @@ public:
     Scanner(std::istream &in) : in(in) {
     }
 
-    template <class T> void read(T &result) {
+    template <class T> Scanner& operator >> (T &result) {
         in >> result;
+        return *this;
     }
 };
 
@@ -50,8 +68,14 @@ public:
     Writer(std::ostream &out) : out(out) {
     }
 
-    template <class T> void write(T value) {
+    template <class T> Writer& operator << (T value) {
         out << value;
+        return *this;
+    }
+
+    Writer& newline() {
+        out << endl;
+        return *this;
     }
 };
 #endif
