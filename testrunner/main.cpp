@@ -27,6 +27,10 @@ bool check(std::string expected, std::string actual) {
 } // namespace jhelper
 
 int main() {
+    std::ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+    cout.precision(10);
+    cout << fixed;
     std::vector<jhelper::Test> tests = {
         {"5\n1 1 2 3 3\n", "2\n", true},{"4\n0 1 2 3\n", "4\n", true},
     };

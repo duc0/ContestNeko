@@ -7,6 +7,8 @@
 #include <iostream>
 #include <fstream>
 
+#define IO_USE_CSTDIO
+
 #define C11
 
 #ifdef SUBMIT
@@ -90,20 +92,82 @@ string toYesNo(bool b) {
 #endif
 
 
+#ifndef H_SCANNER
+#define H_SCANNER
+
+#ifdef IO_USE_CSTDIO
+
+class Scanner {
+    std::istream &in;
+
+public:
+    Scanner(std::istream &in) : in(in) {
+    }
+
+    int read(int &result) {
+        scanf("%d", &result);
+    }
+};
+
+class Writer {
+    std::ostream &out;
+
+public:
+    Writer(std::ostream &out) : out(out) {
+    }
+
+    void write(int value) {
+        printf("%d", value);
+    }
+};
+
+#else
+
+class Scanner {
+    std::istream &in;
+
+public:
+    Scanner(std::istream &in) : in(in) {
+    }
+
+    template <class T> void read(T &result) {
+        in >> result;
+    }
+};
+
+class Writer {
+    std::ostream &out;
+
+public:
+    Writer(std::ostream &out) : out(out) {
+    }
+
+    template <class T> void write(T value) {
+        out << value;
+    }
+};
+#endif
+
+#endif
+
+
 #define MAX 2000000
 
 int a[MAX];
 
 class TaskA {
 public:
-    void solve() {
+    void solve(std::istream &inStream, std::ostream &outStream) {
+        Scanner in(inStream);
+        Writer out(outStream);
+
         int n;
-        scanf("%d", &n);
+        in.read(n);
 
         memset(a, 0, sizeof(a));
         for_inc(i, n) {
             int w;
-            scanf("%d", &w);
+            in.read(w);
             a[w]++;
         }
 
@@ -117,14 +181,15 @@ public:
                 }
             }
         }
-
-        printf("%d\n", cnt);
+        out.write(cnt);
     }
 };
 
 
 int main() {
     TaskA solver;
-    solver.solve();
+    std::istream &in(std::cin);
+    std::ostream &out(std::cout);
+    solver.solve(in, out);
     return 0;
 }

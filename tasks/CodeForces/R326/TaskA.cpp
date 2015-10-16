@@ -1,4 +1,5 @@
 #include "global.hpp"
+#include "Scanner.hpp"
 
 
 #define MAX 2000000
@@ -7,14 +8,17 @@ int a[MAX];
 
 class TaskA {
 public:
-    void solve(std::istream& in, std::ostream& out) {
+    void solve(std::istream& inStream, std::ostream& outStream) {
+        Scanner in(inStream);
+        Writer out(outStream);
+
         int n;
-        in >> n;
+        in.read(n);
 
         memset(a, 0, sizeof(a));
         for_inc(i, n) {
             int w;
-            in >> w;
+            in.read(w);
             a[w]++;
         }
 
@@ -28,7 +32,6 @@ public:
                 }
             }
         }
-
-        out << cnt;
+        out.write(cnt);
     }
 };
