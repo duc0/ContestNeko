@@ -1,4 +1,4 @@
-#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/EduR7/TaskA.cpp"
+#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/VC8_2016/TaskA.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -34,7 +34,7 @@ int main() {
     cout.precision(10);
     cout << fixed;
     std::vector<jhelper::Test> tests = {
-        {"3\n", "2\n", true},{"5\n", "2\n", true},{"10\n", "4\n", true},{"55\n", "10\n", true},{"56\n", "1\n", true},
+        {"6\nURLLDR\n", "2\n", true},{"4\nDLUU\n", "0\n", true},{"7\nRLRLRLR\n", "12\n", true},
     };
     bool allOK = true;
     int testID = 0;
