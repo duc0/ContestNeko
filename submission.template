@@ -2,6 +2,7 @@
 #include <fstream>
 
 #define IO_USE_CSTDIO
+#define SUBMIT
 
 %Code%
 
