@@ -16,6 +16,11 @@ public:
         scanf("%d", &result);
         return *this;
     }
+
+    Scanner& operator >> (int64 &result) {
+        scanf("%I64d", &result);
+        return *this;
+    }
 };
 
 class Writer {

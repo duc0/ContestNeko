@@ -31,6 +31,7 @@
       <sourceFolder url="file://$MODULE_DIR$/library/Number/PrimeGenerator.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/library/String/StringHasher.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/output/main.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/EduR7/TaskA.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R254/C.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R263/TaskD.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R285Div2/TaskB.cpp" isTestSource="false" />
@@ -52,7 +53,6 @@
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R323/TaskC.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R323/TaskD.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R323/TaskE.cpp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/QualBoomerang.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskA.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskB.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R326/TaskC.cpp" isTestSource="false" />
@@ -74,7 +74,7 @@
       <library name="Header Search Paths">
         <CLASSES>
           <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include" />
-          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include" />
+          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include" />
           <root url="file:///Library/Frameworks/iTunesLibrary.framework/Headers" />
           <root url="file:///Library/Frameworks/Mono.framework/Headers" />
           <root url="file:///System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers" />
@@ -253,7 +253,7 @@
         </CLASSES>
         <SOURCES>
           <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include" />
-          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.0/include" />
+          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include" />
           <root url="file:///Library/Frameworks/iTunesLibrary.framework/Headers" />
           <root url="file:///Library/Frameworks/Mono.framework/Headers" />
           <root url="file:///System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers" />

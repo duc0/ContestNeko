@@ -108,6 +108,11 @@ public:
         scanf("%d", &result);
         return *this;
     }
+
+    Scanner &operator>>(int64 &result) {
+        scanf("%I64d", &result);
+        return *this;
+    }
 };
 
 class Writer {
@@ -174,60 +179,122 @@ public:
 
 #endif
 
-class QualBoomerang {
-public:
-    int testNumber = 0;
 
+#ifndef BINARY_SEARCH_H
+#define BINARY_SEARCH_H
+
+/*
+ * Used to find min(x | predicate(x)), if predicate(x) is .. 0, 0, 0, 1, 1, 1, ...
+ */
+template<class T>
+bool binarySearchMin(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = maxIndex + 1;
+    while (leftIndex <= rightIndex) {
+        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+        if (predicate(midIndex)) {
+            ret = midIndex;
+            rightIndex = midIndex - 1;
+        } else {
+            leftIndex = midIndex + 1;
+        }
+    }
+    result = ret;
+    return ret != maxIndex + 1;
+}
+
+/*
+ * Used to find max(x | predicate(x)), if predicate(x) is .. 1, 1, 1, 0, 0, 0, ...
+ */
+template<class T>
+bool binarySearchMax(const T &minIndex, const T &maxIndex, const function<bool(T)> &predicate, T &result) {
+    T leftIndex = minIndex, rightIndex = maxIndex, midIndex, ret = minIndex - 1;
+    while (leftIndex <= rightIndex) {
+        midIndex = leftIndex + (rightIndex - leftIndex) / 2;
+        if (predicate(midIndex)) {
+            ret = midIndex;
+            leftIndex = midIndex + 1;
+        } else {
+            rightIndex = midIndex - 1;
+        }
+    }
+    result = ret;
+    return ret != minIndex - 1;
+}
+
+/*
+ * Used to find max(x | predicate(x)), if predicate(x) is continuously .. 1, 1, 1, 0, 0, 0, ...
+ */
+bool binarySearchMaxReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
+                         double &result) {
+    double l = minRange, r = maxRange, m, ret = minRange - 1;
+    while (r - l > epsilon) {
+        m = l + (r - l) / 2;
+        if (predicate(m)) {
+            ret = m;
+            l = m;
+        } else {
+            r = m;
+        }
+    }
+    result = ret;
+    return ret != minRange - 1;
+}
+
+/*
+ * Used to find min(x | predicate(x)), if predicate(x) is continuously .. 0, 0, 0, 1, 1, 1, ...
+ */
+bool binarySearchMinReal(double minRange, double maxRange, double epsilon, const function<bool(double)> &predicate,
+                         double &result) {
+    double l = minRange, r = maxRange, m, ret = maxRange + 1;
+    while (r - l > epsilon) {
+        m = l + (r - l) / 2;
+        if (predicate(m)) {
+            r = m;
+            ret = m;
+        } else {
+            l = m;
+        }
+    }
+    result = ret;
+    return ret != maxRange + 1;
+}
+
+/*
+ * Used to find the intersection of an increasing and a deceasing function
+ */
+bool binarySearchIntersection(double minRange, double maxRange, double epsilon,
+                              const function<double(double)> &increasing, const function<double(double)> &decreasing,
+                              double &intersection) {
+    return binarySearchMinReal(minRange, maxRange, epsilon, [&](double x) {
+        //LOG(1, x << " " << increasing(x) << " " << decreasing(x));
+        return increasing(x) >= decreasing(x);
+    }, intersection);
+}
+
+#endif
+
+class TaskA {
+public:
     void solve(std::istream &inStream, std::ostream &outStream) {
-        testNumber++;
         Scanner in(inStream);
         Writer out(outStream);
-        int n;
+
+        int64 n;
         in >> n;
-        vector<pair<int, int>> points;
-        repeat(n) {
-            int x, y;
-            in >> x >> y;
-            points.push_back(make_pair(x, y));
-        }
-        int ans = 0;
-        for (int i = 0; i < n; i++) {
-            auto &p = points[i];
-            vector<int> dst;
-            for (int j = 0; j < n; j++) {
-                if (j != i) {
-                    auto &p2 = points[j];
-                    dst.push_back((p2.second - p.second) * (p2.second - p.second) +
-                                  (p2.first - p.first) * (p2.first - p.first));
-                }
-            }
-            sort(dst.begin(), dst.end());
-            int cnt = 0;
-            for (int j = 0; j < n; j++) {
-                if (j == (n - 1) || (dst[j] != dst[j - 1])) {
-                    ans = ans + (cnt * (cnt - 1) / 2);
-                    cnt = 0;
-                }
-                cnt++;
 
-            }
-        }
+        int64 p;
+        function<bool(int64)> pred = [&](int64 p) { return (p * (p - 1) / 2 + 1) <= n; };
+        binarySearchMax(0LL, (int64) 1E8L, pred, p);
 
-        out << "Case #" << testNumber << ": " << ans;
-        out.newline();
+        out << n - (p * (p - 1) / 2);
     }
 };
 
 
 int main() {
-    QualBoomerang solver;
-    std::ifstream in("qualboomerang.in");
-    std::ofstream out("qualboomerang.out");
-    int n;
-    in >> n;
-    for (int i = 0; i < n; ++i) {
-        solver.solve(in, out);
-    }
-
+    TaskA solver;
+    std::istream &in(std::cin);
+    std::ostream &out(std::cout);
+    solver.solve(in, out);
     return 0;
 }
