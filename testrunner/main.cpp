@@ -8,6 +8,8 @@
 #include <cctype>
 #include <ctime>
 
+#define IO_USE_CSTDIO
+
 namespace jhelper {
 
 struct Test {
