@@ -1,4 +1,4 @@
-#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/VC8_2016/TaskB.cpp"
+#include "/Users/Popan/Dropbox/CPPProjects/CPPProjects/tasks/CodeForces/VC8_2016/TaskC.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -34,7 +34,7 @@ int main() {
     cout.precision(10);
     cout << fixed;
     std::vector<jhelper::Test> tests = {
-        {"2\nRB\n", "G\n", true},{"3\nGRG\n", "BR\n", true},{"5\nBBBBB\n", "B\n", true},{"3\nRGR", "BG", true},{"1 G", "G", true},
+        {"1 3\n", "9\n", true},{"3 2\n", "8\n", true},{"5 0\n", "10\n", true},
     };
     bool allOK = true;
     int testID = 0;
@@ -48,7 +48,7 @@ int main() {
             std::stringstream in(test.input);
             std::ostringstream out;
             std::clock_t start = std::clock();
-            TaskB solver;
+            TaskC solver;
             solver.solve(in, out);
             std::clock_t finish = std::clock();
             double currentTime = double(finish - start) / CLOCKS_PER_SEC;
