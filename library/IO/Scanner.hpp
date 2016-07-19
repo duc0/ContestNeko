@@ -35,6 +35,11 @@ public:
         return *this;
     }
 
+    Writer& operator << (int64 value) {
+        printf("%I64d", value);
+        return *this;
+    }
+
     Writer& operator << (string &value) {
         printf("%s", value.c_str());
         return *this;

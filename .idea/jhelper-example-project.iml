@@ -32,6 +32,9 @@
       <sourceFolder url="file://$MODULE_DIR$/library/String/StringHasher.hpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/output/main.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/EduR7/TaskA.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R1/TaskA.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R1/TaskB.cpp" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R1/TaskC.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R254/C.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R263/TaskD.cpp" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tasks/CodeForces/R285Div2/TaskB.cpp" isTestSource="false" />
@@ -81,7 +84,7 @@
       <library name="Header Search Paths">
         <CLASSES>
           <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include" />
-          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include" />
+          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.3.0/include" />
           <root url="file:///Library/Frameworks/iTunesLibrary.framework/Headers" />
           <root url="file:///Library/Frameworks/Mono.framework/Headers" />
           <root url="file:///System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers" />
@@ -260,7 +263,7 @@
         </CLASSES>
         <SOURCES>
           <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include" />
-          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.0.2/include" />
+          <root url="file:///Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/7.3.0/include" />
           <root url="file:///Library/Frameworks/iTunesLibrary.framework/Headers" />
           <root url="file:///Library/Frameworks/Mono.framework/Headers" />
           <root url="file:///System/Library/Frameworks/Accelerate.framework/Frameworks/vecLib.framework/Headers" />
@@ -439,31 +442,31 @@
         </SOURCES>
         <excluded>
           <root url="file://$MODULE_DIR$/library/Geometry/Point.hpp" />
-          <root url="file://$MODULE_DIR$/library/DataStructures/WeightedTree.hpp" />
+          <root url="file://$MODULE_DIR$/library/Algorithms/LowestCommonAncestor.hpp" />
           <root url="file://$MODULE_DIR$/library/Geometry/FarthestPoints.hpp" />
-          <root url="file://$MODULE_DIR$/library/DataStructures/HeavyLightDecomposition.hpp" />
+          <root url="file://$MODULE_DIR$/library/Algorithms/BinarySearch.hpp" />
           <root url="file://$MODULE_DIR$/library/Iterable/Iterator.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/Collections.hpp" />
-          <root url="file://$MODULE_DIR$/library/DataStructures/BinaryIndexedTree.hpp" />
+          <root url="file://$MODULE_DIR$/library/global.hpp" />
+          <root url="file://$MODULE_DIR$/library/IO/InputIterables.hpp" />
           <root url="file://$MODULE_DIR$/library/Algorithms/Sequence.hpp" />
+          <root url="file://$MODULE_DIR$/library/DataStructures/WeightedTree.hpp" />
           <root url="file://$MODULE_DIR$/library/String/StringHasher.hpp" />
           <root url="file://$MODULE_DIR$/library/Combinatorics/ComboUtils.hpp" />
-          <root url="file://$MODULE_DIR$/library/Algorithms/BinarySearch.hpp" />
+          <root url="file://$MODULE_DIR$/library/DataStructures/SegmentTree.hpp" />
           <root url="file://$MODULE_DIR$/library/Number/ModInt.hpp" />
-          <root url="file://$MODULE_DIR$/library/Algorithms/LowestCommonAncestor.hpp" />
+          <root url="file://$MODULE_DIR$/library/Number/NumberTheory.hpp" />
+          <root url="file://$MODULE_DIR$/library/DataStructures/HeavyLightDecomposition.hpp" />
           <root url="file://$MODULE_DIR$/library/Geometry/ConvexHull.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/RangeUpdateArray.hpp" />
-          <root url="file://$MODULE_DIR$/library/global.hpp" />
+          <root url="file://$MODULE_DIR$/library/DataStructures/BinaryIndexedTree.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/MaxTree.hpp" />
           <root url="file://$MODULE_DIR$/library/Number/PrimeGenerator.hpp" />
           <root url="file://$MODULE_DIR$/library/IO/Scanner.hpp" />
           <root url="file://$MODULE_DIR$/library/Algorithms/SubtreeSize.hpp" />
-          <root url="file://$MODULE_DIR$/library/IO/InputIterables.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/HLDSegmentTree.hpp" />
-          <root url="file://$MODULE_DIR$/library/Number/NumberTheory.hpp" />
-          <root url="file://$MODULE_DIR$/library/DataStructures/SegmentTree.hpp" />
-          <root url="file://$MODULE_DIR$/library/Graph/UndirectedGraph.hpp" />
           <root url="file://$MODULE_DIR$/library/Algorithms/Math.hpp" />
+          <root url="file://$MODULE_DIR$/library/Graph/UndirectedGraph.hpp" />
           <root url="file://$MODULE_DIR$/library/DataStructures/Matrix.hpp" />
         </excluded>
       </library>
