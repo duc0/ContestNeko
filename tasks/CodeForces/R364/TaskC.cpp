@@ -230,7 +230,9 @@ public:
         if (edgesInPath.empty()) {
             // Not connected graph
 
-            outStream << 0;
+            out << 0;
+            out.newline();
+            out << 0;
         } else {
 
             Solution best;
