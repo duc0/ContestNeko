@@ -117,22 +117,30 @@ class BridgeFinder {
 
     vector<MyEdge> prev;
     vector<bool> visited;
+    vector<int> timeStamp;
+    vector<int> low;
+    int currentTime;
 
-    // Return true if found a path.
-    bool dfs(int currentNode, int dest) {
+    void dfs(int currentNode) {
+        //LOG(1, "Visit: " << currentNode + 1);
+        currentTime++;
+        timeStamp[currentNode] = currentTime;
+        low[currentNode] = currentTime;
+
         for (auto &edge: graph.adj[currentNode]) {
+            if (graph.deletedEdges[edge.id]) {
+                continue;
+            }
+            //LOG(1, "Visit Edge: " << edge.begin + 1 << " " << edge.end + 1);
             if (!visited[edge.end]) {
                 visited[edge.end] = true;
                 prev[edge.end] = edge;
-                if (edge.end == dest) {
-                    return true;
-                }
-                if (dfs(edge.end, dest)) {
-                    return true;
-                }
+                dfs(edge.end);
+                low[currentNode] = min(low[currentNode], low[edge.end]);
+            } else if (prev[currentNode].id != edge.id){
+                low[currentNode] = min(low[currentNode], timeStamp[edge.end]);
             }
         }
-        return false;
     }
 
 public:
@@ -144,16 +152,24 @@ public:
     vector<MyEdge> findBridge() {
         visited.resize(graph.nNodes);
         prev.resize(graph.nNodes);
+        timeStamp.resize(graph.nNodes);
+        low.resize(graph.nNodes);
         for (int i = 0; i < graph.nNodes; i++) {
             visited[i] = false;
+            timeStamp[i] = 0;
+            low[i] = 0;
         }
+        currentTime = 0;
         visited[source] = true;
-        bool result = dfs(source, dest);
-        connected = result;
+        // A special value
+        prev[source].id = -2;
+
+        dfs(source);
 
         vector<MyEdge> edgesInPath;
 
-        if (!result) {
+        connected = visited[dest];
+        if (!connected) {
             return edgesInPath;
         }
 
@@ -164,7 +180,18 @@ public:
         }
 
         reverse(edgesInPath.begin(), edgesInPath.end());
-        return edgesInPath;
+
+        vector<MyEdge> bridges;
+
+        for (auto &edge : edgesInPath) {
+            //LOG(1, "Path Edge: " << edge.begin + 1 << " " << edge.end + 1);
+            //LOG(1, "Low End: " << low[edge.end] << " " << timeStamp[edge.end]);
+            if (low[edge.end] >= timeStamp[edge.end]) {
+                bridges.push_back(edge);
+            }
+        }
+
+        return bridges;
     }
 };
 
@@ -210,10 +237,10 @@ public:
             bool hasSolution = false;
 
             for (auto &edge : edgesInPath) {
-                LOG(1, "Edge: " << edge.begin + 1 << " " << edge.end + 1);
-
                 // Delete the edge and attempt to detect bridge
                 graph.deleteEdge(edge.id);
+
+                //LOG(1, "Delete Edge: " << edge.begin + 1 << " " << edge.end + 1);
 
                 Solution current;
                 current.addEdge(edge);
@@ -223,8 +250,29 @@ public:
                 vector<MyEdge> bridges = bridgeFinder.findBridge();
 
                 if (bridgeFinder.connected) {
-                    // TODO:
+                    //LOG(1, "Connected");
 
+                    // TODO:
+                    if (bridges.empty()) {
+                        //LOG(1, "No Bridges");
+                        // No bridges
+                        graph.undeleteEdge(edge.id);
+                        continue;
+                    } else {
+                        //LOG(1, "Has Bridges");
+                        int minWeight = bridges[0].weight;
+                        for (auto &edge: bridges) {
+                            minWeight = min(minWeight, edge.weight);
+                        }
+                        for (auto &edge: bridges) {
+                            if (edge.weight == minWeight) {
+                                current.addEdge(edge);
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    //LOG(1, "Not Connected");
                 }
 
                 if (!hasSolution || current.isBetter(best)) {
@@ -235,13 +283,23 @@ public:
                 graph.undeleteEdge(edge.id);
             }
 
-            out << best.weight;
-            out.newline();
-            out << best.edges.size();
-            out.newline();
-            for (auto &edge: best.edges) {
-                out << edge.id + 1;
+            if (!hasSolution) {
+                out << -1;
+            } else {
+                out << best.weight;
                 out.newline();
+                out << (int) best.edges.size();
+                out.newline();
+                vector<int> edgeIds;
+
+                for (auto &edge: best.edges) {
+                    edgeIds.push_back(edge.id);
+                }
+
+                sort(edgeIds.begin(), edgeIds.end());
+                for (int id : edgeIds) {
+                    out << id + 1 << " ";
+                }
             }
         }
 
