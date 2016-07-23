@@ -1,1 +1,1 @@
-Example project for [JHelper](https://github.com/AlexeyDmitriev/jhelper/)
+Reusable C++ algorithms and data structures for competitive programming contests (codeforces, topcoder, hackerrank etc.) 
