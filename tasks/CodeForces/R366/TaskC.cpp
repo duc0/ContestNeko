@@ -87,6 +87,71 @@ struct Graph {
         }
     }
 };
+
+
+int getVal(int val, int sign) {
+    return sign ? val : (1-val);
+}
+
+int f[2][2][2][100100];
+int knownVal[100100];
+
+struct ChainSolver {
+
+    const vector<Edge> &chain;
+
+    int n;
+    vector <int> f;
+
+    ChainSolver(const vector<Edge> &chain) : chain(chain) {
+        n = chain.size();
+    }
+
+    int solve(int target, int offset, int beginVal, int endVal) {
+        int firstPos = offset;
+        int lastPos = chain.size() - 1 - offset;
+        Edge firstEdge = chain[firstPos];
+        Edge lastEdge = chain[lastPos];
+
+
+        int signedBeginVal = getVal(beginVal, firstEdge.signBegin);
+        int signedEndVal = getVal(endVal, lastEdge.signEnd);
+        knownVal[firstEdge.begin] = beginVal;
+        if (knownVal[lastEdge.end] != -1 && knownVal[lastEdge.end] != endVal) {
+            return 0;
+        }
+        knownVal[lastEdge.end] = endVal;
+
+        int result = 0;
+
+        for_inc(nextBeginVal, 2) {
+            if (knownVal[firstEdge.end] != -1 && nextBeginVal != knownVal[firstEdge.end]) {
+                continue;
+            }
+            int signedNextBeginVal = getVal(nextBeginVal, firstEdge.signEnd);
+            int signFirstEdgeVal = signedBeginVal ^ signedNextBeginVal;
+
+            for_inc(nextEndVal, 2) {
+                if (knownVal[lastEdge.begin] != -1 && nextEndVal != knownVal[lastEdge.begin]) {
+                    continue;
+                }
+                int signedNextEndVal = getVal(nextEndVal, lastEdge.signBegin);
+                int signLastEdgeVal = signedEndVal ^ signedNextEndVal;
+
+                result += solve();
+            }
+        }
+
+    }
+
+    int solve(int target) {
+        fill0(f);
+        return solve(target, 0, 0, 0) + solve(target, 0, 0, 1) + solve(target, 0, 1, 0) + solve(target, 0, 1, 1);
+    }
+
+
+
+};
 class TaskC {
 public:
     void solve(std::istream& inStream, std::ostream& outStream) {
@@ -97,6 +162,10 @@ public:
         in >> nEdge >> nVertex;
 
         Graph graph(nVertex);
+
+        for_inc(i, nVertex) {
+            knownVal[i] = -1;
+        }
 
         repeat(nEdge) {
             int k;
@@ -130,6 +199,7 @@ public:
                 graph.initNewChain();
                 graph.dfs(i);
                 graph.logChain();
+                ChainSolver cs(graph.chain);
             }
         }
 
