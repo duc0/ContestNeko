@@ -26,6 +26,8 @@ output/main.cpp
 # Mongo Explorer plugin:
 .idea/mongoSettings.xml
 
+cmake-build-debug/
+
 ## File-based project format:
 *.iws
 

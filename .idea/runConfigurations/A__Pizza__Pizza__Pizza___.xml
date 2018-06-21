@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="A. Pizza, Pizza, Pizza!!!" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" className="APizzaPizzaPizza" cppPath="CodeForces/APizzaPizzaPizza.cpp" inputType="STANDARD" outputType="STANDARD" testType="SINGLE">
+    <tests>
+      <test input="3&#10;" output="2&#10;" active="true" />
+      <test input="4&#10;" output="5&#10;" active="true" />
+    </tests>
+    <method />
+  </configuration>
+</component>
