@@ -4,36 +4,88 @@
 #define H_WEIGHTED_TREE
 
 // Weighted undirected tree
-template <class T> class WeightedTree {
-    vector<vector<pair<int, T>>> adj;
-
-    // p [u] = parent of u and weight p[u] -> u
-    vector<pair<int, T>> p;
-
-    vector<int> depth;
-
-    int n;
-    int root;
-
+// Doesn't yet do any input validation.
+template <class WeightType, WeightType DefaultWeight> class WeightedTree {
 public:
-    const vector<pair<int, T>> &getAdjacent(int u) const { return adj[u]; }
+    WeightedTree() {
+    }
 
+    WeightedTree(int size) {
+        reset(size);
+    }
+
+    // Return all the adjacent nodes of a node, including the node's parent (if tree is already rooted).
+    const vector<pair<int, WeightType>> &getAdjacentNodes(int node) const {
+        return adj[node];
+    }
+
+    // Reset the tree with given number of nodes.
     void reset(int size) {
-        this->n = size;
-        adj.resize(n + 1);
-        for_inc_range(i, 1, n) adj[i].clear();
-        p.resize(n + 1);
-        depth.resize(n + 1);
-        for_inc_range(i, 1, n) {
-            p[i] = make_pair(-1, -1);
+        this->numNodes = size;
+        adj.resize(numNodes + 1);
+        for_inc_range(i, 1, numNodes) {
+            adj[i].clear();
+        }
+        parent.resize(numNodes + 1);
+        depth.resize(numNodes + 1);
+        for_inc_range(i, 1, numNodes) {
+            parent[i] = make_pair(-1, -1);
             depth[i] = 0;
         }
     }
 
-    WeightedTree() {}
+    int getParent(int u) const {
+        return parent[u].first;
+    }
 
-    WeightedTree(int n) { reset(n); }
+    WeightType getWeight(int u) const {
+        return parent[u].second;
+    }
 
+    void setWeight(int u, WeightType w) {
+        parent[u].second = w;
+    }
+
+    int getDepth(int u) const {
+        return depth[u];
+    }
+
+    size_t getSize() const {
+        return numNodes;
+    }
+
+    int getRoot() const {
+        return root;
+    }
+
+    void setRoot(int u) {
+        for_inc_range(v, 1, numNodes) {
+            parent[v].first = -1;
+        }
+        root = u;
+        parent[root].first = -2;
+        dfs(root);
+    }
+
+    // Create an edge between two nodes.
+    void addEdge(int u, int v, WeightType weight = DefaultWeight) {
+        adj[u].push_back(make_pair(v, weight));
+        adj[v].push_back(make_pair(u, weight));
+    }
+
+private:
+    // adjacency list
+    vector<vector<pair<int, WeightType>>> adj;
+
+    // parent[u] = parent of u and weight parent[u] -> u
+    vector<pair<int, WeightType>> parent;
+
+    vector<int> depth;
+
+    int numNodes;
+    int root;
+
+    // Run a DFS on the tree and update parent, depth.
     void dfs(int u) {
         stack<int> node;
         node.push(u);
@@ -42,41 +94,17 @@ public:
             node.pop();
             for (auto &e : adj[u]) {
                 int v = e.first;
-                int c = e.second;
-                if (p[v].first == -1) {
-                    p[v] = make_pair(u, c);
+                int weight = e.second;
+                if (parent[v].first == -1) {
+                    parent[v] = make_pair(u, weight);
                     depth[v] = depth[u] + 1;
                     node.push(v);
                 }
             }
         }
     }
-
-    int getParent(int u) const { return p[u].first; }
-
-    T getWeight(int u) const { return p[u].second; }
-
-    void setWeight(int u, T w) { p[u].second = w; }
-
-    int getDepth(int u) const { return depth[u]; }
-
-    size_t getSize() const { return n; }
-
-    int getRoot() const { return root; }
-
-    void setRoot(int u) {
-        for_inc_range(v, 1, n) {
-            p[v].first = -1;
-        }
-        root = u;
-        p[root].first = -2;
-        dfs(root);
-    }
-
-    void addEdge(int u, int v, int c) {
-        adj[u].push_back(make_pair(v, c));
-        adj[v].push_back(make_pair(u, c));
-    }
 };
+
+using UnweightedTree = WeightedTree<int, 1>;
 
 #endif

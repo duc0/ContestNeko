@@ -26,7 +26,7 @@ template<class T> class HeavyLightDecomposition {
                 int heavyCutoff = subtreeSize[u] / 2;
                 int nextNode = -1;
 
-                for (auto &v: tree.getAdjacent(u)) {
+                for (auto &v: tree.getAdjacentNodes(u)) {
                     if (v.first != tree.getParent(u)) {
                         if (subtreeSize[v.first] > heavyCutoff) {
                             nextNode = v.first;
@@ -35,7 +35,7 @@ template<class T> class HeavyLightDecomposition {
                     }
                 }
 
-                for (auto &v: tree.getAdjacent(u)) {
+                for (auto &v: tree.getAdjacentNodes(u)) {
                     if (v.first != tree.getParent(u) && v.first != nextNode) {
                         head[v.first] = v.first;
                         s.push(v.first);

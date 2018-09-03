@@ -15,7 +15,7 @@ template<class T> class SubtreeSize {
                 node.pop();
                 subtreeSize[u] = 1;
             }
-            for (auto &v: tree.getAdjacent(u)) {
+            for (auto &v: tree.getAdjacentNodes(u)) {
                 if (v.first != tree.getParent(u)) {
                     if (!visit[u]) {
                         node.push(v.first);

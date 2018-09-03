@@ -4,12 +4,12 @@
 
 class TaskD {
 public:
-    bool isBFS(Scanner& in, const WeightedTree<int>& tree) const {
+    bool isBFS(Scanner& in, const UnweightedTree& tree) const {
         int n = tree.getSize();
 
         int lastOrder = -1;
         vector<int> order(n + 1);
-        for (int i = 1; i <= n; i++) {
+        for_inc_range(i, 1, n) {
             order[i] = -1;
         }
         order[1] = 0;
@@ -22,7 +22,7 @@ public:
             if (order[x] == -1 || order[x] < lastOrder) {
                 return false;
             }
-            for (auto& nextNode : tree.getAdjacent(x)) {
+            for (auto& nextNode : tree.getAdjacentNodes(x)) {
                 int v = nextNode.first;
                 if (v != tree.getParent(x)) {
                     order[v] = currentOrder + 1;
@@ -42,13 +42,13 @@ public:
         int n;
         in >> n;
 
-        WeightedTree<int> tree;
+        UnweightedTree tree;
         tree.reset(n);
 
         repeat(n - 1) {
             int u, v;
             in >> u >> v;
-            tree.addEdge(u, v, 1);
+            tree.addEdge(u, v);
         }
 
         tree.setRoot(1);
