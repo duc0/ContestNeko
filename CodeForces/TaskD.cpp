@@ -1,6 +1,7 @@
 #include "global.hpp"
 #include "Scanner.hpp"
 #include "WeightedTree.hpp"
+#include "Collections.hpp"
 
 class TaskD {
 public:
@@ -8,7 +9,7 @@ public:
         int n = tree.getSize();
 
         int lastOrder = -1;
-        vector<int> order(n + 1);
+        cl::Array1<int> order(n);
         for_inc_range(i, 1, n) {
             order[i] = -1;
         }
@@ -42,8 +43,7 @@ public:
         int n;
         in >> n;
 
-        UnweightedTree tree;
-        tree.reset(n);
+        UnweightedTree tree(n);
 
         repeat(n - 1) {
             int u, v;

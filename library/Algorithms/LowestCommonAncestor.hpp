@@ -13,7 +13,7 @@ template <class T, class Q> class LowestCommonAncestor {
 public:
     LowestCommonAncestor(WeightedTree<T> &tree)
             : LowestCommonAncestor(
-            tree, [](WeightedTree<T> &t, int u) { return t.getWeight(u); },
+            tree, [](WeightedTree<T> &t, int u) { return t.getWeightParentEdge(u); },
             [](Q a, Q b) { return min(a, b); }) {}
 
     LowestCommonAncestor(WeightedTree<T> &tree,

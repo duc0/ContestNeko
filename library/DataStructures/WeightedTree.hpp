@@ -18,7 +18,7 @@ public:
     const vector<pair<int, WeightType>> &getAdjacentNodes(int node) const {
         return adj[node];
     }
-
+    
     // Reset the tree with given number of nodes.
     void reset(int size) {
         this->numNodes = size;
@@ -32,21 +32,30 @@ public:
             parent[i] = make_pair(-1, -1);
             depth[i] = 0;
         }
+        root = -1;
+    }
+
+    bool isRootSet() const {
+        return root != -1;
     }
 
     int getParent(int u) const {
+        assert(isRootSet());
         return parent[u].first;
     }
 
-    WeightType getWeight(int u) const {
+    WeightType getWeightParentEdge(int u) const {
+        assert(isRootSet());
         return parent[u].second;
     }
 
-    void setWeight(int u, WeightType w) {
+    void setWeightParentEdge(int u, WeightType w) {
+        assert(isRootSet());
         parent[u].second = w;
     }
 
     int getDepth(int u) const {
+        assert(isRootSet());
         return depth[u];
     }
 
@@ -55,9 +64,11 @@ public:
     }
 
     int getRoot() const {
+        assert(isRootSet());
         return root;
     }
 
+    // Root the tree, and then do a dfs from the root to update parent, depth.
     void setRoot(int u) {
         for_inc_range(v, 1, numNodes) {
             parent[v].first = -1;
