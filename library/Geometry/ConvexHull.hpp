@@ -16,7 +16,7 @@ public:
         sort(p.begin(), p.end());
         upper.resize(2 * n);
         lower.resize(2 * n);
-        for_inc(i, n) {
+        FOR_INC(i, n) {
             while (j >= 2 && cross(lower[j - 2], lower[j - 1], p[i]) <= 0)
                 j--;
             while (k >= 2 && cross(upper[k - 2], upper[k - 1], p[i]) >= 0)

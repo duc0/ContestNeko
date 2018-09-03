@@ -36,7 +36,7 @@ public:
         tree.reset(n);
         vector<pair<int, int>> edge;
 
-        repeat(n - 1) {
+        REPEAT(n - 1) {
             int u, v;
             in >> u >> v;
             tree.addEdge(u, v, 1);
@@ -50,7 +50,7 @@ public:
 
         cl::Array1<NodeStruct> who(n);
 
-        for_inc_range(i, 1, nPeople) {
+        FOR_INC_RANGE(i, 1, nPeople) {
             int city;
             in >> city;
             who[city].add(i);
@@ -59,7 +59,7 @@ public:
         HSeg hseg(1, n, NodeStruct(), hld);
         
 
-        for_inc_range(i, 1, n) {
+        FOR_INC_RANGE(i, 1, n) {
             hseg.updateNode(i, who[i]);
         }
 
@@ -67,7 +67,7 @@ public:
 
         auto nodeFunc = [&](int u) {return who[u];};
 
-        repeat(q) {
+        REPEAT(q) {
             int u, v, a;
             in >> u >> v >> a;
             int ancestor = lca.getLCA(u, v).first;
@@ -81,7 +81,7 @@ public:
 
             int sz = min(a, q3.size());
             out << sz;
-            for_inc(i, sz) {
+            FOR_INC(i, sz) {
                 out << " " << q3[i];
             }
             out.newline();

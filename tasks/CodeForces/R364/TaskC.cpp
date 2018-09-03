@@ -212,7 +212,7 @@ public:
         source--;
         dest--;
 
-        repeat(nEdges) {
+        REPEAT(nEdges) {
             int x, y, w;
             in >> x >> y >> w;
             x--;

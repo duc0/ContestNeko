@@ -12,8 +12,8 @@ vector<int64> getAll(const vector<int> &s, int n) {
     SPH h(s.begin(), s.end());
 
     vector<int64> ans;
-    for_inc_range(i, 0, n) {
-        for_inc(c, 26) {
+    FOR_INC_RANGE(i, 0, n) {
+        FOR_INC(c, 26) {
             auto dh = h.getSubstringHashByRange(0, i - 1);
             dh = dh.concat(SH::fromSingleChar(c));
             dh = dh.concat(h.getSubstringHashByRange(i, n - 1));
@@ -33,9 +33,9 @@ public:
         in >> ss1 >> ss2;
 
         vector<int> s1(n);
-        for_inc(i, n) s1[i] = ss1[i] - 'a';
+        FOR_INC(i, n) s1[i] = ss1[i] - 'a';
         vector<int> s2(n);
-        for_inc(i, n) s2[i] = ss2[i] - 'a';
+        FOR_INC(i, n) s2[i] = ss2[i] - 'a';
 
         vector<int64> all1 = getAll(s1, n);
         vector<int64> all2 = getAll(s2, n);

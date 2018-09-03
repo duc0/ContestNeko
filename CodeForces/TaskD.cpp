@@ -10,19 +10,17 @@ public:
 
         int lastOrder = -1;
         cl::Array1<int> order(n);
-        for_inc_range(i, 1, n) {
+        FOR_INC_RANGE(i, 1, n) {
             order[i] = -1;
         }
         order[1] = 0;
 
         int currentOrder = 0;
 
-        repeat(n) {
+        REPEAT(n) {
             int x;
             in >> x;
-            if (order[x] == -1 || order[x] < lastOrder) {
-                return false;
-            }
+            REQUIRE_OR_RET_FALSE(order[x] != -1 && order[x] >= lastOrder);
             for (auto& nextNode : tree.getAdjacentNodes(x)) {
                 int v = nextNode.first;
                 if (v != tree.getParent(x)) {
@@ -43,9 +41,10 @@ public:
         int n;
         in >> n;
 
-        UnweightedTree tree(n);
+        UnweightedTree tree;
+        tree.reset(n);
 
-        repeat(n - 1) {
+        REPEAT(n - 1) {
             int u, v;
             in >> u >> v;
             tree.addEdge(u, v);

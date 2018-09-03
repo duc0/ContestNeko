@@ -9,7 +9,7 @@ public:
         vector<pair<int, int>> a;
         in >> n;
         int maxH = 0;
-        repeat(n) {
+        REPEAT(n) {
             int h, k;
             in >> h >> k;
             a.push_back(make_pair(h, k));

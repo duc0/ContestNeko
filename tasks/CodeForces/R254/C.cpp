@@ -55,8 +55,8 @@ public:
         cin >> n >> q;
 
         ColorTree tree(1, n, 0);
-        for_inc_range(i, 1, n) { tree.update(i, i, i); }
-        repeat(q) {
+        FOR_INC_RANGE(i, 1, n) { tree.update(i, i, i); }
+        REPEAT(q) {
             cin >> t;
             if (t == 1) {
                 cin >> l >> r >> x;

@@ -18,7 +18,7 @@ public:
     this->maxN = n;
     factorial.resize(n + 1);
     factorial[0] = 1;
-    for_inc_range(i, 1, n) {
+    FOR_INC_RANGE(i, 1, n) {
       factorial[i] = factorial[i - 1] * i;
     }
   }
@@ -52,7 +52,7 @@ public:
   static vector<T> getCombByK(int n, int k) {
     vector<T> c(n + 1);
     c[k] = 1;
-    for_inc_range(i, k + 1, n) {
+    FOR_INC_RANGE(i, k + 1, n) {
       c[i] = c[i - 1] * i / (i - k);
     }
     return c;
@@ -62,7 +62,7 @@ public:
   static vector<T> getCombByN(int n) {
     vector<T> c(n + 1);
     c[0] = 1;
-    for_inc_range(i, 1, n) {
+    FOR_INC_RANGE(i, 1, n) {
       c[i] = c[i - 1] * (n - i + 1)/ i;
     }
     return c;
@@ -72,7 +72,7 @@ public:
   static vector<T> getPower(int n, T a) {
     vector<T> p(n + 1);
     p[0] = 1;
-    for_inc_range(i, 1, n) {
+    FOR_INC_RANGE(i, 1, n) {
       p[i] = p[i - 1] * a;
     }
     return p;

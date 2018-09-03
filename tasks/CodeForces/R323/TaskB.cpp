@@ -24,7 +24,7 @@ public:
         cl::Array1<int> a(n);
         int maxVal = 0;
 
-        for_inc_range(i, 1, n) {
+        FOR_INC_RANGE(i, 1, n) {
             in >> a[i];
             maxVal = max(maxVal, a[i]);
         }
@@ -32,25 +32,25 @@ public:
         UpperTriMatrix<int, MyCalc> base;
         base.init(maxVal);
 
-        for_inc_range(lower, 1, maxVal)
-            for_inc_range(upper, lower, maxVal) {
+        FOR_INC_RANGE(lower, 1, maxVal)
+            FOR_INC_RANGE(upper, lower, maxVal) {
                 base[lower][upper] = 0;
             }
 
-        for_inc_range(lower, 1, maxVal) {
+        FOR_INC_RANGE(lower, 1, maxVal) {
             cl::Array1<int> longestEnd(n);
 
-            for_inc_range(i, 1, n) if (a[i] >= lower) {
+            FOR_INC_RANGE(i, 1, n) if (a[i] >= lower) {
                 longestEnd[i] = 1;
-                for_inc_range(j, 1, i - 1) {
+                FOR_INC_RANGE(j, 1, i - 1) {
                     if (a[j] >= lower && a[j] <= a[i]) {
                         longestEnd[i] = max(longestEnd[i], longestEnd[j] + 1);
                     }
                 }
             }
 
-            for_inc_range(i, 1, n) if (a[i] >= lower) {
-                for_inc_range(upper, a[i], maxVal) {
+            FOR_INC_RANGE(i, 1, n) if (a[i] >= lower) {
+                FOR_INC_RANGE(upper, a[i], maxVal) {
                     base[lower][upper] = MyCalc::plus(base[lower][upper], longestEnd[i]);
                 }
             }
@@ -59,8 +59,8 @@ public:
         base = base.power(nRepeat);
 
         int best = 0;
-        for_inc_range(lower, 1, maxVal) {
-            for_inc_range(upper, lower, maxVal) {
+        FOR_INC_RANGE(lower, 1, maxVal) {
+            FOR_INC_RANGE(upper, lower, maxVal) {
                 best = MyCalc::plus(best, base[lower][upper]);
             }
         }

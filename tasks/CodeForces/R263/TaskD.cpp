@@ -39,7 +39,7 @@ public:
 
         sameGraph.init(n + 1);
 
-        repeat(k) {
+        REPEAT(k) {
             in >> a >> b >> s;
             c = s[0] == 'x';
             Equation e = getEquation(a, b);
@@ -56,7 +56,7 @@ public:
         sameGraph.buildCC();
 
         compGraph.init(sameGraph.getNumberOfComponents());
-        for_inc_range(u, 1, n + 1) {
+        FOR_INC_RANGE(u, 1, n + 1) {
             for (auto &v: diffEdge[u]) {
                 int cu = sameGraph.getComponent(u);
                 int cv = sameGraph.getComponent(v);
@@ -76,7 +76,7 @@ public:
         }
 
         int ret = 1;
-        for_inc_range(i, 1, compGraph.getNumberOfComponents() - 1) {
+        FOR_INC_RANGE(i, 1, compGraph.getNumberOfComponents() - 1) {
             ret = (ret * 2) % MOD;
         }
         out << ret << endl;

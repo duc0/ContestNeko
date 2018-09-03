@@ -8,7 +8,7 @@ public:
         if (n > (int)power.size() - 1) {
             int cur = (int)power.size() - 1;
             power.resize(n + 1);
-            for_inc_range(i, cur + 1, n) {
+            FOR_INC_RANGE(i, cur + 1, n) {
                 if (i == 0) {
                     power[i] = 1;
                 } else {

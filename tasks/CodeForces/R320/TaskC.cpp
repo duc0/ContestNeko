@@ -29,7 +29,7 @@ public:
     void solve(std::istream& in, std::ostream& out) {
         in >> n;
         a.resize(n);
-        for_inc(i, n) {
+        FOR_INC(i, n) {
             in >> a[i];
         }
         double ret;

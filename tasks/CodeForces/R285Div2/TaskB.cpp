@@ -6,7 +6,7 @@ public:
 		int n;
 		in >> n;
 		map<string, string> m;
-		repeat(n) {
+		REPEAT(n) {
             string old, new_;
             in >> old >> new_;
 

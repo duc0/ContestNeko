@@ -6,7 +6,7 @@ public:
 		int n;
 		in >> n;
         map<string, int> m;
-		repeat(n) {
+		REPEAT(n) {
             string s;
             in >> s;
             if (m.count(s)) {

@@ -14,9 +14,9 @@ public:
         this->nRow = nRow;
         this->nCol = nCol;
         a.resize(nRow);
-        for_inc_range(r, 1, nRow) {
+        FOR_INC_RANGE(r, 1, nRow) {
             a[r].resize(nCol);
-            for_inc_range(c, 1, nCol) {
+            FOR_INC_RANGE(c, 1, nCol) {
                 a[r][c] = Calc::zero();
             }
         }
@@ -26,8 +26,8 @@ public:
         assert(val.size() == nRow);
         assert(val[1].size() == nCol);
         init(nRow, nCol);
-        for_inc_range(r, 1, nRow) {
-            for_inc_range(c, 1, nCol) {
+        FOR_INC_RANGE(r, 1, nRow) {
+            FOR_INC_RANGE(c, 1, nCol) {
                 a[r][c] = val[r][c];
             }
         }
@@ -47,7 +47,7 @@ public:
         assert(nCol == o.nCol);
         Matrix ret;
         ret.init(nRow, nCol);
-        for_inc_range(r, 1, nRow) for_inc_range(c, 1, nCol) ret.a[r][c] = Calc::plus(a[r][c], o.a[r][c]);
+        FOR_INC_RANGE(r, 1, nRow) FOR_INC_RANGE(c, 1, nCol) ret.a[r][c] = Calc::plus(a[r][c], o.a[r][c]);
         return ret;
     }
 
@@ -55,8 +55,8 @@ public:
         assert(nCol == o.nRow);
         Matrix ret;
         ret.init(nRow, o.nCol);
-        for_inc_range(r, 1, nRow) for_inc_range(c2, 1, nCol) if (a[r][c2] != Calc::zero())
-                    for_inc_range(c, 1, o.nCol) {
+        FOR_INC_RANGE(r, 1, nRow) FOR_INC_RANGE(c2, 1, nCol) if (a[r][c2] != Calc::zero())
+                    FOR_INC_RANGE(c, 1, o.nCol) {
                         ret.a[r][c] = Calc::plus(ret.a[r][c], Calc::multiply(a[r][c2], o.a[c2][c]));
                     }
         return ret;
@@ -72,8 +72,8 @@ public:
 
     friend std::ostream &operator<<(std::ostream &stream, const Matrix &matrix) {
         stream << "[matrix: row = " << matrix.nRow << ", col = " << matrix.nCol << endl;
-        for_inc_range(r, 1, matrix.nRow) {
-            for_inc_range(c, 1, matrix.nCol) {
+        FOR_INC_RANGE(r, 1, matrix.nRow) {
+            FOR_INC_RANGE(c, 1, matrix.nCol) {
                 stream << matrix.a[r][c] << " ";
             }
             stream << endl;
@@ -92,9 +92,9 @@ public:
         this->size = size;
         this->size = size;
         a.resize(size);
-        for_inc_range(r, 1, size) {
+        FOR_INC_RANGE(r, 1, size) {
             a[r] = cl::ArrayR<T>(r, size);
-            for_inc_range(c, r, size) {
+            FOR_INC_RANGE(c, r, size) {
                 a[r][c] = Calc::zero();
             }
         }
@@ -104,7 +104,7 @@ public:
         assert(size == o.size);
         UpperTriMatrix ret;
         ret.init(size);
-        for_inc_range(r, 1, size) for_inc_range(c, r, size) ret.a[r][c] = Calc::plus(a[r][c], o.a[r][c]);
+        FOR_INC_RANGE(r, 1, size) FOR_INC_RANGE(c, r, size) ret.a[r][c] = Calc::plus(a[r][c], o.a[r][c]);
         return ret;
     }
 
@@ -112,8 +112,8 @@ public:
         assert(size == o.size);
         UpperTriMatrix ret;
         ret.init(size);
-        for_inc_range(r, 1, size) for_inc_range(c2, r, size) if (a[r][c2] != Calc::zero())
-                    for_inc_range(c, c2, size) {
+        FOR_INC_RANGE(r, 1, size) FOR_INC_RANGE(c2, r, size) if (a[r][c2] != Calc::zero())
+                    FOR_INC_RANGE(c, c2, size) {
                         ret.a[r][c] = Calc::plus(ret.a[r][c], Calc::multiply(a[r][c2], o.a[c2][c]));
                     }
         return ret;
@@ -129,8 +129,8 @@ public:
 
     friend std::ostream &operator<<(std::ostream &stream, const UpperTriMatrix &matrix) {
         stream << "[UpperTriMatrix: size = " << matrix.size << endl;
-        for_inc_range(r, 1, matrix.size) {
-            for_inc_range(c, r, matrix.size) {
+        FOR_INC_RANGE(r, 1, matrix.size) {
+            FOR_INC_RANGE(c, r, matrix.size) {
                 stream << matrix.a[r][c] << " ";
             }
             stream << endl;

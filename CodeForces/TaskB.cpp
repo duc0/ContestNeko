@@ -16,7 +16,7 @@ public:
         in >> median;
 
         vector<int> smaller, larger;
-        repeat(len) {
+        REPEAT(len) {
             int x;
             in >> x;
             if (x < median) {

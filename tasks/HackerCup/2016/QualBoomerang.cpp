@@ -11,7 +11,7 @@ public:
         int n;
         in >> n;
         vector<pair<int, int>> points;
-        repeat(n) {
+        REPEAT(n) {
             int x, y;
             in >> x >> y;
             points.push_back(make_pair(x, y));

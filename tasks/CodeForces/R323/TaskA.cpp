@@ -9,7 +9,7 @@ public:
 
         collections::Map<int, int> cnt;
 
-        repeat(n * n) {
+        REPEAT(n * n) {
             int x;
             in >> x;
             cnt[x]++;

@@ -14,9 +14,9 @@ public:
 
         int cnt = 0;
 
-        for_inc_range(lh, 0, n - 1) {
+        FOR_INC_RANGE(lh, 0, n - 1) {
             int dr = 0, dc = 0;
-            for_inc_range(rh, lh, n - 1) {
+            FOR_INC_RANGE(rh, lh, n - 1) {
                 switch (s[rh]) {
                     case 'U':
                         dr++;

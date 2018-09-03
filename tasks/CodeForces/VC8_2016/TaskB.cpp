@@ -34,9 +34,9 @@ struct GVertex {
   }
 
     friend std::ostream &operator<<(std::ostream &stream, const GVertex &val) {
-        for_inc(i, val.r) stream << "R";
-        for_inc(i, val.g) stream << "G";
-        for_inc(i, val.b) stream << "B";
+        FOR_INC(i, val.r) stream << "R";
+        FOR_INC(i, val.g) stream << "G";
+        FOR_INC(i, val.b) stream << "B";
         stream << " Length: " << val.length();
         return stream;
     }

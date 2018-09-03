@@ -24,7 +24,7 @@ struct Graph {
         adjList.resize(nVertex);
         degree.resize(nVertex);
         nEdge = 0;
-        for_inc(i, nVertex) {
+        FOR_INC(i, nVertex) {
             degree[i] = 0;
         }
     }
@@ -56,11 +56,11 @@ struct Graph {
         edgeVisited.resize(nEdge);
         nodeVisited.resize(nVertex);
 
-        for_inc(i, nVertex) {
+        FOR_INC(i, nVertex) {
             nodeVisited[i] = false;
         }
 
-        for_inc(i, nEdge) {
+        FOR_INC(i, nEdge) {
             edgeVisited[i] = false;
         }
     }
@@ -124,14 +124,14 @@ struct ChainSolver {
 
         int result = 0;
 
-        for_inc(nextBeginVal, 2) {
+        FOR_INC(nextBeginVal, 2) {
             if (knownVal[firstEdge.end] != -1 && nextBeginVal != knownVal[firstEdge.end]) {
                 continue;
             }
             int signedNextBeginVal = getVal(nextBeginVal, firstEdge.signEnd);
             int signFirstEdgeVal = signedBeginVal ^ signedNextBeginVal;
 
-            for_inc(nextEndVal, 2) {
+            FOR_INC(nextEndVal, 2) {
                 if (knownVal[lastEdge.begin] != -1 && nextEndVal != knownVal[lastEdge.begin]) {
                     continue;
                 }
@@ -145,7 +145,7 @@ struct ChainSolver {
     }
 
     int solve(int target) {
-        fill0(f);
+        FILL0(f);
         return solve(target, 0, 0, 0) + solve(target, 0, 0, 1) + solve(target, 0, 1, 0) + solve(target, 0, 1, 1);
     }
 
@@ -163,11 +163,11 @@ public:
 
         Graph graph(nVertex);
 
-        for_inc(i, nVertex) {
+        FOR_INC(i, nVertex) {
             knownVal[i] = -1;
         }
 
-        repeat(nEdge) {
+        REPEAT(nEdge) {
             int k;
             in >> k;
 

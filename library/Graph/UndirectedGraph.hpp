@@ -34,7 +34,7 @@ public:
         adj.resize(n + 1);
         indexMap.resize(n + 1);
         deg.resize(n + 1);
-        for_inc_range(u, 1, n) {
+        FOR_INC_RANGE(u, 1, n) {
             adj[u].clear();
             indexMap[u].clear();
         }
@@ -79,7 +79,7 @@ public:
         color.resize(n + 1);
         nComp = 0;
         _hasOddCycle = false;
-        for_inc_range(u, 1, n) {
+        FOR_INC_RANGE(u, 1, n) {
             if (comp[u] == -1) {
                 nComp++;
                 dfs(u, 0);
@@ -118,7 +118,7 @@ public:
     UndirectedGraphEdgeMarker(const UndirectedGraph &g): g(g) {
         n = g.getSize();
         flag.resize(n + 1);
-        for_inc_range(u, 1, n) {
+        FOR_INC_RANGE(u, 1, n) {
             flag[u].resize(g.getAdjacent(u).size());
         }
     }

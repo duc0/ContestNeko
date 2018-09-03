@@ -54,9 +54,9 @@ public:
         this->maxIndex = maxIndex;
         this->n = maxIndex - minIndex + 1;
         val.resize(n + 1);
-        for_inc_range(i, 1, n) {
+        FOR_INC_RANGE(i, 1, n) {
             val[i].resize(n + 1);
-            for_inc_range(j, 1, n) {
+            FOR_INC_RANGE(j, 1, n) {
                 val[i][j].resize(n + 1);
             }
         }

@@ -21,14 +21,14 @@ public:
                          const function<Q(Q, Q)> &combine)
             : t(tree), combine(combine) {
         anc.resize(t.getSize() + 1);
-        for_inc_range(i, 1, t.getSize()) {
+        FOR_INC_RANGE(i, 1, t.getSize()) {
             if (i != t.getRoot()) {
                 anc[i].push_back(make_pair(t.getParent(i), getInitial(t, i)));
             }
         }
         for (int k = 1;; ++k) {
             bool ok = false;
-            for_inc_range(i, 1, t.getSize()) {
+            FOR_INC_RANGE(i, 1, t.getSize()) {
                 if (anc[i].size() >= k) {
                     int j = anc[i][k - 1].first;
                     if (anc[j].size() >= k) {
@@ -72,7 +72,7 @@ public:
             swap(u, v);
         }
         if (t.getDepth(v) > t.getDepth(u)) {
-            for_dec(i, anc[v].size()) {
+            FOR_DEC(i, anc[v].size()) {
                 int w = anc[v][i].first;
                 if (t.getDepth(w) >= t.getDepth(u)) {
                     pair<int, T> p = getLCA(u, w);
@@ -84,7 +84,7 @@ public:
             if (u == v) {
                 return make_pair(u, INT_INF);
             }
-            for_dec(i, anc[u].size()) {
+            FOR_DEC(i, anc[u].size()) {
                 int x = anc[u][i].first;
                 int y = anc[v][i].first;
                 if (x != y || i == 0) {

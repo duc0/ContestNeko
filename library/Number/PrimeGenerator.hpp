@@ -12,7 +12,7 @@ public:
         this->upper = upper;
 
         prime.resize(upper + 1);
-        for_inc_range(i, 0, upper) {
+        FOR_INC_RANGE(i, 0, upper) {
             prime[i] = true;
         }
         prime[0] = prime[1] = false;
@@ -24,7 +24,7 @@ public:
             }
         }
 
-        for_inc_range(i, 2, upper) {
+        FOR_INC_RANGE(i, 2, upper) {
             if (prime[i]) {
                 primeList.push_back(i);
             }

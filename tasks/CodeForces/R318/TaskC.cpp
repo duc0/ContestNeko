@@ -62,7 +62,7 @@ public:
         in >> n;
         adj.clear();
         adj.resize(n + 1);
-        repeat(n - 1) {
+        REPEAT(n - 1) {
             int u, v;
             in >> u >> v;
             adj[u].push_back(v);
@@ -70,14 +70,14 @@ public:
         }
 
         totalLeaf = 0;
-        for_inc_range(u, 1, n) {
+        FOR_INC_RANGE(u, 1, n) {
             if (adj[u].size() == 1) {
                 totalLeaf++;
             }
         }
         memset(nLeaf, -1, sizeof(nLeaf));
         edge.clear();
-        for_inc_range(u, 1, n) {
+        FOR_INC_RANGE(u, 1, n) {
             if (adj[u].size() != 1) {
                 dfs(u);
                 break;
