@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="C - Gambling" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" className="TaskC" cppPath="CodeForces/TaskC.cpp" inputType="STANDARD" outputType="STANDARD" testType="SINGLE">
+    <tests>
+      <test input="2&#10;1 4&#10;5 1&#10;" output="0" active="true" />
+      <test input="3&#10;100 100 100&#10;100 100 100&#10;" output="0" active="true" />
+      <test input="2&#10;2 1&#10;5 6&#10;" output="-3" active="true" />
+    </tests>
+    <method v="2" />
+  </configuration>
+</component>

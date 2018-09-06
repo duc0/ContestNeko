@@ -101,6 +101,19 @@ public:
         assert(ccBuilt);
         return nComp;
     }
+
+    int getComponentSize(int compId) {
+        assert(ccBuilt);
+        int cnt = 0;
+        FOR_INC_RANGE(u, 1, n) {
+            //cout << " Comp " << u << " " << comp[u] << " " << compId << endl;
+            if (comp[u] == compId) {
+                cnt++;
+            }
+        }
+        //cout << "Comp reslt " << compId << " " << cnt << endl;
+        return cnt;
+    }
 };
 
 class UndirectedGraphEdgeMarker {
@@ -136,3 +149,4 @@ public:
         return flag[u][i];
     }
 };
+

@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="A - Equality" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" className="TaskA" cppPath="CodeForces/TaskA.cpp" inputType="STANDARD" outputType="STANDARD" testType="SINGLE">
+    <tests>
+      <test input="9 3&#10;ACAABCCAB&#10;" output="6" active="true" />
+      <test input="9 4&#10;ABCABCABC&#10;" output="0" active="true" />
+    </tests>
+    <method v="2" />
+  </configuration>
+</component>
