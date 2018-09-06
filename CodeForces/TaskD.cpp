@@ -18,8 +18,7 @@ public:
         int currentOrder = 0;
 
         REPEAT(n) {
-            int x;
-            in >> x;
+            int x = in.nextInt();
             REQUIRE_OR_RET_FALSE(order[x] != -1 && order[x] >= lastOrder);
             for (auto& nextNode : tree.getAdjacentNodes(x)) {
                 int v = nextNode.first;
@@ -38,15 +37,14 @@ public:
         Scanner in(inStream);
         Writer out(outStream);
 
-        int n;
-        in >> n;
+        int n = in.nextInt();
 
         UnweightedTree tree;
         tree.reset(n);
 
         REPEAT(n - 1) {
-            int u, v;
-            in >> u >> v;
+            int u = in.nextInt();
+            int v = in.nextInt();
             tree.addEdge(u, v);
         }
 

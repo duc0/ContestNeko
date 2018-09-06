@@ -3,25 +3,41 @@
 #ifndef H_SCANNER
 #define H_SCANNER
 
-#ifdef IO_USE_CSTDIO
-
-class Scanner {
-    std::istream &in;
-
+class IScanner {
 public:
-    Scanner(std::istream &in) : in(in) {
+    virtual int nextInt() const = 0;
+};
+
+class CScanner : IScanner {
+public:
+    CScanner(std::istream& inStream) {
     }
 
-    Scanner& operator >> (int &result) {
+    int nextInt() const {
+        int result;
         scanf("%d", &result);
-        return *this;
-    }
-
-    Scanner& operator >> (int64 &result) {
-        scanf("%I64d", &result);
-        return *this;
+        return result;
     }
 };
+
+class StreamScanner : IScanner {
+public:
+    StreamScanner(std::istream& inStream) : inStream_(inStream) {
+    }
+
+    int nextInt() const {
+        int result;
+        inStream_ >> result;
+        return result;
+    }
+
+private:
+    std::istream& inStream_;
+};
+
+#ifdef IO_USE_CSTDIO
+
+using Scanner = CScanner;
 
 class Writer {
     std::ostream &out;
@@ -58,18 +74,7 @@ public:
 
 #else
 
-class Scanner {
-    std::istream &in;
-
-public:
-    Scanner(std::istream &in) : in(in) {
-    }
-
-    template <class T> Scanner& operator >> (T &result) {
-        in >> result;
-        return *this;
-    }
-};
+using Scanner = StreamScanner;
 
 class Writer {
     std::ostream &out;

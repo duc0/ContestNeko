@@ -29,7 +29,7 @@ bool check(std::string expected, std::string actual) {
 
 int main() {
     std::vector<jhelper::Test> tests = {
-        {"4\n1 2\n1 3\n2 4\n1 2 3 4\n", "Yes", true},{"4\n1 2\n1 3\n2 4\n1 2 4 3\n", "No", true},{"4\n1 2\n1 3\n2 4\n1 3 2 4\n", "", true},{"2\n2 1\n1 2\n", "", true},{"2\n2 1\n2 1", "", true},{"6\n4 1\n4 3\n1 2\n3 5\n3 6\n1 4 2 5 3 6", "", true},{"6\n4 1\n4 3\n1 2\n3 5\n3 6\n4 1 3 2 5 6", "", true},{"6\n4 1\n4 3\n1 2\n3 5\n3 6\n1 4 2 3 6 5", "", true},{"7\n1 2\n2 3\n2 4\n1 5\n5 6\n5 7\n1 5 2 3 6 4 7\n", "No", true},{"7\n1 2\n2 3\n2 4\n1 5\n5 6\n5 7\n1 5 2 4 3 7 6\n", "", true},
+        {"4\n1 2\n1 3\n2 4\n1 2 3 4\n", "Yes", true, true},{"4\n1 2\n1 3\n2 4\n1 2 4 3\n", "No", true, true},
     };
     bool allOK = true;
     int testID = 0;

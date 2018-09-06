@@ -1,5 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="D - Valid BFS?" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" task_path="CodeForces/D - Valid BFS?.task">
-    <method />
+  <configuration default="false" name="D - Valid BFS?" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" className="TaskD" cppPath="CodeForces/TaskD.cpp" inputType="STANDARD" outputType="STANDARD" testType="SINGLE">
+    <tests>
+      <test input="4&#10;1 2&#10;1 3&#10;2 4&#10;1 2 3 4&#10;" output="Yes" active="true" />
+      <test input="4&#10;1 2&#10;1 3&#10;2 4&#10;1 2 4 3&#10;" output="No" active="true" />
+    </tests>
+    <method v="2" />
   </configuration>
 </component>
