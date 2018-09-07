@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="G - A Game on Strings" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" className="TaskG" cppPath="CodeForces/TaskG.cpp" inputType="STANDARD" outputType="STANDARD" testType="SINGLE">
-    <tests>
-      <test input="aaab&#10;2&#10;1 2&#10;1 4&#10;" output="Alice&#10;Bob&#10;" active="true" />
-      <test input="aaccbdb&#10;2&#10;5 7&#10;1 7&#10;" output="Alice&#10;Alice&#10;" active="true" />
-    </tests>
-    <method v="2" />
-  </configuration>
-</component>

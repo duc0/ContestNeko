@@ -6,6 +6,7 @@
 class IScanner {
 public:
     virtual int nextInt() const = 0;
+    virtual int64 nextLong() const = 0;
     virtual string nextString() const = 0;
 };
 
@@ -17,6 +18,12 @@ public:
 
     int nextInt() const {
         int result;
+        cin >> result;
+        return result;
+    }
+
+    int64 nextLong() const {
+        int64 result;
         cin >> result;
         return result;
     }
@@ -39,6 +46,12 @@ public:
         return result;
     }
 
+    int64 nextLong() const {
+        int64 result;
+        inStream_ >> result;
+        return result;
+    }
+
     string nextString() const {
         string result;
         inStream_ >> result;
@@ -52,15 +65,26 @@ private:
 class IWriter {
 public:
     virtual void write(int val) const = 0;
+    virtual void write(int64 val) const = 0;
+    virtual void newLine() const = 0;
 };
 
 class CWriter : IWriter {
 public:
     CWriter(std::ostream& outStream) {
+        ios_base::sync_with_stdio(false);
     }
 
     void write(int val) const {
-        printf("%d", val);
+        cout << val;
+    }
+
+    void write(int64 val) const {
+        cout << val;
+    }
+
+    void newLine() const {
+        cout << "\n";
     }
 };
 
@@ -71,6 +95,14 @@ public:
 
     void write(int val) const {
         outStream_ << val;
+    }
+
+    void write(int64 val) const {
+        outStream_ << val;
+    }
+
+    void newLine() const {
+        outStream_ << "\n";
     }
 
 private:

@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="B - Non-Coprime Partition" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" className="TaskB" cppPath="CodeForces/TaskB.cpp" inputType="STANDARD" outputType="STANDARD" testType="SINGLE">
-    <tests>
-      <test input="1&#10;" output="No" active="true" />
-      <test input="3&#10;" output="Yes&#10;1 2&#10;2 1 3 &#10;" active="true" />
-    </tests>
-    <method v="2" />
-  </configuration>
-</component>

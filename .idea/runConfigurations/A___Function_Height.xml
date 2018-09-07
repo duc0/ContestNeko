@@ -1,0 +1,10 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="A - Function Height" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" className="TaskA" cppPath="CodeForces/TaskA.cpp" inputType="STANDARD" outputType="STANDARD" testType="SINGLE">
+    <tests>
+      <test input="4 3&#10;" output="1&#10;" active="true" />
+      <test input="4 12&#10;" output="3&#10;" active="true" />
+      <test input="999999999999999999 999999999999999986&#10;" output="1&#10;" active="true" />
+    </tests>
+    <method v="2" />
+  </configuration>
+</component>

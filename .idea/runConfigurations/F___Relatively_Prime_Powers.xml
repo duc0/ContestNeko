@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="F - Relatively Prime Powers" type="name.admitriev.jhelper.configuration.TaskConfigurationType" factoryName="Task" className="TaskF" cppPath="CodeForces/TaskF.cpp" inputType="STANDARD" outputType="STANDARD" testType="SINGLE">
+    <tests>
+      <test input="4&#10;4&#10;2&#10;72&#10;10&#10;" output="2&#10;1&#10;61&#10;6&#10;" active="true" />
+    </tests>
+    <method v="2" />
+  </configuration>
+</component>
