@@ -53,7 +53,7 @@ public:
             }
         }
 
-        sameGraph.buildCC();
+        sameGraph.buildConnectedComponents();
 
         compGraph.init(sameGraph.getNumberOfComponents());
         FOR_INC_RANGE(u, 1, n + 1) {
@@ -69,7 +69,7 @@ public:
             }
         }
 
-        compGraph.buildCC();
+        compGraph.buildConnectedComponents();
         if (compGraph.hasOddCycle()) {
             out << 0;
             return;

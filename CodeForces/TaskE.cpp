@@ -27,7 +27,7 @@ class TaskE {
           g.addEdge(edge.u, edge.v);
         }
       }
-      g.buildCC();
+        g.buildConnectedComponents();
 
       unordered_set<int> allComps;
       for (auto& edge : edges) {
@@ -124,8 +124,6 @@ public:
 
         Result result;
         tryAll(edges, result, edges.size() - 1, totalWeight);
-        out << result.bestWeight;
-
-
+        out.write(result.bestWeight);
     }
 };

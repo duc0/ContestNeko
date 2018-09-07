@@ -72,7 +72,7 @@ public:
     }
 
     // Find connected components and detect odd cycle
-    void buildCC() {
+    void buildConnectedComponents() {
         ccBuilt = true;
         comp.resize(n + 1);
         fill(comp.begin(), comp.end(), -1);
@@ -106,12 +106,10 @@ public:
         assert(ccBuilt);
         int cnt = 0;
         FOR_INC_RANGE(u, 1, n) {
-            //cout << " Comp " << u << " " << comp[u] << " " << compId << endl;
             if (comp[u] == compId) {
                 cnt++;
             }
         }
-        //cout << "Comp reslt " << compId << " " << cnt << endl;
         return cnt;
     }
 };

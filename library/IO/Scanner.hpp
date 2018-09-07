@@ -35,64 +35,41 @@ private:
     std::istream& inStream_;
 };
 
+class IWriter {
+public:
+    virtual void write(int val) const = 0;
+};
+
+
+class CWriter : IWriter {
+public:
+    CWriter(std::ostream& outStream) {
+    }
+
+    void write(int val) const {
+        printf("%d", val);
+    }
+};
+
+class StreamWriter : IWriter {
+public:
+    StreamWriter(std::ostream& outStream) : outStream_ (outStream) {
+    }
+
+    void write(int val) const {
+        outStream_ << val;
+    }
+
+private:
+    std::ostream& outStream_;
+};
+
 #ifdef IO_USE_CSTDIO
-
 using Scanner = CScanner;
-
-class Writer {
-    std::ostream &out;
-
-public:
-    Writer(std::ostream &out) : out(out) {
-    }
-
-    Writer& operator << (int value) {
-        printf("%d", value);
-        return *this;
-    }
-
-    Writer& operator << (int64 value) {
-        printf("%I64d", value);
-        return *this;
-    }
-
-    Writer& operator << (string &value) {
-        printf("%s", value.c_str());
-        return *this;
-    }
-
-    Writer& operator << (const char *value) {
-        printf("%s", value);
-        return *this;
-    }
-
-    Writer& newline() {
-        printf("\n");
-        return *this;
-    }
-};
-
+using Writer = CWriter;
 #else
-
 using Scanner = StreamScanner;
-
-class Writer {
-    std::ostream &out;
-
-public:
-    Writer(std::ostream &out) : out(out) {
-    }
-
-    template <class T> Writer& operator << (T value) {
-        out << value;
-        return *this;
-    }
-
-    Writer& newline() {
-        out << endl;
-        return *this;
-    }
-};
+using Writer = StreamWriter;
 #endif
 
 #endif
