@@ -6,16 +6,24 @@
 class IScanner {
 public:
     virtual int nextInt() const = 0;
+    virtual string nextString() const = 0;
 };
 
 class CScanner : IScanner {
 public:
     CScanner(std::istream& inStream) {
+        ios_base::sync_with_stdio(false);
     }
 
     int nextInt() const {
         int result;
-        scanf("%d", &result);
+        cin >> result;
+        return result;
+    }
+
+    string nextString() const {
+        string result;
+        cin >> result;
         return result;
     }
 };
@@ -31,6 +39,12 @@ public:
         return result;
     }
 
+    string nextString() const {
+        string result;
+        inStream_ >> result;
+        return result;
+    }
+
 private:
     std::istream& inStream_;
 };
@@ -39,7 +53,6 @@ class IWriter {
 public:
     virtual void write(int val) const = 0;
 };
-
 
 class CWriter : IWriter {
 public:
