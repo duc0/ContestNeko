@@ -16,12 +16,12 @@ class TaskC {
         if (f[n][k] != -1) {
             return f[n][k];
         }
-        f[n][k] = (k + 1) * solve(n - 1, k) + (9 - k) * (solve(n - 1, k + 1));
+        f[n][k] = solve(n - 1, k) + 9 * solve(n - 1, k + 1);
         //cout << "Solve " << n << " " << k << " " << f[n][k] << endl;
         return f[n][k];
     }
 
-    int64 solve(string num, int pos, map<int, int>& used, int countUsed) {
+    int64 solve(string num, int pos, int countUsed) {
         //cout << "Solve " << num << " " << pos << endl;
         if (countUsed > 3) {
             return 0;
@@ -34,28 +34,24 @@ class TaskC {
         int curDigit = num[pos] - '0';
         int64 result = 0;
         for (int digit = 0; digit < curDigit; digit++) {
-            used[digit] ++;
-
-            if (digit != 0 && used[digit] == 1) {
+            if (digit != 0) {
                 countUsed++;
             }
 
             if (countUsed <= 3) {
-                int64 rest = solve( len - (pos + 1), countUsed); 
+                int64 rest = solve( len - (pos + 1), countUsed);
                 result += rest;
                 //cout << "To solve " << (len - (pos + 1)) << " " << countUsed << " " << rest << endl;
             }
 
-            used[digit] --;
-            if (digit != 0 && used[digit] == 0) {
+            if (digit != 0) {
                 countUsed--;
             }
         }
-        used[curDigit]++;
-        if (curDigit != 0 && used[curDigit] == 1) {
+        if (curDigit != 0) {
             countUsed++;
         }
-        result += solve(num, pos + 1, used, countUsed);
+        result += solve(num, pos + 1, countUsed);
         return result;
     }
 
@@ -66,8 +62,29 @@ class TaskC {
         stringstream ss;
         ss << upper;
         string num = ss.str();
-        map<int, int> used;
-        return solve(num, 0, used, 0) - 1;
+        return solve(num, 0, 0) - 1;
+    }
+    
+    bool good(int n) {
+        int countDigit = 0;
+        while (n > 0) {
+            int d = n % 10;
+            if (d > 0) {
+                countDigit++;
+            }
+            n /= 10;
+        }
+        return countDigit <= 3; 
+    }
+    
+    int solveNaive(int l, int r) {
+        int count = 0;
+        FOR_INC_RANGE(k, l, r) {
+            if (good(k)) {
+                count++;
+            }
+        }
+        return count;
     }
 
 public:
@@ -87,8 +104,9 @@ public:
         while (cases--) {
             int64 l = in.nextLong();
             int64 r = in.nextLong();
-            cout << "Res " << r << " " << solve(r) << endl;
-            cout << "Res " << l-1 << " " << solve(l-1) << endl;
+            //cout << "Res " << r << " " << solve(r) << endl;
+            //cout << "Res " << l-1 << " " << solve(l-1) << endl;
+            //cout << "My " << solveNaive(l, r) << endl;
             out.write(solve(r) - solve(l - 1));
             out.newLine();
         }
