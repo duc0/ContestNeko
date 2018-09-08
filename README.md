@@ -2,7 +2,7 @@
 
 Reusable C++ algorithms and data structures for competitive programming contests (codeforces, topcoder, hackerrank etc.) 
 
-Recommended IDE: [CLion 2017.2](https://www.jetbrains.com/clion/download/previous.html) + [JHelper plugin](https://github.com/AlexeyDmitriev/JHelper)
+Recommended IDE: [CLion 2018.2.3](https://www.jetbrains.com/clion/download/) + [JHelper plugin 0.15](https://github.com/AlexeyDmitriev/JHelper)
 
 [Cleaned up libraries for CLion + JHelper](library)
 
