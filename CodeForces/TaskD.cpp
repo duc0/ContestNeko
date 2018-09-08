@@ -1,6 +1,7 @@
 #include "global.hpp"
 #include "Scanner.hpp"
-#include "Collections.hpp"
+#include "NDArray.hpp"
+#include "ArrayUtils.hpp"
 
 using AL = cl::NDArray<int64>;
 using AI = cl::NDArray<int>;
@@ -48,20 +49,13 @@ public:
         Writer out(outStream);
 
         auto len1 = in.next<int>();
-        auto array1 = in.nextArray<int>(len1, 1);
+        auto array1 = in.nextArray<int64>(len1, 1);
 
         auto len2 = in.next<int>();
-        auto array2 = in.nextArray<int>(len2, 1);
+        auto array2 = in.nextArray<int64>(len2, 1);
 
-        auto sum1 = AL({len1 + 1}, 0);
-        FOR_INC_RANGE(i, 1, len1) {
-            sum1(i) = sum1(i - 1) + array1(i);
-        }
-
-        auto sum2 = AL({len2 + 1}, 0);
-        FOR_INC_RANGE(i, 1, len2) {
-            sum2(i) = sum2(i - 1) + array2(i);
-        }
+        auto sum1 = utils::getSumArray(array1);
+        auto sum2 = utils::getSumArray(array2);
 
         out.write(getResult(sum1, sum2, len1, len2));
     }

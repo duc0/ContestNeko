@@ -1,6 +1,6 @@
 #include "global.hpp"
 #include "Scanner.hpp"
-#include "Collections.hpp"
+#include "NDArray.hpp"
 
 auto f = cl::NDArray<int64>({30, 5}, -1);
 

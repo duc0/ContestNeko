@@ -2,7 +2,7 @@
 #include "global.hpp"
 #include "HLDSegmentTree.hpp"
 #include "LowestCommonAncestor.hpp"
-#include "Collections.hpp"
+#include "NDArray.hpp"
 
 #define CAP 10
 

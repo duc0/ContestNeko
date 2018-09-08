@@ -1,5 +1,5 @@
 #include "global.hpp"
-#include "Collections.hpp"
+#include "NDArray.hpp"
 
 #ifndef H_SCANNER
 #define H_SCANNER

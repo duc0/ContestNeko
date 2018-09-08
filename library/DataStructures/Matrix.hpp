@@ -1,5 +1,5 @@
 #include "global.hpp"
-#include "Collections.hpp"
+#include "NDArray.hpp"
 #include "Math.hpp"
 
 #ifndef MATRIX_H

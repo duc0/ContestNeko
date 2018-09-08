@@ -1,6 +1,6 @@
 #include "global.hpp"
 #include "Matrix.hpp"
-#include "Collections.hpp"
+#include "NDArray.hpp"
 
 class MyCalc {
 public:
