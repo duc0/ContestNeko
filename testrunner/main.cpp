@@ -1,4 +1,4 @@
-#include "/Users/duc/github/ContestNeko/CodeForces/TaskC.cpp"
+#include "/Users/duc/github/ContestNeko/CodeForces/TaskD.cpp"
 
 #include <iostream>
 #include <fstream>
@@ -29,7 +29,7 @@ bool check(std::string expected, std::string actual) {
 
 int main() {
     std::vector<jhelper::Test> tests = {
-        {"4\n1 1000\n1024 1024\n65536 65536\n999999 1000001\n", "1000\n1\n0\n2\n", true, true},{"1\n1 1000000000000000000", "43243", true, true},{"1\n421 4328792", "", true, true},
+        {"5\n11 2 3 5 7\n4\n11 7 3 7\n", "3\n", true, true},{"2\n1 2\n1\n100\n", "-1\n", true, true},{"3\n1 2 3\n3\n1 2 3\n", "3\n", true, true},{"5\n1 2 3 4 5\n3 \n5 7 3", "", true, true},
     };
     bool allOK = true;
     int testID = 0;
@@ -48,7 +48,7 @@ int main() {
             std::stringstream in(test.input);
             std::ostringstream out;
             std::clock_t start = std::clock();
-            TaskC solver;
+            TaskD solver;
             solver.solve(in, out);
              std::clock_t finish = std::clock();
             double currentTime = double(finish - start) / CLOCKS_PER_SEC;

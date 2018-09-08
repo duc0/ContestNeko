@@ -2,12 +2,15 @@
 #include "Scanner.hpp"
 #include "Collections.hpp"
 
+using AL = cl::NDArray<int64>;
+using AI = cl::NDArray<int>;
+
 class TaskD {
-    int64 getSum(const cl::Array<int64>&sum, int l, int r) {
+    int64 getSum(const AL& sum, int l, int r) {
         return sum[r] - sum[l - 1];
     }
 
-    int getResult(const cl::Array<int64>& sum1, const cl::Array<int64>& sum2, int pos1, int pos2) {
+    int getResult(const AL& sum1, const AL& sum2, int pos1, int pos2) {
         if (pos1 == 0 && pos2 == 0) {
             return 0;
         } else if (pos1 == 0 || pos2 == 0) {
@@ -45,27 +48,25 @@ public:
         Writer out(outStream);
 
         int len1 = in.nextInt();
-        cl::Array1<int> array1(len1);
+        auto array1 = AI({len1}, 0, 1);
         FOR_INC_RANGE(i, 1, len1) {
-            array1[i] = in.nextInt();
+            array1(i) = in.nextInt();
         }
 
         int len2 = in.nextInt();
-        cl::Array1<int> array2(len2);
+        auto array2 = AI({len2}, 0, 1);
         FOR_INC_RANGE(i, 1, len2) {
-            array2[i] = in.nextInt();
+            array2(i) = in.nextInt();
         }
 
-        cl::Array<int64> sum1(len1 + 1);
-        sum1[0] = 0;
+        auto sum1 = AL({len1 + 1}, 0);
         FOR_INC_RANGE(i, 1, len1) {
-            sum1[i] = sum1[i - 1] + array1[i];
+            sum1(i) = sum1(i - 1) + array1(i);
         }
 
-        cl::Array<int64> sum2(len2 + 1);
-        sum2[0] = 0;
+        auto sum2 = AL({len2 + 1}, 0);
         FOR_INC_RANGE(i, 1, len2) {
-            sum2[i] = sum2[i - 1] + array2[i];
+            sum2(i) = sum2(i - 1) + array2(i);
         }
 
         out.write(getResult(sum1, sum2, len1, len2));

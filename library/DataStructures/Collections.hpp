@@ -6,10 +6,11 @@
 namespace cl {
     template<class V> class NDArray {
      public:
-      NDArray(const initializer_list<int>& shape, const V& initialValue) : shape_(shape) {
+      NDArray(const initializer_list<int>& shape, const V& initialValue,
+          int defaultStartingPos = 0) : shape_(shape) {
         a_.resize(getSize());
         REPEAT(getDimension()) {
-          startingPos_.push_back(0);
+          startingPos_.push_back(defaultStartingPos);
         }
         fillValue(initialValue);
       }
@@ -41,6 +42,15 @@ namespace cl {
         }
       }
 
+      const V& operator[] (int i0) const {
+        return operator()(i0);
+      }
+
+      const V& operator() (int i0) const {
+        assert(getDimension() == 1);
+        return get(i0 - startingPos_[0]);
+      }
+
       V& operator() (int i0) {
         assert(getDimension() == 1);
         return get(i0 - startingPos_[0]);
@@ -57,6 +67,11 @@ namespace cl {
       vector<int> startingPos_;
 
       V& get(int index) {
+        assert(0 <= index && index < a_.size());
+        return a_[index];
+      }
+
+      const V& get(int index) const {
         assert(0 <= index && index < a_.size());
         return a_[index];
       }
