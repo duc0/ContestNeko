@@ -1,4 +1,5 @@
 #include "global.hpp"
+#include "Collections.hpp"
 
 #ifndef H_SCANNER
 #define H_SCANNER
@@ -8,6 +9,15 @@ class Scanner {
  public:
   Scanner(std::istream& inStream) : inStream_(inStream) {
     ios_base::sync_with_stdio(false);
+  }
+
+  cl::NDArray<int> nextIntArray(int size, int startingPos = 0) {
+    auto result = cl::NDArray<int>({size}, 0, startingPos);
+    FOR_INC(i, size) {
+      int x = nextInt();
+      result(startingPos + i) = x;
+    }
+    return result;
   }
 
   int nextInt() const {

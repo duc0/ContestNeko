@@ -48,16 +48,10 @@ public:
         Writer out(outStream);
 
         int len1 = in.nextInt();
-        auto array1 = AI({len1}, 0, 1);
-        FOR_INC_RANGE(i, 1, len1) {
-            array1(i) = in.nextInt();
-        }
+        auto array1 = in.nextIntArray(len1, 1);
 
         int len2 = in.nextInt();
-        auto array2 = AI({len2}, 0, 1);
-        FOR_INC_RANGE(i, 1, len2) {
-            array2(i) = in.nextInt();
-        }
+        auto array2 = in.nextIntArray(len2, 1);
 
         auto sum1 = AL({len1 + 1}, 0);
         FOR_INC_RANGE(i, 1, len1) {
