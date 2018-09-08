@@ -11,29 +11,17 @@ class Scanner {
     ios_base::sync_with_stdio(false);
   }
 
-  cl::NDArray<int> nextIntArray(int size, int startingPos = 0) {
-    auto result = cl::NDArray<int>({size}, 0, startingPos);
+  template<typename T> cl::NDArray<T> nextArray(int size, int startingPos = 0, T defaultValue = 0) {
+    auto result = cl::NDArray<T>({size}, defaultValue, startingPos);
     FOR_INC(i, size) {
-      int x = nextInt();
+      T x = next<T>();
       result(startingPos + i) = x;
     }
     return result;
   }
 
-  int nextInt() const {
-    int result;
-    inStream_ >> result;
-    return result;
-  }
-
-  int64 nextLong() const {
-    int64 result;
-    inStream_ >> result;
-    return result;
-  }
-
-  string nextString() const {
-    string result;
+  template<typename T> T next() const {
+    T result;
     inStream_ >> result;
     return result;
   }
@@ -42,44 +30,13 @@ class Scanner {
   std::istream& inStream_;
 };
 
-class IWriter {
+
+class Writer {
  public:
-  virtual void write(int val) const = 0;
-
-  virtual void write(int64 val) const = 0;
-
-  virtual void newLine() const = 0;
-};
-
-class CWriter: IWriter {
- public:
-  CWriter(std::ostream& outStream) {
-    ios_base::sync_with_stdio(false);
+  Writer(std::ostream& outStream) : outStream_(outStream) {
   }
 
-  void write(int val) const {
-    cout << val;
-  }
-
-  void write(int64 val) const {
-    cout << val;
-  }
-
-  void newLine() const {
-    cout << "\n";
-  }
-};
-
-class StreamWriter: IWriter {
- public:
-  StreamWriter(std::ostream& outStream) : outStream_(outStream) {
-  }
-
-  void write(int val) const {
-    outStream_ << val;
-  }
-
-  void write(int64 val) const {
+  template <typename T> void write(T val) const {
     outStream_ << val;
   }
 
@@ -90,11 +47,5 @@ class StreamWriter: IWriter {
  private:
   std::ostream& outStream_;
 };
-
-#ifdef IO_USE_CSTDIO
-using Writer = CWriter;
-#else
-using Writer = StreamWriter;
-#endif
 
 #endif

@@ -47,11 +47,11 @@ public:
         Scanner in(inStream);
         Writer out(outStream);
 
-        int len1 = in.nextInt();
-        auto array1 = in.nextIntArray(len1, 1);
+        auto len1 = in.next<int>();
+        auto array1 = in.nextArray<int>(len1, 1);
 
-        int len2 = in.nextInt();
-        auto array2 = in.nextIntArray(len2, 1);
+        auto len2 = in.next<int>();
+        auto array2 = in.nextArray<int>(len2, 1);
 
         auto sum1 = AL({len1 + 1}, 0);
         FOR_INC_RANGE(i, 1, len1) {
