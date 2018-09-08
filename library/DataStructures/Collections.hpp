@@ -4,6 +4,64 @@
 #define COLLECTIONS_H
 
 namespace cl {
+    template<class V> class NDArray {
+     public:
+      NDArray(const initializer_list<int>& shape, const V& initialValue) : shape_(shape) {
+        a_.resize(getSize());
+        REPEAT(getDimension()) {
+          startingPos_.push_back(0);
+        }
+        fillValue(initialValue);
+      }
+
+      void setStartingPos(const initializer_list<int>& startingPos) {
+        assert(startingPos.size() == getDimension());
+        startingPos_ = startingPos;
+      }
+
+      int getSize() const {
+        int size = 1;
+        for (auto x : shape_) {
+          size *= x;
+        }
+        return size;
+      }
+
+      int dim(int i) const {
+        return shape_[i];
+      }
+
+      int getDimension() const {
+        return shape_.size();
+      }
+
+      void fillValue(const V& value) {
+        FOR_INC(i, a_.size()) {
+          a_[i] = value;
+        }
+      }
+
+      V& operator() (int i0) {
+        assert(getDimension() == 1);
+        return get(i0 - startingPos_[0]);
+      }
+
+      V& operator() (int i0, int i1) {
+        assert(getDimension() == 2);
+        return get((i0 - startingPos_[0]) * dim(1) + (i1 - startingPos_[1]));
+      }
+
+     private:
+      vector<V> a_;
+      vector<int> shape_;
+      vector<int> startingPos_;
+
+      V& get(int index) {
+        assert(0 <= index && index < a_.size());
+        return a_[index];
+      }
+    };
+
     template<class K, class V> class Map {
         std::map<K, V> map;
 
@@ -60,127 +118,6 @@ namespace cl {
 
         V& operator[] (const K& k) {
             return map[k];
-        }
-    };
-
-    template<class V> class Array {
-        typedef typename std::vector<V>::iterator iterator;
-        typedef typename std::vector<V>::const_iterator const_iterator;
-    protected:
-        std::vector<V> vec;
-
-    public:
-        Array() {}
-        Array(int sz) : vec(vector<V>(sz)) {}
-
-        void resize(int sz) {
-            vec.resize(sz);
-        }
-
-        void assertIndex(int index) const {
-            ASSERT(index >= 0 && index < vec.size(), "Index of out bounds, size = " << size() << ", index = " << index);
-        }
-
-        V& operator[] (int index) {
-            assertIndex(index);
-            return vec[index];
-        }
-
-        const V& operator[] (int index) const {
-            assertIndex(index);
-            return vec[index];
-        }
-
-        /**
-         * Return the new index
-         */
-        virtual int add(const V &v) {
-            vec.push_back(v);
-            return vec.size() - 1;
-        }
-
-        iterator begin() {
-            return vec.begin();
-        }
-
-        const_iterator begin() const {
-            return vec.begin();
-        }
-
-        iterator end() {
-            return vec.end();
-        }
-
-        const_iterator end() const {
-            return vec.end();
-        }
-
-        int size() const {
-            return vec.size();
-        }
-
-        V& last() {
-            return vec[size() - 1];
-        }
-
-        V& first() {
-            return vec[0];
-        }
-
-        bool empty() {
-            return size() == 0;
-        }
-
-        friend std::ostream &operator<<(std::ostream &stream, const Array<V> &array) {
-            bool first = true;
-            stream << "Array of " << array.size() << ": [";
-            for (auto &v : array) {
-                if (!first) {
-                    stream << ", ";
-                }
-                first = false;
-                stream << v;
-            }
-            stream << "]";
-            return stream;
-        }
-    };
-
-    /**
-     * 1 based array
-     */
-    template<class V> class Array1 : public Array<V> {
-    public:
-        Array1() {}
-        Array1(int sz) : Array<V>(sz) {}
-
-        V& operator[] (int index) {
-            return Array<V>::operator[](index - 1);
-        }
-
-        const V& operator[] (int index) const {
-            return Array<V>::operator[](index - 1);
-        }
-    };
-
-    /**
-     * Range based array
-     */
-    template<class V> class ArrayR : public Array<V> {
-        int minIndex, maxIndex;
-    public:
-        ArrayR() {}
-        ArrayR(int minIndex, int maxIndex) : Array<V>(maxIndex - minIndex + 1), minIndex(minIndex), maxIndex(maxIndex) {
-            assert(minIndex <= maxIndex);
-            assert(Array<V>::size() == (maxIndex - minIndex + 1));
-        }
-
-        V& operator[] (int index) {
-            return Array<V>::operator[](index - minIndex);
-        }
-
-        const V& operator[] (int index) const {
-            return Array<V>::operator[](index - minIndex);
         }
     };
 

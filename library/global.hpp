@@ -34,6 +34,7 @@
 #include <unordered_set>
 #include <unordered_map>
 #include <memory>
+#include <initializer_list>
 #endif
 
 #define LOG(l, x) if (l <= LOGLEVEL) cout << x << endl

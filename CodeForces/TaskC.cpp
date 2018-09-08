@@ -1,24 +1,22 @@
 #include "global.hpp"
 #include "Scanner.hpp"
+#include "Collections.hpp"
 
-#define MAXL 30
-#define MAXD 5
+auto f = cl::NDArray<int64>({30, 5}, -1);
 
 class TaskC {
-    int64 f[MAXL + 1][MAXD + 1];
-
     int64 solve(int n, int k) {
         if (k > 3) {
             return 0;
         } else if (n == 0) {
             return 1;
         }
-        if (f[n][k] != -1) {
-            return f[n][k];
+        if (f(n, k) != -1) {
+            return f(n, k);
         }
-        f[n][k] = solve(n - 1, k) + 9 * solve(n - 1, k + 1);
+        f(n, k) = solve(n - 1, k) + 9 * solve(n - 1, k + 1);
         //cout << "Solve " << n << " " << k << " " << f[n][k] << endl;
-        return f[n][k];
+        return f(n, k);
     }
 
     int64 solve(string num, int pos, int countUsed) {
@@ -89,12 +87,6 @@ class TaskC {
 
 public:
     void solve(std::istream& inStream, std::ostream& outStream) {
-        FOR_INC_RANGE(n, 0, MAXL) {
-            FOR_INC_RANGE(k, 0, MAXD) {
-                f[n][k] = -1;
-            }
-        }
-
         Scanner in(inStream);
         Writer out(outStream);
 
