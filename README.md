@@ -19,3 +19,10 @@ Some available libraries
 
 
 [Other libraries](CPPProjects)
+
+Fun video games with good AI
+-----------------------
+-   [Tic Tac Toe](http://play.google.com/store/apps/details?id=com.popoko.gomokuvn)
+-   [Chess](http://play.google.com/store/apps/details?id=com.popoko.chessru)
+-   [Gomoku](http://play.google.com/store/apps/details?id=com.popoko.gomokukr)
+-   [Minesweeper](http://play.google.com/store/apps/details?id=com.popoko.minesweeper)
